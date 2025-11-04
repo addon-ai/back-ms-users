@@ -1,77 +1,177 @@
-@startuml UpdateEntity
+@startuml Update Entity
 !theme plain
-title Update Entity - Hexagonal Architecture Flow (v2 - Consolidated)
+title Update User - Hexagonal Architecture Flow
 
 actor Client
-participant "EntityController\n(Input Adapter)" as Controller
-participant "EntityService\n(Consolidated Application Service)" as Service
-participant "EntityMapper\n(Application Layer)" as Mapper
-participant "EntityRepositoryAdapter\n(Output Adapter)" as RepoAdapter
-participant "JpaEntityRepository\n(Infrastructure)" as JpaRepo
-database "Database" as DB
+participant "UserController\n(Input Adapter)" as Controller
+participant "UserUseCase\n(Domain Port)" as UseCase
+participant "UserService\n(Application Service)" as Service
+participant "UserMapper\n(Application Layer)" as Mapper
+participant "UserRepositoryPort\n(Domain Port)" as RepoPort
+participant "UserRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaUserRepository\n(Infrastructure)" as JpaRepo
+database "H2 Database" as DB
 
-Client -> Controller: PUT /entities/{entityId}\n{updatable fields}
+Client -> Controller: PUT /users/{userId}\n{"firstName": "John Updated", "lastName": "Doe Updated", "email": "john.updated@example.com"}
 activate Controller
+note right: REST endpoint with\npath and body validation
 
-Controller -> Service: update(entityId, UpdateEntityRequestContent)
+Controller -> Controller: validateRequest(@Valid UpdateUserRequestContent, @PathVariable String userId)
+note right: Bean validation:\n@Email, @Size, UUID format
+
+Controller -> UseCase: update(userId, UpdateUserRequestContent)
+activate UseCase
+note right: Domain port interface\ndefines contract
+
+UseCase -> Service: update(userId, UpdateUserRequestContent)
 activate Service
-note right: Consolidated service implementing\nEntityUseCase (all CRUD operations)
+note right: Application service\nimplements use case
 
-Service -> RepoAdapter: findById(entityId)
+' First, find existing user
+Service -> RepoPort: findById(userId)
+activate RepoPort
+RepoPort -> RepoAdapter: findById(userId)
 activate RepoAdapter
-RepoAdapter -> JpaRepo: findById(entityId)
+RepoAdapter -> JpaRepo: findById(userId)
 activate JpaRepo
-JpaRepo -> DB: SELECT * FROM entities WHERE id = ?
-DB --> JpaRepo: Optional<EntityDbo>
-JpaRepo --> RepoAdapter: Optional<EntityDbo>
+JpaRepo -> DB: SELECT * FROM users WHERE id = ?
+DB --> JpaRepo: Optional<UserDbo>
+JpaRepo --> RepoAdapter: Optional<UserDbo>
 deactivate JpaRepo
 
-RepoAdapter -> Mapper: toDomain(EntityDbo)
-activate Mapper
-Mapper --> RepoAdapter: Entity (existing)
-deactivate Mapper
-RepoAdapter --> Service: Optional<Entity>
-deactivate RepoAdapter
+alt User Found
+    RepoAdapter -> Mapper: toDomain(UserDbo)
+    activate Mapper
+    note right: Convert JPA entity\nto domain object
+    Mapper --> RepoAdapter: User (existing)
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: Optional<User>
+    deactivate RepoAdapter
+    RepoPort --> Service: Optional<User>
+    deactivate RepoPort
+    
+    ' Update entity with new values
+    Service -> Mapper: updateEntityFromRequest(UpdateUserRequestContent, User)
+    activate Mapper
+    note right: MapStruct updates only\nnon-null fields from request
+    note over Mapper: Updates fields:\n- firstName (if provided)\n- lastName (if provided)\n- email (if provided)\n- updatedAt = now()
+    Mapper --> Service: void (User updated in-place)
+    deactivate Mapper
+    
+    ' Check email uniqueness if email changed
+    alt Email Changed
+        Service -> RepoPort: existsByEmail(newEmail)
+        activate RepoPort
+        RepoPort -> RepoAdapter: existsByEmail(newEmail)
+        activate RepoAdapter
+        RepoAdapter -> JpaRepo: existsByEmailAndIdNot(newEmail, userId)
+        activate JpaRepo
+        JpaRepo -> DB: SELECT COUNT(*) FROM users WHERE email = ? AND id != ?
+        DB --> JpaRepo: count
+        JpaRepo --> RepoAdapter: boolean
+        deactivate JpaRepo
+        RepoAdapter --> RepoPort: boolean
+        deactivate RepoAdapter
+        RepoPort --> Service: boolean
+        deactivate RepoPort
+        
+        alt Email Already Exists
+            Service --> UseCase: ConflictException("Email already exists")
+            UseCase --> Controller: ConflictException
+            Controller --> Client: HTTP 409\n{"message": "Email already exists", "timestamp": "...", "path": "/users/..."}
+            note right: GlobalExceptionHandler\nhandles the exception
+        end
+    end
+    
+    ' Save updated user
+    Service -> RepoPort: save(User)
+    activate RepoPort
+    RepoPort -> RepoAdapter: save(User)
+    activate RepoAdapter
+    
+    ' Map domain to DBO
+    RepoAdapter -> Mapper: toDbo(User)
+    activate Mapper
+    note right: Convert updated domain\nto JPA entity
+    Mapper --> RepoAdapter: UserDbo
+    deactivate Mapper
+    
+    RepoAdapter -> JpaRepo: save(UserDbo)
+    activate JpaRepo
+    JpaRepo -> DB: UPDATE users SET first_name = ?, last_name = ?, email = ?, updated_at = ? WHERE id = ?
+    DB --> JpaRepo: UserDbo (updated)
+    JpaRepo --> RepoAdapter: UserDbo
+    deactivate JpaRepo
+    
+    ' Map DBO back to domain
+    RepoAdapter -> Mapper: toDomain(UserDbo)
+    activate Mapper
+    Mapper --> RepoAdapter: User
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: User
+    deactivate RepoAdapter
+    RepoPort --> Service: User
+    deactivate RepoPort
+    
+    ' Map domain to response
+    Service -> Mapper: toUpdateResponse(User)
+    activate Mapper
+    note right: Convert domain to\nresponse DTO
+    Mapper --> Service: UpdateUserResponseContent
+    deactivate Mapper
+    
+    Service --> UseCase: UpdateUserResponseContent
+    deactivate Service
+    UseCase --> Controller: UpdateUserResponseContent
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 200\n{"userId": "...", "firstName": "John Updated", "lastName": "Doe Updated", "email": "john.updated@example.com", "updatedAt": "..."}
+    deactivate Controller
 
-Service -> Mapper: updateEntityFromRequest(request, existingEntity)
-activate Mapper
-note right: Updates only provided fields\nPreserves immutable fields\n(entityId, createdAt, status)
-Mapper --> Service: void (existingEntity updated)
-deactivate Mapper
+else User Not Found
+    RepoAdapter --> RepoPort: Optional.empty()
+    deactivate RepoAdapter
+    RepoPort --> Service: Optional.empty()
+    deactivate RepoPort
+    
+    Service --> UseCase: NotFoundException("User not found with ID: " + userId)
+    deactivate Service
+    UseCase --> Controller: NotFoundException
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 404\n{"message": "User not found with ID: ...", "timestamp": "...", "path": "/users/..."}
+    deactivate Controller
+    note right: GlobalExceptionHandler\nhandles the exception
+end
 
-note over Service: Set updatedAt timestamp:\nexistingEntity.setUpdatedAt(Instant.now().toString())
+note over Service
+  Business Logic:
+  - Validates user existence
+  - Checks business rules
+  - Handles partial updates
+  - Validates email uniqueness
+  - Updates timestamps
+  - Maintains data integrity
+end note
 
-Service -> RepoAdapter: save(Entity)
-activate RepoAdapter
+note over Mapper
+  Update Mapping Features:
+  - Partial field updates
+  - Null value handling
+  - Timestamp management
+  - Field validation
+  - Type conversions
+end note
 
-RepoAdapter -> Mapper: toDbo(Entity)
-activate Mapper
-Mapper --> RepoAdapter: EntityDbo
-deactivate Mapper
-
-RepoAdapter -> JpaRepo: save(EntityDbo)
-activate JpaRepo
-JpaRepo -> DB: UPDATE entities SET ...fields, updatedAt=? WHERE id=?
-DB --> JpaRepo: EntityDbo (updated)
-JpaRepo --> RepoAdapter: EntityDbo
-deactivate JpaRepo
-
-RepoAdapter -> Mapper: toDomain(EntityDbo)
-activate Mapper
-Mapper --> RepoAdapter: Entity
-deactivate Mapper
-RepoAdapter --> Service: Entity (saved)
-deactivate RepoAdapter
-
-Service -> Mapper: toUpdateResponse(Entity)
-activate Mapper
-Mapper --> Service: UpdateEntityResponseContent
-deactivate Mapper
-
-Service --> Controller: UpdateEntityResponseContent
-deactivate Service
-
-Controller --> Client: HTTP 200\n{updated entity data}
-deactivate Controller
+note over RepoAdapter
+  Adapter Features:
+  - Optimistic locking
+  - Transaction management
+  - Constraint validation
+  - Exception handling
+  - Audit trail logging
+end note
 
 @enduml

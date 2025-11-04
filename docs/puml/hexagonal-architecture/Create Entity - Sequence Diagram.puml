@@ -1,63 +1,134 @@
-@startuml CreateEntity
+@startuml Create Entity
 !theme plain
-title Create Entity - Hexagonal Architecture Flow (v2 - Consolidated)
+title Create User - Hexagonal Architecture Flow
 
 actor Client
-participant "EntityController\n(Input Adapter)" as Controller
-participant "EntityService\n(Consolidated Application Service)" as Service
-participant "EntityMapper\n(Application Layer)" as Mapper
-participant "EntityRepositoryAdapter\n(Output Adapter)" as RepoAdapter
-participant "JpaEntityRepository\n(Infrastructure)" as JpaRepo
-database "Database" as DB
+participant "UserController\n(Input Adapter)" as Controller
+participant "UserUseCase\n(Domain Port)" as UseCase
+participant "UserService\n(Application Service)" as Service
+participant "UserMapper\n(Application Layer)" as Mapper
+participant "UserRepositoryPort\n(Domain Port)" as RepoPort
+participant "UserRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaUserRepository\n(Infrastructure)" as JpaRepo
+database "H2 Database" as DB
 
-Client -> Controller: POST /entities\n{entity data}
+Client -> Controller: POST /users\n{"username": "johndoe", "email": "john@example.com", "password": "password123", "firstName": "John", "lastName": "Doe"}
 activate Controller
+note right: REST endpoint with\nbean validation
 
-Controller -> Service: create(CreateEntityRequestContent)
+Controller -> Controller: validateRequest(@Valid CreateUserRequestContent)
+note right: Bean validation:\n@NotNull, @Email, @Size,\n@Pattern for email
+
+Controller -> UseCase: create(CreateUserRequestContent)
+activate UseCase
+note right: Domain port interface\ndefines contract
+
+UseCase -> Service: create(CreateUserRequestContent)
 activate Service
-note right: Consolidated service implementing\nEntityUseCase (all CRUD operations)
+note right: Application service\nimplements use case
 
-Service -> Mapper: fromCreateRequest(request)
+' Map DTO to domain
+Service -> Mapper: fromCreateRequest(CreateUserRequestContent)
 activate Mapper
-note right: Maps DTO to Domain\nGenerates UUID, timestamps\nSets status = "ACTIVE"\nHandles validation
-Mapper --> Service: Entity (domain model)
+note right: MapStruct mapping:\n- Generate UUID\n- Set status = ACTIVE\n- Set createdAt = now()\n- Map all fields
+Mapper --> Service: User (domain object)
 deactivate Mapper
 
-Service -> RepoAdapter: save(Entity)
+' Check business rules (email uniqueness)
+Service -> RepoPort: existsByEmail(email)
+activate RepoPort
+RepoPort -> RepoAdapter: existsByEmail(email)
 activate RepoAdapter
-note right: Implements EntityRepositoryPort\n(Domain Port)
-
-RepoAdapter -> Mapper: toDbo(Entity)
-activate Mapper
-note right: Maps Domain to DBO\nConverts String timestamps\nto LocalDateTime
-Mapper --> RepoAdapter: EntityDbo
-deactivate Mapper
-
-RepoAdapter -> JpaRepo: save(EntityDbo)
+RepoAdapter -> JpaRepo: existsByEmail(email)
 activate JpaRepo
-JpaRepo -> DB: INSERT INTO entities...
-DB --> JpaRepo: EntityDbo (with generated data)
-JpaRepo --> RepoAdapter: EntityDbo
+JpaRepo -> DB: SELECT COUNT(*) FROM users WHERE email = ?
+DB --> JpaRepo: count
+JpaRepo --> RepoAdapter: boolean
 deactivate JpaRepo
-
-RepoAdapter -> Mapper: toDomain(EntityDbo)
-activate Mapper
-Mapper --> RepoAdapter: Entity
-deactivate Mapper
-
-RepoAdapter --> Service: Entity (saved)
+RepoAdapter --> RepoPort: boolean
 deactivate RepoAdapter
+RepoPort --> Service: boolean
+deactivate RepoPort
 
-Service -> Mapper: toCreateResponse(Entity)
-activate Mapper
-note right: Maps Domain to Response DTO\nISO 8601 timestamps\nIncludes all entity fields
-Mapper --> Service: CreateEntityResponseContent
-deactivate Mapper
+alt Email Already Exists
+    Service --> UseCase: ConflictException("Email already exists")
+    UseCase --> Controller: ConflictException
+    Controller --> Client: HTTP 409\n{"message": "Email already exists", "timestamp": "...", "path": "/users"}
+    note right: GlobalExceptionHandler\nhandles the exception
+else Email Available
+    ' Save user
+    Service -> RepoPort: save(User)
+    activate RepoPort
+    RepoPort -> RepoAdapter: save(User)
+    activate RepoAdapter
+    
+    ' Map domain to DBO
+    RepoAdapter -> Mapper: toDbo(User)
+    activate Mapper
+    note right: Convert domain to\nJPA entity (UserDbo)
+    Mapper --> RepoAdapter: UserDbo
+    deactivate Mapper
+    
+    RepoAdapter -> JpaRepo: save(UserDbo)
+    activate JpaRepo
+    JpaRepo -> DB: INSERT INTO users (id, username, email, first_name, last_name, password, status, created_at)
+    DB --> JpaRepo: UserDbo (with generated ID)
+    JpaRepo --> RepoAdapter: UserDbo
+    deactivate JpaRepo
+    
+    ' Map DBO back to domain
+    RepoAdapter -> Mapper: toDomain(UserDbo)
+    activate Mapper
+    Mapper --> RepoAdapter: User
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: User
+    deactivate RepoAdapter
+    RepoPort --> Service: User
+    deactivate RepoPort
+    
+    ' Map domain to response
+    Service -> Mapper: toCreateResponse(User)
+    activate Mapper
+    note right: Convert domain to\nresponse DTO
+    Mapper --> Service: CreateUserResponseContent
+    deactivate Mapper
+    
+    Service --> UseCase: CreateUserResponseContent
+    deactivate Service
+    UseCase --> Controller: CreateUserResponseContent
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 201\n{"userId": "...", "username": "johndoe", "email": "john@example.com", "firstName": "John", "lastName": "Doe", "status": "ACTIVE", "createdAt": "..."}
+    deactivate Controller
+end
 
-Service --> Controller: CreateEntityResponseContent
-deactivate Service
+note over Service
+  Business Logic:
+  - Validates email uniqueness
+  - Generates unique user ID
+  - Sets default status (ACTIVE)
+  - Sets creation timestamp
+  - Applies business rules
+  - Handles domain exceptions
+end note
 
-Controller --> Client: HTTP 201\n{entityId, ...fields, status, createdAt, updatedAt}
-deactivate Controller
+note over Mapper
+  Mapping Features:
+  - DTO to Domain conversion
+  - Domain to DBO conversion
+  - Auto-generated fields (ID, timestamps)
+  - Field validation and transformation
+  - MapStruct annotations
+end note
+
+note over RepoAdapter
+  Adapter Features:
+  - Domain-to-infrastructure translation
+  - Exception handling and wrapping
+  - Transaction boundary
+  - Logging and monitoring
+  - Database constraint handling
+end note
 
 @enduml

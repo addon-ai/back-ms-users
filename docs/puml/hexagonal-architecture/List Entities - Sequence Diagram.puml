@@ -1,58 +1,123 @@
-@startuml ListEntities
+@startuml List Entities
 !theme plain
-title List Entities - Hexagonal Architecture Flow (v2 - Consolidated)
+title List Users - Hexagonal Architecture Flow
 
 actor Client
-participant "EntityController\n(Input Adapter)" as Controller
-participant "EntityService\n(Consolidated Application Service)" as Service
-participant "EntityMapper\n(Application Layer)" as Mapper
-participant "EntityRepositoryAdapter\n(Output Adapter)" as RepoAdapter
-participant "JpaEntityRepository\n(Infrastructure)" as JpaRepo
-database "Database" as DB
+participant "UserController\n(Input Adapter)" as Controller
+participant "UserUseCase\n(Domain Port)" as UseCase
+participant "UserService\n(Application Service)" as Service
+participant "UserMapper\n(Application Layer)" as Mapper
+participant "UserRepositoryPort\n(Domain Port)" as RepoPort
+participant "UserRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaUserRepository\n(Infrastructure)" as JpaRepo
+database "H2 Database" as DB
 
-Client -> Controller: GET /entities?page=1&size=20&search=term
+Client -> Controller: GET /users?page=1&size=20&search=john
 activate Controller
+note right: REST endpoint with\nquery parameters
 
-Controller -> Service: list(page, size, search)
+Controller -> Controller: validateQueryParams(@RequestParam Integer page, @RequestParam Integer size, @RequestParam String search)
+note right: Parameter validation:\n- page >= 1\n- size <= 100\n- search optional
+
+Controller -> UseCase: list(page, size, search)
+activate UseCase
+note right: Domain port interface\ndefines contract
+
+UseCase -> Service: list(page, size, search)
 activate Service
-note right: Consolidated service implementing\nEntityUseCase (all CRUD operations)
+note right: Application service\nimplements use case
 
-Service -> RepoAdapter: findAll()
-activate RepoAdapter
-note right: In production: implement\npagination and filtering
+alt Search Term Provided
+    Service -> RepoPort: findBySearchTerm(search, page, size)
+    activate RepoPort
+    RepoPort -> RepoAdapter: findBySearchTerm(search, page, size)
+    activate RepoAdapter
+    
+    RepoAdapter -> RepoAdapter: buildPageable(page, size)
+    note right: Convert to Spring Pageable:\npage-1 (0-based), size
+    
+    RepoAdapter -> JpaRepo: findBySearchTerm(search, pageable)
+    activate JpaRepo
+    note right: Custom query:\nSELECT * FROM users WHERE\nLOWER(username) LIKE '%search%'\nOR LOWER(email) LIKE '%search%'\nOR LOWER(first_name) LIKE '%search%'\nOR LOWER(last_name) LIKE '%search%'
+    JpaRepo -> DB: SELECT with LIKE conditions and pagination
+    DB --> JpaRepo: Page<UserDbo>
+    JpaRepo --> RepoAdapter: Page<UserDbo>
+    deactivate JpaRepo
+    
+    RepoAdapter -> Mapper: toDomain(UserDbo) for each result
+    activate Mapper
+    note right: Convert each JPA entity\nto domain object
+    Mapper --> RepoAdapter: List<User>
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: List<User>
+    deactivate RepoAdapter
+    RepoPort --> Service: List<User>
+    deactivate RepoPort
 
-RepoAdapter -> JpaRepo: findAll()
-activate JpaRepo
-JpaRepo -> DB: SELECT * FROM entities
-DB --> JpaRepo: List<EntityDbo>
-JpaRepo --> RepoAdapter: List<EntityDbo>
-deactivate JpaRepo
-
-RepoAdapter -> Mapper: toDomainList(List<EntityDbo>)
-activate Mapper
-loop for each EntityDbo
-    Mapper -> Mapper: toDomain(EntityDbo)
+else No Search Term
+    Service -> RepoPort: findAll()
+    activate RepoPort
+    RepoPort -> RepoAdapter: findAll()
+    activate RepoAdapter
+    RepoAdapter -> JpaRepo: findAll()
+    activate JpaRepo
+    JpaRepo -> DB: SELECT * FROM users
+    DB --> JpaRepo: List<UserDbo>
+    JpaRepo --> RepoAdapter: List<UserDbo>
+    deactivate JpaRepo
+    
+    RepoAdapter -> Mapper: toDomainList(List<UserDbo>)
+    activate Mapper
+    note right: Batch convert JPA entities\nto domain objects
+    Mapper --> RepoAdapter: List<User>
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: List<User>
+    deactivate RepoAdapter
+    RepoPort --> Service: List<User>
+    deactivate RepoPort
 end
-Mapper --> RepoAdapter: List<Entity>
+
+Service -> Mapper: toListResponse(List<User>, page, size)
+activate Mapper
+note right: Convert to paginated response:\n- Map each User to UserResponse\n- Calculate pagination metadata\n- Set total, totalPages
+Mapper --> Service: ListUsersResponseContent
 deactivate Mapper
 
-RepoAdapter --> Service: List<Entity>
-deactivate RepoAdapter
-
-Service -> Mapper: toListResponse(List<Entity>, page, size)
-activate Mapper
-note right: Maps entities to response format\nand builds pagination metadata
-loop for each Entity
-    Mapper -> Mapper: toResponse(Entity)
-end
-note over Mapper: Build ListEntitiesResponseContent:\n- entities: List<EntityResponse>\n- page: page (default 1)\n- size: size (default 20)\n- total: BigDecimal.valueOf(entities.size())\n- totalPages: calculated
-Mapper --> Service: ListEntitiesResponseContent
-deactivate Mapper
-
-Service --> Controller: ListEntitiesResponseContent
+Service --> UseCase: ListUsersResponseContent
 deactivate Service
+UseCase --> Controller: ListUsersResponseContent
+deactivate UseCase
 
-Controller --> Client: HTTP 200\n{entities: [...], pagination: {...}}
+Controller --> Client: HTTP 200\n{"users": [...], "page": 1, "size": 20, "total": 150, "totalPages": 8}
 deactivate Controller
+
+note over Service
+  Business Logic:
+  - Handles search vs list scenarios
+  - Applies pagination defaults
+  - Validates search parameters
+  - Implements business filters
+  - Logs query patterns
+end note
+
+note over Mapper
+  List Mapping Features:
+  - Batch domain to DTO conversion
+  - Pagination metadata calculation
+  - Performance optimization
+  - Memory efficient processing
+  - Field selection for lists
+end note
+
+note over RepoAdapter
+  Search Features:
+  - Full-text search implementation
+  - Pagination with Spring Data
+  - Query optimization
+  - Index utilization
+  - Performance monitoring
+end note
 
 @enduml

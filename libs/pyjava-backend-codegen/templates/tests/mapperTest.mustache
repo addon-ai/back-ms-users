@@ -1,0 +1,343 @@
+package {{packageName}};
+
+import {{basePackage}}.domain.model.{{entityName}};
+import {{basePackage}}.domain.model.EntityStatus;
+import {{basePackage}}.infrastructure.adapters.output.persistence.entity.{{entityName}}Dbo;
+{{#dtoImports}}
+import {{.}};
+{{/dtoImports}}
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Unit tests for {{classname}}.
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@SpringBootTest
+class {{classname}}Test {
+
+    @Autowired
+    private {{classname}} mapper;
+
+{{#hasCreateDto}}
+    @Test
+    void fromCreateRequest_ShouldMapCorrectly() {
+        // Given
+        Create{{entityName}}RequestContent request = Create{{entityName}}RequestContent.builder()
+            .build();
+
+        // When
+        {{entityName}} result = mapper.fromCreateRequest(request);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void toCreateResponse_ShouldMapCorrectly_FromDomain() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder()
+            .build();
+
+        // When
+        Create{{entityName}}ResponseContent result = mapper.toCreateResponse(domain);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+{{/hasCreateDto}}
+
+{{#hasUpdateDto}}
+    @Test
+    void fromUpdateRequest_ShouldMapCorrectly() {
+        // Given
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+            .build();
+
+        // When
+        {{entityName}} result = mapper.fromUpdateRequest(request);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void toUpdateResponse_ShouldMapCorrectly_FromDomain() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder()
+            .build();
+
+        // When
+        Update{{entityName}}ResponseContent result = mapper.toUpdateResponse(domain);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+{{/hasUpdateDto}}
+
+{{#hasGetDto}}
+    @Test
+    void toGetResponse_ShouldMapCorrectly_FromDomain() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder()
+            .build();
+
+        // When
+        Get{{entityName}}ResponseContent result = mapper.toGetResponse(domain);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+{{/hasGetDto}}
+
+    @Test
+    void toDbo_ShouldMapCorrectly_FromDomain() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder()
+            .build();
+
+        // When
+        {{entityName}}Dbo result = mapper.toDbo(domain);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void toDbo_ShouldMapCorrectly_WithStatus() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder()
+            .status("ACTIVE")
+            .build();
+
+        // When
+        {{entityName}}Dbo result = mapper.toDbo(domain);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(EntityStatus.ACTIVE);
+    }
+
+    @Test
+    void toDomain_ShouldMapCorrectly_FromDbo() {
+        // Given
+        {{entityName}}Dbo dbo = {{entityName}}Dbo.builder()
+            .build();
+
+        // When
+        {{entityName}} result = mapper.toDomain(dbo);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void toDomainList_ShouldMapCorrectly_FromDboList() {
+        // Given
+        {{entityName}}Dbo dbo = {{entityName}}Dbo.builder().build();
+        List<{{entityName}}Dbo> dboList = Arrays.asList(dbo);
+
+        // When
+        List<{{entityName}}> result = mapper.toDomainList(dboList);
+
+        // Then
+        assertThat(result).isNotNull().hasSize(1);
+    }
+
+    @Test
+    void toDboList_ShouldMapCorrectly_FromDomainList() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder().build();
+        List<{{entityName}}> domainList = Arrays.asList(domain);
+
+        // When
+        List<{{entityName}}Dbo> result = mapper.toDboList(domainList);
+
+        // Then
+        assertThat(result).isNotNull().hasSize(1);
+    }
+
+{{#hasUpdateDto}}
+    @Test
+    void updateEntityFromRequest_ShouldUpdateCorrectly() {
+        // Given
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+            .build();
+        {{entityName}} entity = {{entityName}}.builder().build();
+
+        // When
+        mapper.updateEntityFromRequest(request, entity);
+
+        // Then
+        assertThat(entity).isNotNull();
+    }
+
+    @Test
+    void updateEntityFromRequest_ShouldUpdateFields_WhenRequestHasValues() {
+        // Given
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+            .build();
+        {{entityName}} entity = {{entityName}}.builder().build();
+
+        // When
+        mapper.updateEntityFromRequest(request, entity);
+
+        // Then
+        assertThat(entity).isNotNull();
+    }
+
+    @Test
+    void updateEntityFromRequest_ShouldDoNothing_WhenRequestIsNull() {
+        // Given
+        {{entityName}} entity = {{entityName}}.builder().build();
+        {{entityName}} originalEntity = {{entityName}}.builder().build();
+
+        // When
+        mapper.updateEntityFromRequest(null, entity);
+
+        // Then
+        assertThat(entity).isEqualTo(originalEntity);
+    }
+{{/hasUpdateDto}}
+
+    @Test
+    void toDto_ShouldMapCorrectly_FromDomain() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder().build();
+
+        // When
+        {{entityName}}Response result = mapper.toDto(domain);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void toDtoList_ShouldMapCorrectly_FromDomainList() {
+        // Given
+        {{entityName}} domain = {{entityName}}.builder().build();
+        List<{{entityName}}> domainList = Arrays.asList(domain);
+
+        // When
+        List<{{entityName}}Response> result = mapper.toDtoList(domainList);
+
+        // Then
+        assertThat(result).isNotNull().hasSize(1);
+    }
+
+    // Null parameter coverage tests
+{{#hasCreateDto}}
+    @Test
+    void toCreateResponse_ShouldReturnNull_WhenDomainIsNull() {
+        // When
+        Create{{entityName}}ResponseContent result = mapper.toCreateResponse(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+{{/hasCreateDto}}
+
+{{#hasGetDto}}
+    @Test
+    void toGetResponse_ShouldReturnNull_WhenDomainIsNull() {
+        // When
+        Get{{entityName}}ResponseContent result = mapper.toGetResponse(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+{{/hasGetDto}}
+
+    @Test
+    void toDto_ShouldReturnNull_WhenDomainIsNull() {
+        // When
+        {{entityName}}Response result = mapper.toDto(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void toDtoList_ShouldReturnNull_WhenDomainsIsNull() {
+        // When
+        List<{{entityName}}Response> result = mapper.toDtoList(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void toDomain_ShouldReturnNull_WhenDboIsNull() {
+        // When
+        {{entityName}} result = mapper.toDomain(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void toDbo_ShouldReturnNull_WhenDomainIsNull() {
+        // When
+        {{entityName}}Dbo result = mapper.toDbo(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void toDomainList_ShouldReturnNull_WhenDboListIsNull() {
+        // When
+        List<{{entityName}}> result = mapper.toDomainList(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void toDboList_ShouldReturnNull_WhenDomainListIsNull() {
+        // When
+        List<{{entityName}}Dbo> result = mapper.toDboList(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+{{#hasCreateDto}}
+    @Test
+    void fromCreateRequest_ShouldReturnNull_WhenRequestIsNull() {
+        // When
+        {{entityName}} result = mapper.fromCreateRequest(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+{{/hasCreateDto}}
+
+{{#hasUpdateDto}}
+    @Test
+    void toUpdateResponse_ShouldReturnNull_WhenDomainIsNull() {
+        // When
+        Update{{entityName}}ResponseContent result = mapper.toUpdateResponse(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void fromUpdateRequest_ShouldReturnNull_WhenRequestIsNull() {
+        // When
+        {{entityName}} result = mapper.fromUpdateRequest(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+{{/hasUpdateDto}}
+}

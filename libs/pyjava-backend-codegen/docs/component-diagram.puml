@@ -1,130 +1,257 @@
-@startuml PyJava Backend CodeGen - Component Diagram
+@startuml PyJava Backend Code Generator - Component Diagram
 
 !define RECTANGLE class
 
-title PyJava Backend Code Generator v2 - Component Architecture
-
-package "pyjava-backend-codegen" {
+package "PyJava Backend Code Generator" {
     
-    [main.py] as Main
-    [__main__.py] as ModuleEntry
-    
-    package "Core Components" {
-        [config_loader.py] as ConfigLoader
-        [openapi_processor.py] as OpenApiProcessor
-        [template_renderer.py] as TemplateRenderer
-        [file_manager.py] as FileManager
-        [property_converter.py] as PropertyConverter
-        [code_generator.py] as CodeGenerator
+    package "Core Layer" {
+        RECTANGLE CodeGenerator {
+            +generate_complete_project()
+            +_extract_openapi_data()
+            +_generate_domain_layer()
+            +_generate_application_layer()
+            +_generate_infrastructure_layer()
+            +_generate_supporting_files()
+        }
+        
+        RECTANGLE ConfigLoader {
+            +build_package_structure()
+            +build_mustache_context()
+            +load_project_config()
+        }
+        
+        RECTANGLE OpenApiProcessor {
+            +load_openapi_specs()
+            +extract_schemas()
+            +extract_operations()
+            +extract_entities()
+        }
     }
     
-    package "External Dependencies" {
-        [pystache] as Pystache
-        [json] as Json
-        [pathlib] as Pathlib
-        [subprocess] as Subprocess
+    package "Generator Layer" {
+        RECTANGLE DtoGenerator {
+            +generate_dto()
+            +generate_composite_request_dtos()
+            +_build_dto_properties()
+        }
+        
+        RECTANGLE DomainGenerator {
+            +generate_domain_model()
+            +generate_domain_port_output()
+            +generate_entity_status_enum()
+        }
+        
+        RECTANGLE ApplicationGenerator {
+            +generate_mapper()
+            +generate_consolidated_use_cases()
+            +generate_consolidated_service()
+            +_detect_relation_mappings()
+        }
+        
+        RECTANGLE InfrastructureGenerator {
+            +generate_entity()
+            +generate_jpa_repository()
+            +generate_repository_adapter()
+            +generate_rest_controller()
+            +generate_exception_classes()
+            +_pluralize_entity_name()
+        }
+        
+        RECTANGLE TestGenerator {
+            +generate_tests_for_existing_components()
+            +generate_service_test()
+            +generate_mapper_test()
+            +generate_repository_adapter_test()
+            +generate_logging_utils_test()
+        }
+        
+        RECTANGLE ProjectGenerator {
+            +generate_main_application()
+            +generate_configuration()
+            +generate_pom_xml()
+            +generate_docker_compose()
+            +generate_maven_wrapper()
+        }
     }
     
-    package "File System" {
-        [libs/pyjava-backend-codegen/templates/*.mustache] as Templates
-        [libs/config/params.json] as Config
-        [build/smithy/*/openapi/*.json] as OpenApiSpecs
-        [projects/*] as OutputProjects
+    package "Utilities Layer" {
+        RECTANGLE TemplateRenderer {
+            +render_template()
+            +load_template()
+            +_process_mustache()
+        }
+        
+        RECTANGLE FileManager {
+            +write_file()
+            +create_directories()
+            +get_package_path()
+            +check_dto_exists()
+        }
+        
+        RECTANGLE PropertyConverter {
+            +convert_openapi_property()
+            +_map_java_types()
+            +_build_validation_annotations()
+        }
     }
     
-    package "Generated Architecture Layers" {
-        [Domain Layer] as Domain
-        [Application Layer] as Application
-        [Infrastructure Layer] as Infrastructure
+    package "Template System" {
+        package "Domain Templates" {
+            RECTANGLE DomainTemplates {
+                pojo.mustache
+                interface.mustache
+                consolidatedUseCase.mustache
+                EntityStatus.mustache
+            }
+        }
+        
+        package "Application Templates" {
+            RECTANGLE ApplicationTemplates {
+                apiService.mustache
+                consolidatedService.mustache
+                apiMapper.mustache
+                dtoRecord.mustache
+                LoggingUtils.mustache
+            }
+        }
+        
+        package "Infrastructure Templates" {
+            RECTANGLE InfrastructureTemplates {
+                apiController.mustache
+                apiEntity.mustache
+                apiRepository.mustache
+                Configuration.mustache
+                SecurityConfiguration.mustache
+            }
+        }
+        
+        package "Test Templates" {
+            RECTANGLE TestTemplates {
+                serviceTest.mustache
+                mapperTest.mustache
+                repositoryAdapterTest.mustache
+                controllerTest.mustache
+                LoggingUtilsTest.mustache
+            }
+        }
+        
+        package "Project Templates" {
+            RECTANGLE ProjectTemplates {
+                Application.mustache
+                pom.xml.mustache
+                application.properties.mustache
+                docker-compose.yml.mustache
+                README.md.mustache
+            }
+        }
     }
 }
 
-' Main orchestration
-Main --> CodeGenerator : creates & orchestrates
-ModuleEntry --> Main : delegates to
+package "External Dependencies" {
+    RECTANGLE OpenAPISpecs {
+        user-service.smithy
+        movie-service.smithy
+        location-service.smithy
+    }
+    
+    RECTANGLE ProjectConfig {
+        template-config.json
+        project-config.json
+    }
+}
 
-' CodeGenerator dependencies
-CodeGenerator --> ConfigLoader : loads configuration
-CodeGenerator --> OpenApiProcessor : processes specs
-CodeGenerator --> TemplateRenderer : renders templates
-CodeGenerator --> FileManager : manages files
-CodeGenerator --> PropertyConverter : converts properties
+package "Generated Output" {
+    package "Hexagonal Architecture Project" {
+        package "Domain Layer" {
+            RECTANGLE DomainOutput {
+                User.java
+                UserRepositoryPort.java
+                UserUseCase.java
+                EntityStatus.java
+            }
+        }
+        
+        package "Application Layer" {
+            RECTANGLE ApplicationOutput {
+                UserService.java
+                UserMapper.java
+                CreateUserRequestContent.java
+                GetUserResponseContent.java
+                LoggingUtils.java
+            }
+        }
+        
+        package "Infrastructure Layer" {
+            RECTANGLE InfrastructureOutput {
+                UserController.java
+                UserDbo.java
+                JpaUserRepository.java
+                UserRepositoryAdapter.java
+                ApplicationConfiguration.java
+            }
+        }
+        
+        package "Test Layer" {
+            RECTANGLE TestOutput {
+                UserServiceTest.java
+                UserMapperTest.java
+                UserRepositoryAdapterTest.java
+                UserControllerTest.java
+                LoggingUtilsTest.java
+            }
+        }
+    }
+}
 
-' Component dependencies
-ConfigLoader --> Json : parses JSON
-ConfigLoader --> Config : reads from
+' Core relationships
+CodeGenerator --> ConfigLoader : uses
+CodeGenerator --> OpenApiProcessor : uses
+CodeGenerator --> DtoGenerator : orchestrates
+CodeGenerator --> DomainGenerator : orchestrates
+CodeGenerator --> ApplicationGenerator : orchestrates
+CodeGenerator --> InfrastructureGenerator : orchestrates
+CodeGenerator --> TestGenerator : orchestrates
+CodeGenerator --> ProjectGenerator : orchestrates
 
-OpenApiProcessor --> Json : parses specs
-OpenApiProcessor --> OpenApiSpecs : reads from
-OpenApiProcessor --> Pathlib : path operations
+' Generator dependencies
+DtoGenerator --> TemplateRenderer : uses
+DtoGenerator --> FileManager : uses
+DtoGenerator --> PropertyConverter : uses
 
-TemplateRenderer --> Pystache : renders templates
-TemplateRenderer --> Templates : reads from
-TemplateRenderer --> Pathlib : path operations
+DomainGenerator --> TemplateRenderer : uses
+DomainGenerator --> FileManager : uses
+DomainGenerator --> PropertyConverter : uses
 
-FileManager --> Pathlib : path operations
-FileManager --> OutputProjects : writes to
+ApplicationGenerator --> TemplateRenderer : uses
+ApplicationGenerator --> FileManager : uses
 
-PropertyConverter --> [no external deps]
+InfrastructureGenerator --> TemplateRenderer : uses
+InfrastructureGenerator --> FileManager : uses
+InfrastructureGenerator --> PropertyConverter : uses
 
-Main --> Subprocess : runs smithy commands
-Main --> Pathlib : directory operations
+TestGenerator --> TemplateRenderer : uses
+TestGenerator --> FileManager : uses
 
-note right of CodeGenerator
-  Main orchestrator that coordinates
-  all components to generate the
-  complete project structure
-end note
+ProjectGenerator --> TemplateRenderer : uses
+ProjectGenerator --> FileManager : uses
 
-note right of ConfigLoader
-  Handles project configuration
-  and package structure definition
-end note
+' Template relationships
+TemplateRenderer --> DomainTemplates : renders
+TemplateRenderer --> ApplicationTemplates : renders
+TemplateRenderer --> InfrastructureTemplates : renders
+TemplateRenderer --> TestTemplates : renders
+TemplateRenderer --> ProjectTemplates : renders
 
-note right of OpenApiProcessor
-  Processes OpenAPI specs and
-  extracts schemas/operations
-end note
+' Input relationships
+OpenApiProcessor --> OpenAPISpecs : processes
+ConfigLoader --> ProjectConfig : loads
 
-note right of TemplateRenderer
-  Renders Mustache templates
-  with context data
-end note
-
-note right of FileManager
-  Manages file system operations
-  and directory structures
-end note
-
-note right of PropertyConverter
-  Converts OpenAPI properties
-  to Java types with validation
-end note
-
-note right of Domain
-  Pure domain models and ports
-  - Domain entities (User, Movie, etc.)
-  - Use case interfaces (UserUseCase)
-  - Repository ports (UserRepositoryPort)
-end note
-
-note right of Application
-  Business logic orchestration
-  - Consolidated services (UserService)
-  - DTOs with validation
-  - MapStruct mappers
-end note
-
-note right of Infrastructure
-  External adapters
-  - REST controllers
-  - JPA entities and repositories
-  - Configuration classes
-end note
-
-' Generated architecture relationships
-CodeGenerator --> Domain : generates
-CodeGenerator --> Application : generates
-CodeGenerator --> Infrastructure : generates
+' Output relationships
+DtoGenerator --> ApplicationOutput : generates
+DomainGenerator --> DomainOutput : generates
+ApplicationGenerator --> ApplicationOutput : generates
+InfrastructureGenerator --> InfrastructureOutput : generates
+TestGenerator --> TestOutput : generates
+ProjectGenerator --> InfrastructureOutput : generates
 
 @enduml

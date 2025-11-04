@@ -1,73 +1,131 @@
-@startuml DeleteEntity
+@startuml Delete Entity
 !theme plain
-title Delete Entity - Hexagonal Architecture Flow (v2 - Consolidated)
+title Delete User - Hexagonal Architecture Flow
 
 actor Client
-participant "EntityController\n(Input Adapter)" as Controller
-participant "EntityService\n(Consolidated Application Service)" as Service
-participant "EntityRepositoryAdapter\n(Output Adapter)" as RepoAdapter
-participant "JpaEntityRepository\n(Infrastructure)" as JpaRepo
-database "Database" as DB
+participant "UserController\n(Input Adapter)" as Controller
+participant "UserUseCase\n(Domain Port)" as UseCase
+participant "UserService\n(Application Service)" as Service
+participant "UserMapper\n(Application Layer)" as Mapper
+participant "UserRepositoryPort\n(Domain Port)" as RepoPort
+participant "UserRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaUserRepository\n(Infrastructure)" as JpaRepo
+database "H2 Database" as DB
 
-Client -> Controller: DELETE /entities/{entityId}
+Client -> Controller: DELETE /users/{userId}
 activate Controller
+note right: REST endpoint with\npath variable validation
 
-Controller -> Service: delete(entityId)
+Controller -> Controller: validatePathVariable(@PathVariable String userId)
+note right: UUID format validation
+
+Controller -> UseCase: delete(userId)
+activate UseCase
+note right: Domain port interface\ndefines contract
+
+UseCase -> Service: delete(userId)
 activate Service
-note right: Consolidated service implementing\nEntityUseCase (all CRUD operations)
+note right: Application service\nimplements use case
 
-Service -> RepoAdapter: findById(entityId)
+' First, verify user exists
+Service -> RepoPort: findById(userId)
+activate RepoPort
+RepoPort -> RepoAdapter: findById(userId)
 activate RepoAdapter
-note right: Verify entity exists\nbefore deletion
-
-RepoAdapter -> JpaRepo: findById(entityId)
+RepoAdapter -> JpaRepo: findById(userId)
 activate JpaRepo
-JpaRepo -> DB: SELECT * FROM entities WHERE id = ?
-DB --> JpaRepo: Optional<EntityDbo>
-JpaRepo --> RepoAdapter: Optional<EntityDbo>
+JpaRepo -> DB: SELECT * FROM users WHERE id = ?
+DB --> JpaRepo: Optional<UserDbo>
+JpaRepo --> RepoAdapter: Optional<UserDbo>
 deactivate JpaRepo
 
-alt Entity Found
-    RepoAdapter -> Mapper: toDomain(EntityDbo)
+alt User Found
+    RepoAdapter -> Mapper: toDomain(UserDbo)
     activate Mapper
-    Mapper --> RepoAdapter: Entity
+    note right: Convert JPA entity\nto domain object
+    Mapper --> RepoAdapter: User
     deactivate Mapper
     
-    RepoAdapter --> Service: Optional<Entity>
+    RepoAdapter --> RepoPort: Optional<User>
     deactivate RepoAdapter
+    RepoPort --> Service: Optional<User>
+    deactivate RepoPort
     
-    Service -> RepoAdapter: deleteById(entityId)
+    ' Check business rules before deletion
+    Service -> Service: validateDeletionRules(User)
+    note right: Business validation:\n- Check dependencies\n- Verify permissions\n- Apply soft delete rules
+    
+    ' Perform deletion
+    Service -> RepoPort: deleteById(userId)
+    activate RepoPort
+    RepoPort -> RepoAdapter: deleteById(userId)
     activate RepoAdapter
-    note right: Physical deletion\nfrom database
-    
-    RepoAdapter -> JpaRepo: deleteById(entityId)
+    RepoAdapter -> JpaRepo: deleteById(userId)
     activate JpaRepo
-    JpaRepo -> DB: DELETE FROM entities WHERE id = ?
+    JpaRepo -> DB: DELETE FROM users WHERE id = ?
     DB --> JpaRepo: void
     JpaRepo --> RepoAdapter: void
     deactivate JpaRepo
-    
-    RepoAdapter --> Service: void
+    RepoAdapter --> RepoPort: void
     deactivate RepoAdapter
+    RepoPort --> Service: void
+    deactivate RepoPort
     
-    note over Service: Create success response:\nDeleteEntityResponseContent.builder()\n.deleted(true)\n.message("Entity deleted successfully")\n.build()
+    ' Build success response
+    Service -> Service: buildDeleteResponse()
+    note right: Create response:\n- deleted = true\n- message = "User deleted successfully"
     
-    Service --> Controller: DeleteEntityResponseContent
+    Service --> UseCase: DeleteUserResponseContent
     deactivate Service
+    UseCase --> Controller: DeleteUserResponseContent
+    deactivate UseCase
     
-    Controller --> Client: HTTP 200\n{"deleted": true,\n "message": "Entity deleted successfully"}
+    Controller --> Client: HTTP 200\n{"deleted": true, "message": "User deleted successfully"}
     deactivate Controller
 
-else Entity Not Found
-    RepoAdapter --> Service: Optional.empty()
+else User Not Found
+    RepoAdapter --> RepoPort: Optional.empty()
     deactivate RepoAdapter
+    RepoPort --> Service: Optional.empty()
+    deactivate RepoPort
     
-    Service --> Controller: NotFoundException
+    Service --> UseCase: NotFoundException("User not found")
     deactivate Service
+    UseCase --> Controller: NotFoundException
+    deactivate UseCase
     
-    Controller --> Client: HTTP 404\n{"message": "Entity not found",\n "timestamp": "...",\n "path": "/entities/{entityId}"}
+    Controller --> Client: HTTP 404\n{"message": "User not found", "timestamp": "...", "path": "/users/..."}
     deactivate Controller
     note right: GlobalExceptionHandler\nhandles the exception
 end
+
+note over Service
+  Business Logic:
+  - Validates user existence
+  - Checks deletion constraints
+  - Handles cascade deletions
+  - Implements soft delete if needed
+  - Logs deletion events
+  - Maintains referential integrity
+end note
+
+note over RepoAdapter
+  Deletion Features:
+  - Transactional deletion
+  - Constraint checking
+  - Cascade handling
+  - Audit trail logging
+  - Performance optimization
+  - Error handling
+end note
+
+note over DB
+  Database Operations:
+  - Foreign key constraints
+  - Cascade delete rules
+  - Transaction isolation
+  - Rollback on failure
+  - Index maintenance
+end note
 
 @enduml

@@ -5,7 +5,7 @@ use aws.protocols#restJson1
 @title("User Service API")
 @cors(origin: "*")
 @restJson1
-@documentation("A service for managing user accounts.")
+@documentation("A service for managing user accounts with full CRUD operations and search capabilities. This service provides comprehensive user management functionality including user registration and authentication, profile management and updates, user search and listing with pagination, and account status management (active, inactive, suspended).")
 service UserService {
     version: "2023-01-01",
     operations: [
@@ -21,6 +21,7 @@ service UserService {
 
 @http(method: "POST", uri: "/users", code: 201)
 @idempotent
+@documentation("Creates a new user account. Registers a new user with the provided information. The username and email must be unique across the system. Password requirements include minimum length of 6 characters.")
 operation CreateUser {
     input: CreateUserRequest,
     output: UserResponse,
@@ -29,6 +30,7 @@ operation CreateUser {
 
 @http(method: "GET", uri: "/users/{userId}")
 @readonly
+@documentation("Retrieves a user by their unique identifier. Returns the complete user profile information including status and timestamps. The user ID must be a valid UUID format.")
 operation GetUser {
     input: GetUserRequest,
     output: UserResponse,
@@ -37,6 +39,7 @@ operation GetUser {
 
 @http(method: "PUT", uri: "/users/{userId}")
 @idempotent
+@documentation("Updates an existing user's profile information. Allows partial updates to user profile fields including first name, last name, and email address. All fields are optional in the update request.")
 operation UpdateUser {
     input: UpdateUserRequest, 
     output: UserResponse,
@@ -45,6 +48,7 @@ operation UpdateUser {
 
 @http(method: "DELETE", uri: "/users/{userId}")
 @idempotent
+@documentation("Deletes a user account. Permanently removes a user account from the system. This operation cannot be undone. Consider using status updates for soft deletion instead.")
 operation DeleteUser {
     input: DeleteUserRequest,
     output: DeleteUserResponse,
@@ -52,7 +56,8 @@ operation DeleteUser {
 }
 
 @http(method: "GET", uri: "/users")
-@readonly  
+@readonly
+@documentation("Lists users with pagination and search capabilities. Returns a paginated list of users with optional search functionality. Search can be performed across username, email, first name, and last name fields. Supports pagination with configurable page size (max 100 users per page).")
 operation ListUsers {
     input: ListUsersRequest,
     output: ListUsersResponse

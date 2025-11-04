@@ -1,208 +1,288 @@
-@startuml Library Architecture Component Diagram
+@startuml Library Architecture - Component Diagram
 !theme plain
-title PyJava Backend CodeGen v2 - Library Architecture
+title Generated Project Architecture - Component Relationships
 
-skinparam packageStyle rectangle
-skinparam component {
-    BackgroundColor<<core>> LightBlue
-    BackgroundColor<<templates>> LightGreen
-    BackgroundColor<<config>> LightYellow
-    BackgroundColor<<output>> LightCoral
-}
-
-package "Entry Points" {
-    [main.py] as Main
-    [__main__.py] as ModuleEntry
-    [hexagonal-architecture-generator-v2.py] as BridgeScript
-}
-
-package "Core Library Components" <<core>> {
-    [ConfigLoader] as CL
-    [OpenApiProcessor] as OAP
-    [TemplateRenderer] as TR
-    [FileManager] as FM
-    [PropertyConverter] as PC
-    [CodeGenerator] as CG
-}
-
-package "Template System" <<templates>> {
-    package "Mustache Templates" {
-        [pojo.mustache] as PojoTemplate
-        [consolidatedService.mustache] as ServiceTemplate
-        [consolidatedUseCase.mustache] as UseCaseTemplate
-        [apiController.mustache] as ControllerTemplate
-        [apiRepository.mustache] as RepoTemplate
-        [apiEntity.mustache] as EntityTemplate
-        [apiMapper.mustache] as MapperTemplate
-        [Application.mustache] as AppTemplate
-        [pom.xml.mustache] as PomTemplate
-        [Configuration.mustache] as ConfigTemplate
-        [EntityStatus.mustache] as StatusTemplate
-    }
-}
-
-package "Configuration" <<config>> {
-    [params.json] as ParamsConfig
-    [smithy-build.json] as SmithyConfig
-    [pyproject.toml] as ProjectConfig
-}
-
-package "Input Sources" {
-    package "Smithy Definitions" {
-        [user-service.smithy] as UserSmithyDef
-        [movie-service.smithy] as MovieSmithyDef
-        [location-service.smithy] as LocationSmithyDef
+package "Generated Microservices" {
+    
+    package "User Service (back-ms-users)" {
+        package "Domain Layer" {
+            component "User" as UserDomain
+            component "Location" as LocationDomain
+            component "City" as CityDomain
+            component "Country" as CountryDomain
+            component "Region" as RegionDomain
+            component "Neighborhood" as NeighborhoodDomain
+            component "EntityStatus" as EntityStatusUser
+            
+            interface "UserUseCase" as UserUC
+            interface "LocationUseCase" as LocationUC
+            
+            interface "UserRepositoryPort" as UserRP
+            interface "LocationRepositoryPort" as LocationRP
+            interface "CityRepositoryPort" as CityRP
+            interface "CountryRepositoryPort" as CountryRP
+            interface "RegionRepositoryPort" as RegionRP
+            interface "NeighborhoodRepositoryPort" as NeighborhoodRP
+        }
+        
+        package "Application Layer" {
+            component "UserService" as UserSvc
+            component "LocationService" as LocationSvc
+            
+            component "UserMapper" as UserMap
+            component "LocationMapper" as LocationMap
+            component "CityMapper" as CityMap
+            component "CountryMapper" as CountryMap
+            component "RegionMapper" as RegionMap
+            component "NeighborhoodMapper" as NeighborhoodMap
+            
+            package "User DTOs" {
+                component "CreateUserRequestContent"
+                component "GetUserResponseContent"
+                component "UpdateUserRequestContent"
+                component "ListUsersResponseContent"
+            }
+            
+            package "Location DTOs" {
+                component "CreateLocationRequestContent"
+                component "GetRegionsByCountryResponseContent"
+                component "GetCitiesByRegionResponseContent"
+                component "GetNeighborhoodsByCityResponseContent"
+            }
+        }
+        
+        package "Infrastructure Layer" {
+            component "UserController" as UserCtrl
+            component "LocationController" as LocationCtrl
+            
+            component "UserRepositoryAdapter" as UserRA
+            component "LocationRepositoryAdapter" as LocationRA
+            component "CityRepositoryAdapter" as CityRA
+            component "CountryRepositoryAdapter" as CountryRA
+            component "RegionRepositoryAdapter" as RegionRA
+            component "NeighborhoodRepositoryAdapter" as NeighborhoodRA
+            
+            component "JpaUserRepository" as UserJPA
+            component "JpaLocationRepository" as LocationJPA
+            component "JpaCityRepository" as CityJPA
+            component "JpaCountryRepository" as CountryJPA
+            component "JpaRegionRepository" as RegionJPA
+            component "JpaNeighborhoodRepository" as NeighborhoodJPA
+            
+            component "UserDbo" as UserDBO
+            component "LocationDbo" as LocationDBO
+            component "CityDbo" as CityDBO
+            component "CountryDbo" as CountryDBO
+            component "RegionDbo" as RegionDBO
+            component "NeighborhoodDbo" as NeighborhoodDBO
+        }
     }
     
-    package "Generated OpenAPI" {
-        [UserService.openapi.json] as UserOpenAPI
-        [MovieService.openapi.json] as MovieOpenAPI
-        [LocationService.openapi.json] as LocationOpenAPI
+    package "Movie Service (back-ms-movies)" {
+        package "Domain Layer" {
+            component "Movie" as MovieDomain
+            component "Rental" as RentalDomain
+            component "EntityStatus" as EntityStatusMovie
+            
+            interface "MovieUseCase" as MovieUC
+            interface "RentalUseCase" as RentalUC
+            
+            interface "MovieRepositoryPort" as MovieRP
+            interface "RentalRepositoryPort" as RentalRP
+        }
+        
+        package "Application Layer" {
+            component "MovieService" as MovieSvc
+            component "RentalService" as RentalSvc
+            
+            component "MovieMapper" as MovieMap
+            component "RentalMapper" as RentalMap
+            
+            package "Movie DTOs" {
+                component "CreateMovieRequestContent"
+                component "GetMovieResponseContent"
+                component "UpdateMovieRequestContent"
+                component "ListMoviesResponseContent"
+            }
+            
+            package "Rental DTOs" {
+                component "CreateRentalRequestContent"
+                component "GetRentalResponseContent"
+                component "UpdateRentalRequestContent"
+                component "ListRentalsResponseContent"
+            }
+        }
+        
+        package "Infrastructure Layer" {
+            component "MovieController" as MovieCtrl
+            component "RentalController" as RentalCtrl
+            
+            component "MovieRepositoryAdapter" as MovieRA
+            component "RentalRepositoryAdapter" as RentalRA
+            
+            component "JpaMovieRepository" as MovieJPA
+            component "JpaRentalRepository" as RentalJPA
+            
+            component "MovieDbo" as MovieDBO
+            component "RentalDbo" as RentalDBO
+        }
+    }
+    
+    package "Shared Infrastructure" {
+        component "GlobalExceptionHandler" as GEH
+        component "SecurityConfiguration" as SecConfig
+        component "OpenApiConfiguration" as OpenApiConfig
+        component "ApplicationConfiguration" as AppConfig
+        component "LoggingUtils" as LogUtils
+        
+        component "ConflictException" as ConflictEx
+        component "NotFoundException" as NotFoundEx
+        component "InternalServerErrorException" as InternalEx
     }
 }
 
-package "Generated Output" <<output>> {
-    package "Domain Layer" {
-        [User.java] as UserDomain
-        [Movie.java] as MovieDomain
-        [UserUseCase.java] as UserUC
-        [UserRepositoryPort.java] as UserPort
-        [EntityStatus.java] as StatusEnum
-    }
-    
-    package "Application Layer" {
-        [UserService.java] as UserService
-        [UserMapper.java] as UserMapper
-        [CreateUserRequestContent.java] as UserDTO
-    }
-    
-    package "Infrastructure Layer" {
-        [UserController.java] as UserController
-        [UserDbo.java] as UserEntity
-        [JpaUserRepository.java] as UserRepo
-        [UserRepositoryAdapter.java] as UserAdapter
-        [ApplicationConfiguration.java] as AppConfig
-    }
-    
-    package "Project Files" {
-        [pom.xml] as PomFile
-        [application.properties] as PropsFile
-        [UserServiceApplication.java] as MainClass
-        [docker-compose.yml] as DockerCompose
-        [Dockerfile] as DockerFile
-    }
+package "External Systems" {
+    database "H2 Database" as H2DB
+    component "Spring Boot Framework" as SpringBoot
+    component "MapStruct" as MapStruct
+    component "JPA/Hibernate" as JPA
+    component "Bean Validation" as BeanValidation
 }
 
-' Entry point relationships
-Main --> CG : orchestrates
-ModuleEntry --> Main : delegates to
-BridgeScript --> CG : uses directly
+' User Service Internal Connections
+UserSvc ..|> UserUC
+LocationSvc ..|> LocationUC
 
-' Core component relationships
-CG --> CL : loads configuration
-CG --> OAP : processes OpenAPI specs
-CG --> TR : renders templates
-CG --> FM : manages files
-CG --> PC : converts properties
+UserSvc --> UserRP
+LocationSvc --> LocationRP
 
-' Configuration loading
-CL --> ParamsConfig : reads
-CL --> ProjectConfig : references
+UserRA ..|> UserRP
+LocationRA ..|> LocationRP
+CityRA ..|> CityRP
+CountryRA ..|> CountryRP
+RegionRA ..|> RegionRP
+NeighborhoodRA ..|> NeighborhoodRP
 
-' OpenAPI processing
-OAP --> UserOpenAPI : processes
-OAP --> MovieOpenAPI : processes
-OAP --> LocationOpenAPI : processes
+UserCtrl --> UserUC
+LocationCtrl --> LocationUC
 
-' Template rendering
-TR --> PojoTemplate : renders DTOs
-TR --> ServiceTemplate : renders services
-TR --> UseCaseTemplate : renders use cases
-TR --> ControllerTemplate : renders controllers
-TR --> RepoTemplate : renders repositories
-TR --> EntityTemplate : renders entities
-TR --> MapperTemplate : renders mappers
-TR --> AppTemplate : renders main class
-TR --> PomTemplate : renders pom.xml
-TR --> ConfigTemplate : renders configuration
-TR --> StatusTemplate : renders enum
+' Movie Service Internal Connections
+MovieSvc ..|> MovieUC
+RentalSvc ..|> RentalUC
 
-' File management
-FM --> UserDomain : creates
-FM --> UserService : creates
-FM --> UserController : creates
-FM --> UserEntity : creates
-FM --> UserRepo : creates
-FM --> UserAdapter : creates
-FM --> UserMapper : creates
-FM --> UserDTO : creates
-FM --> UserUC : creates
-FM --> UserPort : creates
-FM --> StatusEnum : creates
-FM --> AppConfig : creates
-FM --> PomFile : creates
-FM --> PropsFile : creates
-FM --> MainClass : creates
-FM --> DockerCompose : creates
-FM --> DockerFile : creates
+MovieSvc --> MovieRP
+RentalSvc --> RentalRP
 
-' Smithy to OpenAPI flow
-UserSmithyDef --> UserOpenAPI : smithy build
-MovieSmithyDef --> MovieOpenAPI : smithy build
-LocationSmithyDef --> LocationOpenAPI : smithy build
+MovieRA ..|> MovieRP
+RentalRA ..|> RentalRP
 
-note top of CG
-  Main Orchestrator:
-  - Coordinates all components
-  - Manages generation workflow
-  - Handles multiple projects
-  - Provides error handling
-  - Supports consolidated architecture
-end note
+MovieCtrl --> MovieUC
+RentalCtrl --> RentalUC
 
-note top of OAP
-  OpenAPI Processing:
-  - Loads multiple service specs
-  - Extracts schemas and operations
-  - Groups operations by entity
-  - Identifies CRUD patterns
-  - Supports complex operations
-end note
+' Mapper Connections
+UserSvc --> UserMap
+LocationSvc --> LocationMap
+MovieSvc --> MovieMap
+RentalSvc --> RentalMap
 
-note top of TR
-  Template Rendering:
-  - Uses Mustache templating
-  - Supports context variables
-  - Handles HTML escaping
-  - Renders multiple file types
-  - Maintains template consistency
-end note
+UserRA --> UserMap
+LocationRA --> LocationMap
+MovieRA --> MovieMap
+RentalRA --> RentalMap
 
-note top of CL
-  Configuration Management:
-  - Loads project configurations
-  - Builds package structures
-  - Creates template contexts
-  - Supports multiple projects
-  - Handles hexagonal architecture
-end note
+' JPA Connections
+UserRA --> UserJPA
+LocationRA --> LocationJPA
+CityRA --> CityJPA
+CountryRA --> CountryJPA
+RegionRA --> RegionJPA
+NeighborhoodRA --> NeighborhoodJPA
 
-note bottom of FM
-  File Management:
-  - Creates directory structures
-  - Handles Java package paths
-  - Manages file operations
-  - Organizes by architecture layers
-  - Supports multiple projects
-end note
+MovieRA --> MovieJPA
+RentalRA --> RentalJPA
 
-note bottom of PC
-  Property Conversion:
-  - Maps OpenAPI to Java types
-  - Generates validation annotations
-  - Handles type imports
-  - Supports complex schemas
-  - Maintains type safety
+UserJPA --> UserDBO
+LocationJPA --> LocationDBO
+CityJPA --> CityDBO
+CountryJPA --> CountryDBO
+RegionJPA --> RegionJPA
+NeighborhoodJPA --> NeighborhoodDBO
+
+MovieJPA --> MovieDBO
+RentalJPA --> RentalDBO
+
+' Database Connections
+UserJPA --> H2DB
+LocationJPA --> H2DB
+CityJPA --> H2DB
+CountryJPA --> H2DB
+RegionJPA --> H2DB
+NeighborhoodJPA --> H2DB
+MovieJPA --> H2DB
+RentalJPA --> H2DB
+
+' Shared Infrastructure Connections
+UserCtrl --> GEH
+LocationCtrl --> GEH
+MovieCtrl --> GEH
+RentalCtrl --> GEH
+
+UserSvc --> LogUtils
+LocationSvc --> LogUtils
+MovieSvc --> LogUtils
+RentalSvc --> LogUtils
+
+UserCtrl --> LogUtils
+LocationCtrl --> LogUtils
+MovieCtrl --> LogUtils
+RentalCtrl --> LogUtils
+
+' Framework Dependencies
+UserCtrl --> SpringBoot
+LocationCtrl --> SpringBoot
+MovieCtrl --> SpringBoot
+RentalCtrl --> SpringBoot
+
+UserMap --> MapStruct
+LocationMap --> MapStruct
+MovieMap --> MapStruct
+RentalMap --> MapStruct
+
+UserJPA --> JPA
+LocationJPA --> JPA
+MovieJPA --> JPA
+RentalJPA --> JPA
+
+UserCtrl --> BeanValidation
+LocationCtrl --> BeanValidation
+MovieCtrl --> BeanValidation
+RentalCtrl --> BeanValidation
+
+note as GeneratedNote
+**Generated Architecture Features:**
+
+**Domain Entities:**
+• User Service: User, Location, City, Country, Region, Neighborhood
+• Movie Service: Movie, Rental
+
+**CRUD Operations:**
+• Complete Create, Read, Update, Delete for all entities
+• Pagination and search functionality
+• Complex geographic queries (regions by country, cities by region)
+
+**Hexagonal Architecture:**
+• Clean separation of concerns
+• Dependency inversion principle
+• Testable and maintainable code
+• Framework-independent business logic
+
+**Technical Stack:**
+• Spring Boot 3 with Jakarta EE
+• MapStruct for object mapping
+• JPA/Hibernate for persistence
+• Bean Validation for input validation
+• H2 in-memory database
+• Comprehensive test coverage (100%)
 end note
 
 @enduml

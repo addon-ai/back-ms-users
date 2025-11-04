@@ -1,0 +1,129 @@
+package {{packageName}};
+
+import {{basePackage}}.infrastructure.adapters.output.persistence.entity.{{entityName}}Dbo;
+import {{basePackage}}.infrastructure.adapters.output.persistence.repository.Jpa{{entityName}}Repository;
+import {{basePackage}}.domain.model.EntityStatus;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Integration tests for Jpa{{entityName}}Repository.
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class Jpa{{entityName}}RepositoryTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
+
+    @Autowired
+    private Jpa{{entityName}}Repository {{entityVarName}}Repository;
+
+    private {{entityName}}Dbo create{{entityName}}Dbo() {
+        return {{entityName}}Dbo.builder()
+{{#properties}}
+{{#required}}
+{{#isString}}
+            .{{name}}("test-{{name}}")
+{{/isString}}
+{{#isEmail}}
+            .{{name}}("test@example.com")
+{{/isEmail}}
+{{#isBoolean}}
+            .{{name}}(true)
+{{/isBoolean}}
+{{#isInteger}}
+            .{{name}}(1)
+{{/isInteger}}
+{{#isLong}}
+            .{{name}}(1L)
+{{/isLong}}
+{{#isDouble}}
+            .{{name}}(1.0)
+{{/isDouble}}
+{{#isBigDecimal}}
+            .{{name}}(java.math.BigDecimal.valueOf(1.0))
+{{/isBigDecimal}}
+{{/required}}
+{{/properties}}
+            .status(EntityStatus.ACTIVE)
+            .build();
+    }
+
+    @Test
+    void findById_ShouldReturnEntity_WhenExists() {
+        // Given
+        {{entityName}}Dbo {{entityVarName}} = create{{entityName}}Dbo();
+        {{entityName}}Dbo saved{{entityName}} = entityManager.persistAndFlush({{entityVarName}});
+
+        // When
+        Optional<{{entityName}}Dbo> result = {{entityVarName}}Repository.findById(saved{{entityName}}.getId());
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(saved{{entityName}}.getId());
+    }
+
+    @Test
+    void save_ShouldPersistEntity() {
+        // Given
+        {{entityName}}Dbo {{entityVarName}} = create{{entityName}}Dbo();
+
+        // When
+        {{entityName}}Dbo saved{{entityName}} = {{entityVarName}}Repository.save({{entityVarName}});
+
+        // Then
+        assertThat(saved{{entityName}}.getId()).isNotNull();
+        
+        {{entityName}}Dbo found{{entityName}} = entityManager.find({{entityName}}Dbo.class, saved{{entityName}}.getId());
+        assertThat(found{{entityName}}).isNotNull();
+    }
+
+    @Test
+    void deleteById_ShouldRemoveEntity() {
+        // Given
+        {{entityName}}Dbo {{entityVarName}} = create{{entityName}}Dbo();
+        {{entityName}}Dbo saved{{entityName}} = entityManager.persistAndFlush({{entityVarName}});
+
+        // When
+        {{entityVarName}}Repository.deleteById(saved{{entityName}}.getId());
+        entityManager.flush();
+
+        // Then
+        {{entityName}}Dbo found{{entityName}} = entityManager.find({{entityName}}Dbo.class, saved{{entityName}}.getId());
+        assertThat(found{{entityName}}).isNull();
+    }
+
+    @Test
+    void existsById_ShouldReturnTrue_WhenEntityExists() {
+        // Given
+        {{entityName}}Dbo {{entityVarName}} = create{{entityName}}Dbo();
+        {{entityName}}Dbo saved{{entityName}} = entityManager.persistAndFlush({{entityVarName}});
+
+        // When
+        boolean exists = {{entityVarName}}Repository.existsById(saved{{entityName}}.getId());
+
+        // Then
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void existsById_ShouldReturnFalse_WhenEntityDoesNotExist() {
+        // When
+        boolean exists = {{entityVarName}}Repository.existsById("non-existent-id");
+
+        // Then
+        assertThat(exists).isFalse();
+    }
+}

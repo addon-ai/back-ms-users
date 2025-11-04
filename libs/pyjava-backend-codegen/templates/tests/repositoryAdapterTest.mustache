@@ -1,0 +1,421 @@
+package {{packageName}};
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import {{basePackage}}.application.mapper.{{entityName}}Mapper;
+import {{basePackage}}.domain.model.{{entityName}};
+import {{basePackage}}.infrastructure.adapters.output.persistence.entity.{{entityName}}Dbo;
+import {{basePackage}}.infrastructure.adapters.output.persistence.repository.Jpa{{entityName}}Repository;
+
+@ExtendWith(MockitoExtension.class)
+class {{entityName}}RepositoryAdapterTest {
+
+    @Mock
+    private Jpa{{entityName}}Repository jpa{{entityName}}Repository;
+
+    @Mock
+    private {{entityName}}Mapper {{entityVarName}}Mapper;
+
+    @InjectMocks
+    private {{entityName}}RepositoryAdapter {{entityVarName}}RepositoryAdapter;
+
+    private {{entityName}} domain{{entityName}};
+    private {{entityName}}Dbo {{entityVarName}}Dbo;
+
+    @BeforeEach
+    void setUp() {
+        domain{{entityName}} = {{entityName}}.builder()
+            .build();
+        
+        {{entityVarName}}Dbo = {{entityName}}Dbo.builder()
+            .build();
+    }
+
+    @Test
+    void save_ShouldReturnDomainEntity_WhenValidEntity() {
+        // Given
+        when({{entityVarName}}Mapper.toDbo(domain{{entityName}})).thenReturn({{entityVarName}}Dbo);
+        when(jpa{{entityName}}Repository.save({{entityVarName}}Dbo)).thenReturn({{entityVarName}}Dbo);
+        when({{entityVarName}}Mapper.toDomain({{entityVarName}}Dbo)).thenReturn(domain{{entityName}});
+
+        // When
+        {{entityName}} result = {{entityVarName}}RepositoryAdapter.save(domain{{entityName}});
+
+        // Then
+        assertThat(result).isNotNull();
+        verify({{entityVarName}}Mapper).toDbo(domain{{entityName}});
+        verify(jpa{{entityName}}Repository).save({{entityVarName}}Dbo);
+        verify({{entityVarName}}Mapper).toDomain({{entityVarName}}Dbo);
+    }
+
+    @Test
+    void save_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when({{entityVarName}}Mapper.toDbo(domain{{entityName}})).thenReturn({{entityVarName}}Dbo);
+        when(jpa{{entityName}}Repository.save({{entityVarName}}Dbo)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.save(domain{{entityName}}))
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to save {{entityName}}");
+    }
+
+    @Test
+    void findById_ShouldReturnOptionalWithEntity_WhenEntityExists() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        when(jpa{{entityName}}Repository.findById({{entityVarName}}Id)).thenReturn(Optional.of({{entityVarName}}Dbo));
+        when({{entityVarName}}Mapper.toDomain({{entityVarName}}Dbo)).thenReturn(domain{{entityName}});
+
+        // When
+        Optional<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findById({{entityVarName}}Id);
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(domain{{entityName}});
+        verify(jpa{{entityName}}Repository).findById({{entityVarName}}Id);
+        verify({{entityVarName}}Mapper).toDomain({{entityVarName}}Dbo);
+    }
+
+    @Test
+    void findById_ShouldReturnEmptyOptional_WhenEntityNotFound() {
+        // Given
+        String {{entityVarName}}Id = "non-existent-id";
+        when(jpa{{entityName}}Repository.findById({{entityVarName}}Id)).thenReturn(Optional.empty());
+
+        // When
+        Optional<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findById({{entityVarName}}Id);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(jpa{{entityName}}Repository).findById({{entityVarName}}Id);
+    }
+
+    @Test
+    void findById_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.findById({{entityVarName}}Id)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.findById({{entityVarName}}Id))
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to find {{entityName}} by id");
+    }
+
+    @Test
+    void findAll_ShouldReturnListOfEntities_WhenEntitiesExist() {
+        // Given
+        List<{{entityName}}Dbo> {{entityVarName}}Dbos = Collections.singletonList({{entityVarName}}Dbo);
+        List<{{entityName}}> {{entityVarName}}s = Collections.singletonList(domain{{entityName}});
+        when(jpa{{entityName}}Repository.findAll()).thenReturn({{entityVarName}}Dbos);
+        when({{entityVarName}}Mapper.toDomainList({{entityVarName}}Dbos)).thenReturn({{entityVarName}}s);
+
+        // When
+        List<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findAll();
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result).isEqualTo({{entityVarName}}s);
+        verify(jpa{{entityName}}Repository).findAll();
+        verify({{entityVarName}}Mapper).toDomainList({{entityVarName}}Dbos);
+    }
+
+    @Test
+    void findAll_ShouldReturnEmptyList_WhenNoEntitiesExist() {
+        // Given
+        when(jpa{{entityName}}Repository.findAll()).thenReturn(Collections.emptyList());
+        when({{entityVarName}}Mapper.toDomainList(Collections.emptyList())).thenReturn(Collections.emptyList());
+
+        // When
+        List<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findAll();
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(jpa{{entityName}}Repository).findAll();
+        verify({{entityVarName}}Mapper).toDomainList(Collections.emptyList());
+    }
+
+    @Test
+    void findAll_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.findAll()).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.findAll())
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to find all {{entityNamePlural}}");
+        
+        verify(jpa{{entityName}}Repository).findAll();
+    }
+
+    @Test
+    void deleteById_ShouldCallRepository_WhenValidId() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+
+        // When
+        {{entityVarName}}RepositoryAdapter.deleteById({{entityVarName}}Id);
+
+        // Then
+        verify(jpa{{entityName}}Repository).deleteById({{entityVarName}}Id);
+    }
+
+    @Test
+    void deleteById_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        doThrow(repositoryException).when(jpa{{entityName}}Repository).deleteById({{entityVarName}}Id);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.deleteById({{entityVarName}}Id))
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to delete {{entityName}} by id");
+    }
+
+    @Test
+    void existsById_ShouldReturnTrue_WhenEntityExists() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        when(jpa{{entityName}}Repository.existsById({{entityVarName}}Id)).thenReturn(true);
+
+        // When
+        boolean result = {{entityVarName}}RepositoryAdapter.existsById({{entityVarName}}Id);
+
+        // Then
+        assertThat(result).isTrue();
+        verify(jpa{{entityName}}Repository).existsById({{entityVarName}}Id);
+    }
+
+    @Test
+    void existsById_ShouldReturnFalse_WhenEntityNotExists() {
+        // Given
+        String {{entityVarName}}Id = "non-existent-id";
+        when(jpa{{entityName}}Repository.existsById({{entityVarName}}Id)).thenReturn(false);
+
+        // When
+        boolean result = {{entityVarName}}RepositoryAdapter.existsById({{entityVarName}}Id);
+
+        // Then
+        assertThat(result).isFalse();
+        verify(jpa{{entityName}}Repository).existsById({{entityVarName}}Id);
+    }
+
+    @Test
+    void existsById_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.existsById({{entityVarName}}Id)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.existsById({{entityVarName}}Id))
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to check if {{entityName}} exists by id");
+    }
+
+    @Test
+    void findBySearchTerm_ShouldReturnListOfEntities_WhenEntitiesExist() {
+        // Given
+        String searchTerm = "test";
+        Integer page = 1;
+        Integer size = 10;
+        
+        when(jpa{{entityName}}Repository.findBySearchTerm(anyString(), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(Collections.singletonList({{entityVarName}}Dbo)));
+        when({{entityVarName}}Mapper.toDomain({{entityVarName}}Dbo)).thenReturn(domain{{entityName}});
+
+        // When
+        List<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findBySearchTerm(searchTerm, page, size);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0)).isEqualTo(domain{{entityName}});
+    }
+
+    @Test
+    void findBySearchTerm_ShouldReturnListOfEntities_WhenSearchIsEmpty() {
+        // Given
+        String searchTerm = "";
+        Integer page = 1;
+        Integer size = 10;
+        
+        when(jpa{{entityName}}Repository.findAll()).thenReturn(Collections.singletonList({{entityVarName}}Dbo));
+        when({{entityVarName}}Mapper.toDomainList(Collections.singletonList({{entityVarName}}Dbo)))
+            .thenReturn(Collections.singletonList(domain{{entityName}}));
+
+        // When
+        List<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findBySearchTerm(searchTerm, page, size);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0)).isEqualTo(domain{{entityName}});
+    }
+
+    @Test
+    void findBySearchTerm_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String searchTerm = "test";
+        Integer page = 1;
+        Integer size = 10;
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.findBySearchTerm(anyString(), any(Pageable.class)))
+            .thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.findBySearchTerm(searchTerm, page, size))
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to search {{entityNamePlural}}");
+    }
+
+    @Test
+    void findBySearchTerm_ShouldThrowException_WhenRepositoryFailsOnFindAll() {
+        // Given
+        String searchTerm = null;
+        Integer page = 1;
+        Integer size = 10;
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.findAll()).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.findBySearchTerm(searchTerm, page, size))
+            .isInstanceOf({{basePackage}}.infrastructure.config.exceptions.InternalServerErrorException.class)
+            .hasMessage("Failed to search {{entityNamePlural}}");
+    }
+
+    @Test
+    void findBySearchTermPaged_ShouldReturnPageOfEntities_WhenEntitiesExist() {
+        // Given
+        String searchTerm = "test";
+        Pageable pageable = PageRequest.of(0, 10);
+        List<{{entityName}}Dbo> {{entityVarName}}Dbos = Collections.singletonList({{entityVarName}}Dbo);
+        Page<{{entityName}}Dbo> dboPage = new PageImpl<>({{entityVarName}}Dbos, pageable, 1);
+        
+        when(jpa{{entityName}}Repository.findBySearchTerm(searchTerm, pageable)).thenReturn(dboPage);
+        when({{entityVarName}}Mapper.toDomain({{entityVarName}}Dbo)).thenReturn(domain{{entityName}});
+
+        // When
+        Page<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findBySearchTermPaged(searchTerm, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0)).isEqualTo(domain{{entityName}});
+        verify(jpa{{entityName}}Repository).findBySearchTerm(searchTerm, pageable);
+        verify({{entityVarName}}Mapper).toDomain({{entityVarName}}Dbo);
+    }
+
+    @Test
+    void findBySearchTermPaged_ShouldReturnEmptyPage_WhenNoEntitiesExist() {
+        // Given
+        String searchTerm = "nonexistent";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<{{entityName}}Dbo> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        
+        when(jpa{{entityName}}Repository.findBySearchTerm(searchTerm, pageable)).thenReturn(emptyPage);
+
+        // When
+        Page<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findBySearchTermPaged(searchTerm, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+        verify(jpa{{entityName}}Repository).findBySearchTerm(searchTerm, pageable);
+    }
+
+    @Test
+    void findAllPaged_ShouldReturnPageOfEntities_WhenEntitiesExist() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        List<{{entityName}}Dbo> {{entityVarName}}Dbos = Collections.singletonList({{entityVarName}}Dbo);
+        Page<{{entityName}}Dbo> dboPage = new PageImpl<>({{entityVarName}}Dbos, pageable, 1);
+        
+        when(jpa{{entityName}}Repository.findAllPaged(pageable)).thenReturn(dboPage);
+        when({{entityVarName}}Mapper.toDomain({{entityVarName}}Dbo)).thenReturn(domain{{entityName}});
+
+        // When
+        Page<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findAllPaged(pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0)).isEqualTo(domain{{entityName}});
+        verify(jpa{{entityName}}Repository).findAllPaged(pageable);
+        verify({{entityVarName}}Mapper).toDomain({{entityVarName}}Dbo);
+    }
+
+    @Test
+    void findAllPaged_ShouldReturnEmptyPage_WhenNoEntitiesExist() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<{{entityName}}Dbo> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        
+        when(jpa{{entityName}}Repository.findAllPaged(pageable)).thenReturn(emptyPage);
+
+        // When
+        Page<{{entityName}}> result = {{entityVarName}}RepositoryAdapter.findAllPaged(pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+        verify(jpa{{entityName}}Repository).findAllPaged(pageable);
+    }
+
+    @Test
+    void findBySearchTermPaged_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String searchTerm = "test";
+        Pageable pageable = PageRequest.of(0, 10);
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.findBySearchTerm(searchTerm, pageable)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.findBySearchTermPaged(searchTerm, pageable))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+
+    @Test
+    void findAllPaged_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when(jpa{{entityName}}Repository.findAllPaged(pageable)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}RepositoryAdapter.findAllPaged(pageable))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+}

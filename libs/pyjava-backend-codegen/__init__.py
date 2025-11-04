@@ -5,19 +5,22 @@ A Python library for generating Java Spring Boot applications following
 Hexagonal Architecture principles from Smithy service definitions.
 """
 
-from .config_loader import ConfigLoader
-from .openapi_processor import OpenApiProcessor
-from .template_renderer import TemplateRenderer
-from .code_generator import CodeGenerator
-from .file_manager import FileManager
+# Make core components easily accessible
+from .core.code_generator import CodeGenerator
+from .core.config_loader import ConfigLoader
+from .core.openapi_processor import OpenApiProcessor
+from .utils.template_renderer import TemplateRenderer
+from .utils.file_manager import FileManager
+from .utils.property_converter import PropertyConverter
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Jiliar Silgado"
 
 __all__ = [
-    "ConfigLoader",
-    "OpenApiProcessor", 
-    "TemplateRenderer",
     "CodeGenerator",
-    "FileManager"
+    "ConfigLoader",
+    "OpenApiProcessor",
+    "TemplateRenderer",
+    "FileManager",
+    "PropertyConverter"
 ]

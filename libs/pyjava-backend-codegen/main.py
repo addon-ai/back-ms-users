@@ -6,8 +6,14 @@ import subprocess
 import shutil
 from pathlib import Path
 
-from .config_loader import ConfigLoader
-from .code_generator import CodeGenerator
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from common.logging_setup import get_logger, setup_logging
+
+from config_loader import ConfigLoader
+from .core.code_generator import CodeGenerator
+
+setup_logging()
+logger = get_logger(__name__)
 
 
 def run_command(cmd: str) -> str:
@@ -23,10 +29,10 @@ def run_command(cmd: str) -> str:
     Raises:
         SystemExit: If command fails
     """
-    print(f"Running: {cmd}")
+    logger.info(f"Running: {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"Error: {result.stderr}")
+        logger.error(f"Error: {result.stderr}")
         exit(1)
     return result.stdout
 
@@ -38,7 +44,7 @@ def main():
     Handles command line arguments, loads configuration, and orchestrates
     the project generation process for multiple projects.
     """
-    print("📝 Generating OpenAPI from Smithy...")
+    logger.info("📝 Generating OpenAPI from Smithy...")
     run_command("smithy clean")
     run_command("smithy build")
     
@@ -46,37 +52,37 @@ def main():
     projects_dir = Path("projects")
     if projects_dir.exists():
         shutil.rmtree(projects_dir)
-        print("🗑️ Cleaned existing projects directory")
+        logger.info("🗑️ Cleaned existing projects directory")
     projects_dir.mkdir(exist_ok=True)
-    print("📁 Created projects directory")
+    logger.info("📁 Created projects directory")
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
-        print("Usage: python -m pyjava-backend-codegen [templates_dir]")
-        print("Example: python -m pyjava-backend-codegen libs/pyjava-backend-codegen/templates")
-        print("Config: libs/config/params.json (array of project configurations)")
+        logger.info("Usage: python -m pyjava-backend-codegen [templates_dir]")
+        logger.info("Example: python -m pyjava-backend-codegen libs/pyjava-backend-codegen/templates")
+        logger.info("Config: libs/config/params.json (array of project configurations)")
         sys.exit(0)
     
-    config_path = "libs/config/params.json"
-    templates_dir = sys.argv[1] if len(sys.argv) > 1 else str(Path(__file__).parent / "templates")
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "libs/config/params.json"
+    templates_dir = str(Path(__file__).parent / "templates")
     
     try:
         # Load all project configurations
         projects_config = ConfigLoader.load_projects_config(config_path)
         
-        print(f"Found {len(projects_config)} project(s) to generate...")
+        logger.info(f"Found {len(projects_config)} project(s) to generate...")
         
         # Generate each project
         for i, project_config in enumerate(projects_config, 1):
             project_name = project_config['project']['general']['name']
-            print(f"\n[{i}/{len(projects_config)}] Generating project: {project_name}")
+            logger.info(f"[{i}/{len(projects_config)}] Generating project: {project_name}")
             
-            generator = CodeGenerator(templates_dir, project_config)
+            generator = CodeGenerator(config_path, templates_dir, project_config)
             generator.generate_complete_project()
             
-        print(f"\n✅ Successfully generated {len(projects_config)} project(s)!")
+        logger.info(f"✅ Successfully generated {len(projects_config)} project(s)!")
         
     except Exception as e:
-        print(f"Error generating projects: {e}")
+        logger.error(f"Error generating projects: {e}")
         sys.exit(1)
 
 

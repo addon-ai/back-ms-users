@@ -17,6 +17,19 @@
                     "basePackage": "com.example.userservice",
                     "mainClass": "UserServiceApplication"
                 }
+            },
+            "dependencies": {
+                "java": "21",
+                "springBoot": "3.2.5",
+                "mapstruct": "1.5.5.Final",
+                "lombok": "1.18.30",
+                "springdoc": "2.1.0",
+                "h2": "2.2.224",
+                "postgresql": "42.7.3",
+                "mavenCompiler": "3.11.0",
+                "mavenSurefire": "3.2.5",
+                "lombokMapstructBinding": "0.2.0",
+                "jacoco": "0.8.11"
             }
         },
         "database": {
@@ -62,6 +75,19 @@
                     "basePackage": "com.example.movieservice",
                     "mainClass": "MovieServiceApplication"
                 }
+            },
+            "dependencies": {
+                "java": "21",
+                "springBoot": "3.2.5",
+                "mapstruct": "1.5.5.Final",
+                "lombok": "1.18.30",
+                "springdoc": "2.1.0",
+                "h2": "2.2.224",
+                "postgresql": "42.7.3",
+                "mavenCompiler": "3.11.0",
+                "mavenSurefire": "3.2.5",
+                "lombokMapstructBinding": "0.2.0",
+                "jacoco": "0.8.11"
             }
         },
         "database": {

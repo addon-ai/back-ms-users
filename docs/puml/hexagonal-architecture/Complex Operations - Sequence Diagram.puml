@@ -1,111 +1,107 @@
 @startuml Complex Operations
 !theme plain
-title Complex Operations - Hexagonal Architecture Flow (v2)
+title Complex Operations - Location Service (GetRegionsByCountry)
 
 actor Client
 participant "LocationController\n(Input Adapter)" as Controller
-participant "LocationService\n(Consolidated Application Service)" as Service
+participant "LocationUseCase\n(Domain Port)" as UseCase
+participant "LocationService\n(Application Service)" as Service
 participant "LocationMapper\n(Application Layer)" as Mapper
-participant "CityRepositoryAdapter\n(Output Adapter)" as CityRepoAdapter
-participant "RegionRepositoryAdapter\n(Output Adapter)" as RegionRepoAdapter
-participant "JpaCityRepository\n(Infrastructure)" as JpaCityRepo
-participant "JpaRegionRepository\n(Infrastructure)" as JpaRegionRepo
+participant "RegionRepositoryPort\n(Domain Port)" as RepoPort
+participant "RegionRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaRegionRepository\n(Infrastructure)" as JpaRepo
 database "H2 Database" as DB
 
-Client -> Controller: GET /locations/regions/{regionId}/cities
+Client -> Controller: GET /locations/regions-by-country?countryId=USA
 activate Controller
-note right: Complex operation beyond basic CRUD
+note right: Complex operation endpoint\nwith query parameters
 
-Controller -> Service: getCitiesByRegion(regionId)
+Controller -> Controller: validateQueryParams(@RequestParam String countryId)
+note right: Parameter validation:\n- countryId required\n- format validation
+
+Controller -> UseCase: getRegionsByCountry()
+activate UseCase
+note right: Complex operation\ndefined in use case
+
+UseCase -> Service: getRegionsByCountry()
 activate Service
-note right: Consolidated service handling\nboth CRUD and complex operations
+note right: Business logic for\ncomplex geographic query
 
-' Validate region exists
-Service -> RegionRepoAdapter: findById(regionId)
-activate RegionRepoAdapter
-RegionRepoAdapter -> JpaRegionRepo: findById(regionId)
-activate JpaRegionRepo
-JpaRegionRepo -> DB: SELECT * FROM regions WHERE id = ?
-DB --> JpaRegionRepo: Optional<RegionDbo>
-JpaRegionRepo --> RegionRepoAdapter: Optional<RegionDbo>
-deactivate JpaRegionRepo
+' Service may need to validate country exists first
+Service -> Service: validateCountryExists(countryId)
+note right: Business rule:\nCountry must exist before\nquerying regions
 
-alt Region Found
-    RegionRepoAdapter -> Mapper: toDomain(RegionDbo)
-    activate Mapper
-    Mapper --> RegionRepoAdapter: Region
-    deactivate Mapper
-    RegionRepoAdapter --> Service: Optional<Region>
-    deactivate RegionRepoAdapter
-    
-    ' Get cities for the region
-    Service -> CityRepoAdapter: findByRegionId(regionId)
-    activate CityRepoAdapter
-    note right: Custom query method\ngenerated in repository
-    
-    CityRepoAdapter -> JpaCityRepo: findByRegionId(regionId)
-    activate JpaCityRepo
-    JpaCityRepo -> DB: SELECT * FROM cities WHERE region_id = ?
-    DB --> JpaCityRepo: List<CityDbo>
-    JpaCityRepo --> CityRepoAdapter: List<CityDbo>
-    deactivate JpaCityRepo
-    
-    CityRepoAdapter -> Mapper: toDomainList(List<CityDbo>)
-    activate Mapper
-    loop for each CityDbo
-        Mapper -> Mapper: toDomain(CityDbo)
-    end
-    Mapper --> CityRepoAdapter: List<City>
-    deactivate Mapper
-    
-    CityRepoAdapter --> Service: List<City>
-    deactivate CityRepoAdapter
-    
-    ' Map to response
-    Service -> Mapper: toCitiesByRegionResponse(List<City>, regionId)
-    activate Mapper
-    note right: Maps cities to response format\nwith region context
-    loop for each City
-        Mapper -> Mapper: toCityInfo(City)
-    end
-    note over Mapper: Build GetCitiesByRegionResponseContent:\n- cities: List<CityInfo>\n- regionId: regionId\n- total: cities.size()
-    Mapper --> Service: GetCitiesByRegionResponseContent
-    deactivate Mapper
-    
-    Service --> Controller: GetCitiesByRegionResponseContent
-    deactivate Service
-    
-    Controller --> Client: HTTP 200\n{"cities": [...], "regionId": "...", "total": 5}
-    deactivate Controller
+' Execute complex query
+Service -> RepoPort: findByCountryId(countryId)
+activate RepoPort
+RepoPort -> RepoAdapter: findByCountryId(countryId)
+activate RepoAdapter
 
-else Region Not Found
-    RegionRepoAdapter --> Service: Optional.empty()
-    deactivate RegionRepoAdapter
-    
-    Service --> Controller: NotFoundException("Region not found")
-    deactivate Service
-    
-    Controller --> Client: HTTP 404\n{"message": "Region not found", "timestamp": "...", "path": "/locations/regions/{regionId}/cities"}
-    deactivate Controller
-    note right: GlobalExceptionHandler\nhandles the exception
-end
+RepoAdapter -> JpaRepo: findByCountryIdAndStatusActive(countryId)
+activate JpaRepo
+note right: Complex query:\nSELECT r.* FROM regions r\nWHERE r.country_id = ?\nAND r.status = 'ACTIVE'\nORDER BY r.name
+JpaRepo -> DB: Complex JOIN query with filtering
+DB --> JpaRepo: List<RegionDbo>
+JpaRepo --> RepoAdapter: List<RegionDbo>
+deactivate JpaRepo
+
+RepoAdapter -> Mapper: toDomainList(List<RegionDbo>)
+activate Mapper
+note right: Batch convert regions\nto domain objects
+Mapper --> RepoAdapter: List<Region>
+deactivate Mapper
+
+RepoAdapter --> RepoPort: List<Region>
+deactivate RepoAdapter
+RepoPort --> Service: List<Region>
+deactivate RepoPort
+
+' Apply business logic and sorting
+Service -> Service: applyBusinessRules(List<Region>)
+note right: Business processing:\n- Sort by name\n- Filter by permissions\n- Apply regional rules
+
+' Map to complex response DTO
+Service -> Mapper: toGetRegionsByCountryResponse(List<Region>)
+activate Mapper
+note right: Complex mapping:\n- Region details\n- Country information\n- Metadata inclusion
+Mapper --> Service: GetRegionsByCountryResponseContent
+deactivate Mapper
+
+Service --> UseCase: GetRegionsByCountryResponseContent
+deactivate Service
+UseCase --> Controller: GetRegionsByCountryResponseContent
+deactivate UseCase
+
+Controller --> Client: HTTP 200\n{"regions": [{"regionId": "...", "name": "California", "code": "CA", "countryId": "USA", ...}], "country": {"name": "United States", ...}}
+deactivate Controller
 
 note over Service
-  Complex Operation Features:
-  - Validates related entities
-  - Performs multiple repository calls
-  - Handles business logic
-  - Maintains transaction boundaries
-  - Provides detailed error handling
+  Complex Business Logic:
+  - Multi-entity validation
+  - Geographic data processing
+  - Hierarchical data handling
+  - Business rule application
+  - Performance optimization
+  - Caching strategies
 end note
 
-note over Controller
-  Controller Features:
-  - Handles complex endpoints
-  - Maintains REST conventions
-  - Provides proper HTTP status codes
-  - Includes comprehensive documentation
-  - Supports request tracing headers
+note over Mapper
+  Complex Mapping:
+  - Nested object mapping
+  - Hierarchical data structure
+  - Metadata enrichment
+  - Performance optimization
+  - Memory efficient processing
+end note
+
+note over RepoAdapter
+  Complex Query Features:
+  - Multi-table joins
+  - Advanced filtering
+  - Sorting and ordering
+  - Index optimization
+  - Query performance monitoring
+  - Result caching
 end note
 
 @enduml
