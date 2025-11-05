@@ -76,9 +76,26 @@ echo ""
 python3 "$PROJECT_ROOT/libs/fake-data-generator.py"
 
 echo ""
+echo "📚 Step 4: Generating OpenAPI documentation..."
+echo ""
+
+# Run the OpenAPI documentation generator
+python3 "$PROJECT_ROOT/libs/openapi-docs-generator.py"
+
+echo ""
+echo "🏗️  Step 5: Generating architectural diagrams (components & sequences)..."
+echo ""
+
+# Run the architectural documentation generator
+python3 "$PROJECT_ROOT/libs/architect-docs-generator.py"
+
+echo ""
 echo "🎉 Code Generation Pipeline complete!"
 echo "📁 Generated outputs:"
 echo "   • projects/ → Java Spring Boot applications with hexagonal architecture"
 echo "   • schemas/ → JSON Schema files from OpenAPI specs"
-echo "   • schemas/*/fake-data/ → Fake data for unit testing"
+echo "   • schemas/*/fake-data/ → Fake data"
+echo "   • docs/puml/open-api/ → OpenAPI documentation (PlantUML, Markdown, TXT)"
+echo "   • docs/puml/components/ → Architectural component diagrams (PlantUML)"
+echo "   • docs/puml/sequences/ → CRUD sequence diagrams by service (PlantUML)"
 echo "🚀 Ready to run: cd projects/[project-name] && mvn spring-boot:run"

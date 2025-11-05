@@ -1,0 +1,192 @@
+@startuml {{project_name}} Hexagonal Architecture
+!theme plain
+title {{project_title}} - Hexagonal Architecture
+
+left to right direction
+
+' === EXTERNAL ACTORS ===
+rectangle "External Actors" {
+  [Web Client] as WebClient
+  [Mobile App] as MobileApp
+  [API Consumer] as APIConsumer
+  [Database] as Database
+}
+
+' === {{project_title}} SERVICE ===
+package "{{project_name}}" as ServiceMS {
+  package "Infrastructure Layer" as ServiceInfra {
+    {{#has_controllers}}
+    package "Input Adapters" as ServiceInputAdapters {
+      {{#controllers}}
+      [{{name}}] as {{name}}
+      {{/controllers}}
+    }
+    {{/has_controllers}}
+    
+    {{#has_adapters}}
+    package "Output Adapters" as ServiceOutputAdapters {
+      {{#adapters}}
+      [{{name}}] as {{name}}
+      {{/adapters}}
+    }
+    {{/has_adapters}}
+    
+    {{#has_jpa_repositories}}
+    package "Persistence" as ServicePersistence {
+      {{#jpa_repositories}}
+      [{{name}}] as {{name}}
+      {{/jpa_repositories}}
+      
+      {{#jpa_entities}}
+      [{{name}}] as {{name}}
+      {{/jpa_entities}}
+    }
+    {{/has_jpa_repositories}}
+    
+    {{#has_config}}
+    package "Configuration" as ServiceConfig {
+      {{#config_classes}}
+      [{{name}}] as {{name}}
+      {{/config_classes}}
+    }
+    {{/has_config}}
+    
+    {{#has_exceptions}}
+    package "Exceptions" as ServiceExceptions {
+      {{#exceptions}}
+      [{{name}}] as {{name}}
+      {{/exceptions}}
+    }
+    {{/has_exceptions}}
+  }
+  
+  package "Application Layer" as ServiceApplication {
+    {{#has_services}}
+    package "Services" as ServiceServices {
+      {{#services}}
+      [{{name}}] as {{name}}
+      {{/services}}
+    }
+    {{/has_services}}
+    
+    {{#has_mappers}}
+    package "Mappers" as ServiceMappers {
+      {{#mappers}}
+      [{{name}}] as {{name}}
+      {{/mappers}}
+    }
+    {{/has_mappers}}
+    
+    {{#has_dtos}}
+    package "DTOs" as ServiceDTOs {
+      {{#dto_groups}}
+      [{{entity_name}} DTOs] as {{entity_name}}DTOsGroup
+      {{/dto_groups}}
+    }
+    {{/has_dtos}}
+    
+    {{#has_logging_utils}}
+    [Logging Utils] as ServiceLoggingUtils
+    {{/has_logging_utils}}
+  }
+  
+  package "Domain Layer" as ServiceDomain {
+    {{#has_domain_models}}
+    package "Domain Models" as ServiceDomainModels {
+      {{#domain_models}}
+      [{{name}}] as {{name}}Model
+      {{/domain_models}}
+    }
+    {{/has_domain_models}}
+    
+    {{#has_input_ports}}
+    package "Input Ports" as ServiceInputPorts {
+      {{#input_ports}}
+      [{{name}}] as {{name}}
+      {{/input_ports}}
+    }
+    {{/has_input_ports}}
+    
+    {{#has_output_ports}}
+    package "Output Ports" as ServiceOutputPorts {
+      {{#output_ports}}
+      [{{name}}] as {{name}}
+      {{/output_ports}}
+    }
+    {{/has_output_ports}}
+  }
+}
+
+' === EXTERNAL CONNECTIONS ===
+WebClient --> ServiceInputAdapters : HTTP/REST
+MobileApp --> ServiceInputAdapters : HTTP/REST
+APIConsumer --> ServiceInputAdapters : HTTP/REST
+
+' === PACKAGE CONNECTIONS ===
+{{#has_controllers}}{{#has_input_ports}}
+ServiceInputAdapters --> ServiceInputPorts : "delegates to use cases"
+{{/has_input_ports}}{{/has_controllers}}
+{{#has_services}}{{#has_input_ports}}
+ServiceServices ..|> ServiceInputPorts : "implements use cases"
+{{/has_input_ports}}{{/has_services}}
+{{#has_services}}{{#has_output_ports}}
+ServiceServices --> ServiceOutputPorts : "uses repository ports"
+{{/has_output_ports}}{{/has_services}}
+{{#has_adapters}}{{#has_output_ports}}
+ServiceOutputAdapters ..|> ServiceOutputPorts : "implements ports"
+{{/has_output_ports}}{{/has_adapters}}
+{{#has_adapters}}{{#has_jpa_repositories}}
+ServiceOutputAdapters --> ServicePersistence : "uses JPA repositories"
+{{/has_jpa_repositories}}{{/has_adapters}}
+{{#has_services}}{{#has_mappers}}
+ServiceServices --> ServiceMappers : "uses mappers"
+{{/has_mappers}}{{/has_services}}
+{{#has_adapters}}{{#has_mappers}}
+ServiceOutputAdapters --> ServiceMappers : "uses mappers"
+{{/has_mappers}}{{/has_adapters}}
+{{#has_services}}{{#has_dtos}}
+ServiceServices --> ServiceDTOs : "uses DTOs"
+{{/has_dtos}}{{/has_services}}
+{{#has_config}}{{#has_controllers}}
+ServiceConfig --> ServiceInputAdapters : "configures & handles exceptions"
+{{/has_controllers}}{{/has_config}}
+{{#has_config}}{{#has_exceptions}}
+ServiceConfig --> ServiceExceptions : "handles custom exceptions"
+{{/has_exceptions}}{{/has_config}}
+{{#has_domain_models}}
+ServiceDomainModels --> EntityStatusModel : "uses status"
+{{/has_domain_models}}
+
+' === INTERNAL PERSISTENCE CONNECTIONS ===
+{{#jpa_dbo_mappings}}
+{{jpa_repo}} --> {{dbo_entity}} : "manages"
+{{/jpa_dbo_mappings}}
+
+' === DATABASE CONNECTION ===
+{{#has_jpa_repositories}}
+ServicePersistence --> Database : "persists data"
+{{/has_jpa_repositories}}
+
+note right of ServiceMS
+  <b>{{project_title}} Service Architecture</b>
+  • <b>{{entity_count}} Domain Entities</b>: {{#domain_models}}{{name}}{{^last}}, {{/last}}{{/domain_models}}
+  • <b>{{use_case_count}} Use Cases</b>: {{#input_ports}}{{name}}{{^last}}, {{/last}}{{/input_ports}}
+  • <b>{{repository_count}} Repository Ports</b>: One per entity
+  • <b>{{service_count}} Services</b>: {{#services}}{{name}}{{^last}}, {{/last}}{{/services}}
+  • <b>{{mapper_count}} Mappers</b>: MapStruct transformations
+  {{#has_exceptions}}
+  • <b>{{exception_count}} Custom Exceptions</b>: {{#exceptions}}{{name}}{{^last}}, {{/last}}{{/exceptions}}
+  {{/has_exceptions}}
+  • <b>Complete CRUD</b>: All entities support full operations
+  • <b>Logging</b>: LoggingUtils used across all layers
+end note
+
+note bottom
+  <b>Hexagonal Architecture Principles</b>
+  • <b>Dependency Rule</b>: All dependencies point inward toward domain
+  • <b>Ports & Adapters</b>: External communication via interfaces
+  • <b>Domain Isolation</b>: Pure business logic without framework dependencies
+  • <b>Testability</b>: Each layer independently testable
+end note
+
+@enduml
