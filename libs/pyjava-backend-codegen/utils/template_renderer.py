@@ -52,10 +52,11 @@ class TemplateRenderer:
         renderer = pystache.Renderer(escape=lambda u: u)
         rendered = renderer.render(template_content, context)
         
-        # Fix HTML entities
+        # Fix HTML entities but preserve GitHub Actions syntax
         rendered = rendered.replace('&quot;', '"')
         rendered = rendered.replace('&lt;', '<')
         rendered = rendered.replace('&gt;', '>')
         rendered = rendered.replace('&amp;', '&')
+        rendered = rendered.replace('&#39;', "'")
         
         return rendered

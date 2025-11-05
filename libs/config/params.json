@@ -63,7 +63,8 @@
                 "artifactName": "user-service-jar",
                 "artifactRetentionDays": 30,
                 "mavenOpts": "-Xmx1024m",
-                "coverageThreshold": "85"
+                "coverageThreshold": "85",
+                "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-users"
             }
         }
     },
@@ -131,7 +132,8 @@
                 "artifactName": "movie-service-jar",
                 "artifactRetentionDays": 30,
                 "mavenOpts": "-Xmx1024m",
-                "coverageThreshold": "85"
+                "coverageThreshold": "85",
+                "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-movies"
             }
         }
     }
