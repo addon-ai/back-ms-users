@@ -7,7 +7,7 @@ use aws.protocols#restJson1
 @title("Location Service API")
 @cors(origin: "*")
 @restJson1
-@documentation("A service for managing user locations including countries, regions, cities, addresses, and neighborhoods.")
+@documentation("A comprehensive service for managing user locations and geographic data with full CRUD operations. This service provides user location management (home, work, billing, shipping addresses), geographic data hierarchy (countries, regions, cities, neighborhoods), location type categorization and validation, geospatial coordinates support (latitude/longitude), and postal code and address validation.")
 service LocationService {
     version: "2023-01-01",
     operations: [
@@ -24,7 +24,9 @@ service LocationService {
 }
 
 // Location Operations
+
 @http(method: "POST", uri: "/locations")
+@documentation("Creates a new location for a user. Registers a new location with complete address information including geographic hierarchy (country, region, city, neighborhood) and optional geospatial coordinates. Supports multiple location types per user.")
 operation CreateLocation {
     input: CreateLocationRequest,
     output: CreateLocationResponse,
@@ -32,6 +34,7 @@ operation CreateLocation {
 }
 
 @http(method: "GET", uri: "/locations/{locationId}")
+@documentation("Retrieves a location by its unique identifier. Returns complete location information including resolved geographic hierarchy with country, region, city, and neighborhood details.")
 operation GetLocation {
     input: GetLocationRequest,
     output: GetLocationResponse,
@@ -39,6 +42,7 @@ operation GetLocation {
 }
 
 @http(method: "PUT", uri: "/locations/{locationId}")
+@documentation("Updates an existing location's information. Allows partial updates to location fields including address, geographic references, coordinates, and location type. All fields are optional.")
 operation UpdateLocation {
     input: UpdateLocationRequest,
     output: UpdateLocationResponse,
@@ -46,6 +50,7 @@ operation UpdateLocation {
 }
 
 @http(method: "DELETE", uri: "/locations/{locationId}")
+@documentation("Deletes a location. Permanently removes a location from the system. This operation cannot be undone. Consider using status updates for soft deletion instead.")
 operation DeleteLocation {
     input: DeleteLocationRequest,
     output: DeleteLocationResponse,
@@ -53,19 +58,23 @@ operation DeleteLocation {
 }
 
 @http(method: "GET", uri: "/locations")
+@documentation("Lists locations with filtering and pagination. Returns a paginated list of locations with optional filtering by user ID and location type. Supports pagination for efficient data retrieval.")
 operation ListLocations {
     input: ListLocationsRequest,
     output: ListLocationsResponse
 }
 
 // Geographic Data Operations
+
 @http(method: "GET", uri: "/countries")
+@documentation("Retrieves list of available countries. Returns all countries in the system with optional search functionality. Used for populating country selection in location forms.")
 operation GetCountries {
     input: GetCountriesRequest,
     output: GetCountriesResponse
 }
 
 @http(method: "GET", uri: "/countries/{countryId}/regions")
+@documentation("Retrieves regions within a specific country. Returns all regions (states, provinces) that belong to the specified country. Used for cascading geographic selection in location forms.")
 operation GetRegionsByCountry {
     input: GetRegionsByCountryRequest,
     output: GetRegionsByCountryResponse,
@@ -73,6 +82,7 @@ operation GetRegionsByCountry {
 }
 
 @http(method: "GET", uri: "/regions/{regionId}/cities")
+@documentation("Retrieves cities within a specific region. Returns all cities that belong to the specified region. Used for cascading geographic selection in location forms.")
 operation GetCitiesByRegion {
     input: GetCitiesByRegionRequest,
     output: GetCitiesByRegionResponse,
@@ -80,6 +90,7 @@ operation GetCitiesByRegion {
 }
 
 @http(method: "GET", uri: "/cities/{cityId}/neighborhoods")
+@documentation("Retrieves neighborhoods within a specific city. Returns all neighborhoods that belong to the specified city. Used for detailed address specification in location forms.")
 operation GetNeighborhoodsByCity {
     input: GetNeighborhoodsByCityRequest,
     output: GetNeighborhoodsByCityResponse,
@@ -461,6 +472,9 @@ structure RegionInfo {
     code: String,
     
     @required
+    countryId: String,
+    
+    @required
     status: String,
     
     @required
@@ -478,6 +492,9 @@ structure CityInfo {
     name: String,
     
     @required
+    regionId: String,
+    
+    @required
     status: String,
     
     @required
@@ -493,6 +510,9 @@ structure NeighborhoodInfo {
     
     @required
     name: String,
+    
+    @required
+    cityId: String,
     
     @required
     status: String,

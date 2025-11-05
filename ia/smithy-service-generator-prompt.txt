@@ -1,183 +1,60 @@
-# Smithy Service Generator - Chain of Thought Prompt Template
+## Smithy Service Generator Requirements
 
-You are an expert in creating Smithy service definitions for Hexagonal Architecture Spring Boot applications. Follow this step-by-step approach to generate complete, well-structured Smithy files.
+### Documentation Standards
 
-## Step 1: Analyze Requirements
-Think through the following questions:
-- What is the main domain/business area? (e.g., user management, movie rental, inventory)
-- What are the core entities involved? (e.g., User, Movie, Rental, Product)
-- What operations are needed for each entity?
-- What are the relationships between entities?
+All Smithy files MUST include comprehensive documentation using the `@documentation` trait for:
 
-## Step 2: Apply CRUD Operation Naming Rules
-**CRITICAL**: All operations MUST follow these exact prefixes for proper code generation:
+#### 1. Services
+- Service purpose and functionality overview
+- Key features and capabilities
+- Usage context and business domain
 
-✅ **Required Prefixes:**
-- `Create{Entity}` - For creating new entities
-- `Get{Entity}` - For retrieving single entities  
-- `Update{Entity}` - For updating existing entities
-- `Delete{Entity}` - For deleting entities
-- `List{Entities}` - For listing multiple entities (plural form)
+#### 2. Operations
+- Operation purpose and behavior
+- Input/output expectations
+- Business rules and constraints
+- Error conditions and handling
 
-✅ **Examples:**
-- `CreateUser`, `GetUser`, `UpdateUser`, `DeleteUser`, `ListUsers`
-- `CreateMovie`, `GetMovie`, `UpdateMovie`, `DeleteMovie`, `ListMovies`
-- `CreateRental`, `GetRental`, `UpdateRental`, `DeleteRental`, `ListRentals`
+#### 3. Structures
+- Structure purpose and usage
+- Business context and relationships
+- Data validation rules
 
-❌ **NEVER use these patterns:**
-- `RentMovie`, `ReturnMovie`, `SearchUsers`, `FindMovies`
-- Custom action names that don't follow CRUD prefixes
+#### 4. Structure Fields
+- Field purpose and meaning
+- Data format requirements
+- Validation constraints
+- Optional vs required context
+- Business rules affecting the field
 
-## Step 3: Define Service Structure
-Create the service definition with:
+#### 5. Enums
+- Enum purpose and usage
+- Each enum value meaning and context
+
+### Documentation Format
 ```smithy
-$version: "2"
-namespace com.example.{servicename}
+@documentation("Clear, concise description explaining the purpose, behavior, constraints, and business context")
+```
 
-@title("{Service Name} API")
-@cors(origin: "*")
-@restJson1
-@documentation("A service for managing {domain description}.")
-service {ServiceName}Service {
-    version: "2023-01-01",
-    operations: [
-        // List all CRUD operations here
-    ]
+### Example Implementation
+```smithy
+@documentation("A service for managing user accounts with full CRUD operations and search capabilities.")
+service UserService {
+    // operations
+}
+
+@documentation("Creates a new user account. Username and email must be unique. Password minimum 6 characters.")
+operation CreateUser {
+    // definition
+}
+
+structure CreateUserRequest {
+    @documentation("Unique username for the user account. Must be 3-50 characters and unique across system.")
+    username: String,
+    
+    @documentation("User's email address. Must be valid email format and unique across system.")
+    email: String
 }
 ```
 
-## Step 4: Define HTTP Operations
-For each operation, follow these HTTP method patterns:
-- `Create{Entity}` → `POST /{entities}`
-- `Get{Entity}` → `GET /{entities}/{entityId}`
-- `Update{Entity}` → `PUT /{entities}/{entityId}`
-- `Delete{Entity}` → `DELETE /{entities}/{entityId}`
-- `List{Entities}` → `GET /{entities}`
-
-## Step 5: Create Request/Response Structures
-Follow this naming convention:
-- `{OperationName}Request` with `{OperationName}RequestContent`
-- `{OperationName}Response` with `{OperationName}ResponseContent`
-
-### Required Fields Pattern:
-**MANDATORY AUDIT FIELDS**: ALL structures (including Common Structures) MUST include these audit fields:
-- `createdAt: String` - Entity creation timestamp
-- `updatedAt: String` - Entity last update timestamp (except Create operations)
-- `status: String` - Entity status (ACTIVE, INACTIVE, DELETED, etc.)
-
-**CRITICAL**: These fields are required in:
-- All ResponseContent structures (Create, Get, Update operations)
-- All Common Response structures (e.g., MovieResponse, UserResponse)
-- Any structure used for domain model generation
-
-**Create Operations:**
-- Request: Business fields only (no ID, timestamps, status)
-- Response: All fields including `{entity}Id`, `createdAt`, `status`
-
-**Get Operations:**
-- Request: Only `{entity}Id` as @httpLabel
-- Response: All fields including `{entity}Id`, `createdAt`, `updatedAt`, `status`
-
-**Update Operations:**
-- Request: `{entity}Id` as @httpLabel + optional business fields
-- Response: All fields including `{entity}Id`, `createdAt`, `updatedAt`, `status`
-
-**Delete Operations:**
-- Request: Only `{entity}Id` as @httpLabel
-- Response: `deleted: Boolean`, `message: String`
-
-**List Operations:**
-- Request: Pagination (`page`, `size`) + filter fields as @httpQuery
-- Response: Array of entities + pagination metadata
-
-**Common Response Structures:**
-- Must include `createdAt`, `updatedAt`, `status` fields
-- Used in List operations for entity arrays
-- Examples: `MovieResponse`, `UserResponse`, `ProductResponse`
-- These structures are used by the generator to create domain models
-
-**Example with Audit Fields:**
-```smithy
-structure MovieResponse {
-    @required
-    movieId: String,
-    @required
-    title: String,
-    // ... other business fields
-    @required
-    createdAt: String,
-    @required
-    updatedAt: String,
-    @required
-    status: String
-}
-```
-
-## Step 6: Add Common Structures
-Always include:
-- `{Entity}Response` structure for list operations
-- `{Entity}List` list type
-- Standard error structures: `ValidationError`, `NotFoundError`, `ConflictError`
-
-## Step 7: Validation Rules
-- Use `@required` for mandatory fields
-- Use `@httpLabel` for path parameters
-- Use `@httpQuery` for query parameters
-- Use `@httpPayload` for request/response bodies
-- Include appropriate error types for each operation
-
-## Example Request:
-"Create a Smithy service for managing a library system with books and authors"
-
-## Example Response Structure:
-```smithy
-$version: "2"
-namespace com.example.libraryservice
-
-@title("Library Service API")
-@cors(origin: "*")
-@restJson1
-@documentation("A service for managing library books and authors.")
-service LibraryService {
-    version: "2023-01-01",
-    operations: [
-        CreateBook,
-        GetBook,
-        UpdateBook,
-        DeleteBook,
-        ListBooks,
-        CreateAuthor,
-        GetAuthor,
-        UpdateAuthor,
-        DeleteAuthor,
-        ListAuthors
-    ]
-}
-
-// Book Operations
-@http(method: "POST", uri: "/books")
-operation CreateBook {
-    input: CreateBookRequest,
-    output: CreateBookResponse,
-    errors: [ValidationError, ConflictError]
-}
-// ... continue with all operations
-```
-
-## Quality Checklist:
-- [ ] All operations use correct CRUD prefixes
-- [ ] HTTP methods and URIs follow REST conventions
-- [ ] Request/Response structures are properly named
-- [ ] Required fields are marked with @required
-- [ ] Path parameters use @httpLabel
-- [ ] Query parameters use @httpQuery
-- [ ] Payloads use @httpPayload
-- [ ] Error structures are included
-- [ ] List operations include pagination
-- [ ] Common response structures are defined
-- [ ] **CRITICAL**: ALL response structures include `createdAt`, `updatedAt`, `status` fields
-- [ ] **CRITICAL**: ALL common response structures include audit fields
-- [ ] **CRITICAL**: Every structure used for domain models has audit fields
-- [ ] **CRITICAL**: No structure is missing `createdAt`, `updatedAt`, `status` fields
-
-Now, generate a complete Smithy service definition based on the user's requirements.
+This documentation will be used by code generators to create comprehensive API documentation, improve code readability, and provide context for developers using the generated services.

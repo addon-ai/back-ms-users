@@ -17,6 +17,19 @@
                     "basePackage": "com.example.userservice",
                     "mainClass": "UserServiceApplication"
                 }
+            },
+            "dependencies": {
+                "java": "21",
+                "springBoot": "3.2.5",
+                "mapstruct": "1.5.5.Final",
+                "lombok": "1.18.30",
+                "springdoc": "2.1.0",
+                "h2": "2.2.224",
+                "postgresql": "42.7.3",
+                "mavenCompiler": "3.11.0",
+                "mavenSurefire": "3.2.5",
+                "lombokMapstructBinding": "0.2.0",
+                "jacoco": "0.8.11"
             }
         },
         "database": {
@@ -42,6 +55,17 @@
                     "ext": 8080
                 }
             }
+        },
+        "devops": {
+            "ci": {
+                "javaVersion": "21",
+                "javaDistribution": "temurin",
+                "artifactName": "user-service-jar",
+                "artifactRetentionDays": 30,
+                "mavenOpts": "-Xmx1024m",
+                "coverageThreshold": "85",
+                "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-users"
+            }
         }
     },
     {
@@ -62,6 +86,19 @@
                     "basePackage": "com.example.movieservice",
                     "mainClass": "MovieServiceApplication"
                 }
+            },
+            "dependencies": {
+                "java": "21",
+                "springBoot": "3.2.5",
+                "mapstruct": "1.5.5.Final",
+                "lombok": "1.18.30",
+                "springdoc": "2.1.0",
+                "h2": "2.2.224",
+                "postgresql": "42.7.3",
+                "mavenCompiler": "3.11.0",
+                "mavenSurefire": "3.2.5",
+                "lombokMapstructBinding": "0.2.0",
+                "jacoco": "0.8.11"
             }
         },
         "database": {
@@ -86,6 +123,17 @@
                     "int": 8081,
                     "ext": 8081
                 }
+            }
+        },
+        "devops": {
+            "ci": {
+                "javaVersion": "21",
+                "javaDistribution": "temurin",
+                "artifactName": "movie-service-jar",
+                "artifactRetentionDays": 30,
+                "mavenOpts": "-Xmx1024m",
+                "coverageThreshold": "85",
+                "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-movies"
             }
         }
     }

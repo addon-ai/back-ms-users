@@ -1,0 +1,338 @@
+package {{packageName}};
+
+import {{basePackage}}.domain.ports.output.{{entityName}}RepositoryPort;
+import {{basePackage}}.application.mapper.{{entityName}}Mapper;
+{{#dtoImports}}
+import {{.}};
+{{/dtoImports}}
+import {{basePackage}}.domain.model.{{entityName}};
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.mapstruct.factory.Mappers;
+
+import java.util.Optional;
+import java.util.List;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
+
+import {{basePackage}}.infrastructure.config.exceptions.NotFoundException;
+
+/**
+ * Unit tests for {{classname}}.
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class {{classname}}Test {
+
+    @Mock
+    private {{entityName}}RepositoryPort {{entityVarName}}RepositoryPort;
+
+    @Spy
+    private {{entityName}}Mapper {{entityVarName}}Mapper = Mappers.getMapper({{entityName}}Mapper.class);
+
+    @InjectMocks
+    private {{classname}} {{entityVarName}}Service;
+
+{{#hasCreate}}
+    @Test
+    void create_ShouldReturnResponse_WhenValidRequest() {
+        // Given
+        Create{{entityName}}RequestContent request = Create{{entityName}}RequestContent.builder()
+            .build();
+        {{entityName}} domain{{entityName}} = {{entityName}}.builder()
+            .build();
+        {{entityName}} saved{{entityName}} = {{entityName}}.builder()
+            .build();
+        Create{{entityName}}ResponseContent expectedResponse = Create{{entityName}}ResponseContent.builder()
+            .build();
+
+        when({{entityVarName}}Mapper.fromCreateRequest(request)).thenReturn(domain{{entityName}});
+        when({{entityVarName}}RepositoryPort.save(domain{{entityName}})).thenReturn(saved{{entityName}});
+        when({{entityVarName}}Mapper.toCreateResponse(saved{{entityName}})).thenReturn(expectedResponse);
+
+        // When
+        Create{{entityName}}ResponseContent result = {{entityVarName}}Service.create(request);
+
+        // Then
+        assertThat(result).isEqualTo(expectedResponse);
+        verify({{entityVarName}}RepositoryPort).save(domain{{entityName}});
+    }
+
+    @Test
+    void create_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        Create{{entityName}}RequestContent request = Create{{entityName}}RequestContent.builder()
+            .build();
+        {{entityName}} domain{{entityName}} = {{entityName}}.builder()
+            .build();
+        RuntimeException repositoryException = new RuntimeException("Database error");
+
+        when({{entityVarName}}Mapper.fromCreateRequest(request)).thenReturn(domain{{entityName}});
+        when({{entityVarName}}RepositoryPort.save(domain{{entityName}})).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.create(request))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+{{/hasCreate}}
+
+{{#hasGet}}
+    @Test
+    void get_ShouldReturnResponse_WhenEntityExists() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        {{entityName}} domain{{entityName}} = {{entityName}}.builder()
+            .build();
+        Get{{entityName}}ResponseContent expectedResponse = Get{{entityName}}ResponseContent.builder()
+            .build();
+
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.of(domain{{entityName}}));
+        when({{entityVarName}}Mapper.toGetResponse(domain{{entityName}})).thenReturn(expectedResponse);
+
+        // When
+        Get{{entityName}}ResponseContent result = {{entityVarName}}Service.get({{entityVarName}}Id);
+
+        // Then
+        assertThat(result).isEqualTo(expectedResponse);
+        verify({{entityVarName}}RepositoryPort).findById({{entityVarName}}Id);
+    }
+
+    @Test
+    void get_ShouldThrowNotFoundException_WhenEntityNotFound() {
+        // Given
+        String {{entityVarName}}Id = "non-existent-id";
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.get({{entityVarName}}Id))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("{{entityName}} not found");
+    }
+
+    @Test
+    void get_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.get({{entityVarName}}Id))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+{{/hasGet}}
+
+{{#hasUpdate}}
+    @Test
+    void update_ShouldReturnResponse_WhenValidRequest() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+            .build();
+        {{entityName}} existing{{entityName}} = {{entityName}}.builder()
+            .build();
+        {{entityName}} updated{{entityName}} = {{entityName}}.builder()
+            .build();
+        Update{{entityName}}ResponseContent expectedResponse = Update{{entityName}}ResponseContent.builder()
+            .build();
+
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.of(existing{{entityName}}));
+        // Use void method for updating existing entity
+        // The updateEntityFromRequest method modifies existing{{entityName}} in place
+        when({{entityVarName}}RepositoryPort.save(any({{entityName}}.class))).thenReturn(updated{{entityName}});
+        when({{entityVarName}}Mapper.toUpdateResponse(any({{entityName}}.class))).thenReturn(expectedResponse);
+
+        // When
+        Update{{entityName}}ResponseContent result = {{entityVarName}}Service.update({{entityVarName}}Id, request);
+
+        // Then
+        assertThat(result).isEqualTo(expectedResponse);
+        verify({{entityVarName}}RepositoryPort).save(any({{entityName}}.class));
+    }
+
+    @Test
+    void update_ShouldThrowNotFoundException_WhenEntityNotFound() {
+        // Given
+        String {{entityVarName}}Id = "non-existent-id";
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+            .build();
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.update({{entityVarName}}Id, request))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("{{entityName}} not found");
+    }
+
+    @Test
+    void update_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+            .build();
+        {{entityName}} existing{{entityName}} = {{entityName}}.builder()
+            .build();
+        RuntimeException repositoryException = new RuntimeException("Database error");
+
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.of(existing{{entityName}}));
+        when({{entityVarName}}RepositoryPort.save(any({{entityName}}.class))).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.update({{entityVarName}}Id, request))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+{{/hasUpdate}}
+
+{{#hasDelete}}
+    @Test
+    void delete_ShouldReturnResponse_WhenEntityExists() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        {{entityName}} domain{{entityName}} = {{entityName}}.builder()
+            .build();
+        Delete{{entityName}}ResponseContent expectedResponse = Delete{{entityName}}ResponseContent.builder()
+            .deleted(true)
+            .message("{{entityName}} deleted successfully")
+            .build();
+
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.of(domain{{entityName}}));
+{{#hasDeleteDto}}
+        when({{entityVarName}}Mapper.toDeleteResponse(domain{{entityName}})).thenReturn(expectedResponse);
+{{/hasDeleteDto}}
+
+        // When
+        Delete{{entityName}}ResponseContent result = {{entityVarName}}Service.delete({{entityVarName}}Id);
+
+        // Then
+        assertThat(result).isEqualTo(expectedResponse);
+        verify({{entityVarName}}RepositoryPort).deleteById({{entityVarName}}Id);
+    }
+
+    @Test
+    void delete_ShouldThrowNotFoundException_WhenEntityNotFound() {
+        // Given
+        String {{entityVarName}}Id = "non-existent-id";
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.delete({{entityVarName}}Id))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("{{entityName}} not found");
+    }
+
+    @Test
+    void delete_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        {{entityName}} domain{{entityName}} = {{entityName}}.builder()
+            .build();
+        RuntimeException repositoryException = new RuntimeException("Database error");
+
+        when({{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)).thenReturn(Optional.of(domain{{entityName}}));
+        doThrow(repositoryException).when({{entityVarName}}RepositoryPort).deleteById({{entityVarName}}Id);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.delete({{entityVarName}}Id))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+{{/hasDelete}}
+
+{{#hasList}}
+    @Test
+    void list_ShouldReturnResponse_WhenValidRequest() {
+        // Given
+        List<{{entityName}}> {{entityVarName}}s = Collections.singletonList({{entityName}}.builder().build());
+        List{{entityName}}sResponseContent expectedResponse = List{{entityName}}sResponseContent.builder().build();
+        
+        when({{entityVarName}}RepositoryPort.findAll()).thenReturn({{entityVarName}}s);
+        when({{entityVarName}}Mapper.toListResponse({{entityVarName}}s, 1, 20)).thenReturn(expectedResponse);
+
+        // When
+        List{{entityName}}sResponseContent result = {{entityVarName}}Service.list(1, 20, null);
+
+        // Then
+        assertThat(result).isEqualTo(expectedResponse);
+        verify({{entityVarName}}RepositoryPort).findAll();
+    }
+
+    @Test
+    void list_ShouldReturnResponse_WhenSearchTermProvided() {
+        // Given
+        String searchTerm = "test search";
+        Integer page = 1;
+        Integer size = 10;
+        List<{{entityName}}> {{entityVarName}}s = Collections.singletonList({{entityName}}.builder().build());
+        List{{entityName}}sResponseContent expectedResponse = List{{entityName}}sResponseContent.builder().build();
+        
+        when({{entityVarName}}RepositoryPort.findBySearchTerm(searchTerm, page, size)).thenReturn({{entityVarName}}s);
+        when({{entityVarName}}Mapper.toListResponse({{entityVarName}}s, page, size)).thenReturn(expectedResponse);
+
+        // When
+        List{{entityName}}sResponseContent result = {{entityVarName}}Service.list(page, size, searchTerm);
+
+        // Then
+        assertThat(result).isEqualTo(expectedResponse);
+        verify({{entityVarName}}RepositoryPort).findBySearchTerm(searchTerm, page, size);
+    }
+
+    @Test
+    void list_ShouldReturnResponse_WhenNullParameters() {
+        // Given
+        List<{{entityName}}> {{entityVarName}}s = Collections.emptyList();
+        List{{entityName}}sResponseContent expectedResponse = List{{entityName}}sResponseContent.builder()
+            .{{entityVarName}}s(Collections.emptyList())
+            .page(java.math.BigDecimal.valueOf(1))
+            .size(java.math.BigDecimal.valueOf(20))
+            .total(java.math.BigDecimal.valueOf(0))
+            .totalPages(java.math.BigDecimal.valueOf(0))
+            .build();
+        
+        when({{entityVarName}}RepositoryPort.findAll()).thenReturn({{entityVarName}}s);
+        when({{entityVarName}}Mapper.toListResponse({{entityVarName}}s, 1, 20)).thenReturn(expectedResponse);
+
+        // When
+        List{{entityName}}sResponseContent result = {{entityVarName}}Service.list(null, null, null);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.get{{entityName}}s()).isNotNull().isEmpty();
+        assertThat(result.getPage()).isEqualTo(java.math.BigDecimal.valueOf(1));
+        assertThat(result.getSize()).isEqualTo(java.math.BigDecimal.valueOf(20));
+        assertThat(result.getTotal()).isEqualTo(java.math.BigDecimal.valueOf(0));
+        assertThat(result.getTotalPages()).isEqualTo(java.math.BigDecimal.valueOf(0));
+        verify({{entityVarName}}RepositoryPort).findAll();
+    }
+
+    @Test
+    void list_ShouldThrowException_WhenRepositoryFails() {
+        // Given
+        RuntimeException repositoryException = new RuntimeException("Database error");
+        when({{entityVarName}}RepositoryPort.findAll()).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> {{entityVarName}}Service.list(1, 20, null))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+    }
+{{/hasList}}
+}

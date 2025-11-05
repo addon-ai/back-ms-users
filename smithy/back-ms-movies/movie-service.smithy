@@ -3,12 +3,11 @@ $version: "2"
 namespace com.example.movieservice
 
 use aws.protocols#restJson1
-use smithy.framework#ValidationException
 
 @title("Movie Service API")
 @cors(origin: "*")
 @restJson1
-@documentation("A service for managing movie rentals.")
+@documentation("A comprehensive service for managing movie rentals with catalog and transaction processing. This service provides movie catalog management (CRUD operations), rental transaction processing, inventory tracking and availability management, late fee calculation and payment processing, and user rental history and status tracking.")
 service MovieService {
     version: "2023-01-01",
     operations: [
@@ -25,7 +24,9 @@ service MovieService {
 }
 
 // Movie Operations
+
 @http(method: "POST", uri: "/movies")
+@documentation("Creates a new movie in the rental catalog with complete information including title, director, genre, release year, duration, available copies, and rental price. Validates movie information and ensures no duplicate titles exist.")
 operation CreateMovie {
     input: CreateMovieRequest,
     output: CreateMovieResponse,
@@ -33,6 +34,7 @@ operation CreateMovie {
 }
 
 @http(method: "GET", uri: "/movies/{movieId}")
+@documentation("Retrieves a movie by its unique identifier. Returns complete movie information including availability status, rental price, and current inventory levels.")
 operation GetMovie {
     input: GetMovieRequest,
     output: GetMovieResponse,
@@ -40,6 +42,7 @@ operation GetMovie {
 }
 
 @http(method: "PUT", uri: "/movies/{movieId}")
+@documentation("Updates an existing movie's information. Allows partial updates to movie catalog information including title, director, genre, availability, and pricing. All fields are optional.")
 operation UpdateMovie {
     input: UpdateMovieRequest,
     output: UpdateMovieResponse,
@@ -47,6 +50,7 @@ operation UpdateMovie {
 }
 
 @http(method: "DELETE", uri: "/movies/{movieId}")
+@documentation("Removes a movie from the catalog. Permanently removes a movie from the rental catalog. This operation should only be performed if no active rentals exist for the movie.")
 operation DeleteMovie {
     input: DeleteMovieRequest,
     output: DeleteMovieResponse,
@@ -54,13 +58,16 @@ operation DeleteMovie {
 }
 
 @http(method: "GET", uri: "/movies")
+@documentation("Lists movies with filtering and pagination. Returns a paginated list of movies with optional filtering by genre and director. Supports pagination for efficient catalog browsing.")
 operation ListMovies {
     input: ListMoviesRequest,
     output: ListMoviesResponse
 }
 
 // Rental Operations
+
 @http(method: "POST", uri: "/rentals")
+@documentation("Creates a new movie rental transaction. Processes a new rental request by checking movie availability, calculating rental price based on duration, and creating a rental record with due date calculation. Updates movie inventory automatically.")
 operation CreateRental {
     input: CreateRentalRequest,
     output: CreateRentalResponse,
@@ -68,6 +75,7 @@ operation CreateRental {
 }
 
 @http(method: "PUT", uri: "/rentals/{rentalId}")
+@documentation("Updates a rental transaction (typically for returns). Updates rental information including return date, late fees, and status. Automatically calculates late fees based on return date and updates movie inventory when rental is returned.")
 operation UpdateRental {
     input: UpdateRentalRequest,
     output: UpdateRentalResponse,
@@ -75,6 +83,7 @@ operation UpdateRental {
 }
 
 @http(method: "GET", uri: "/rentals/{rentalId}")
+@documentation("Retrieves a rental transaction by its unique identifier. Returns complete rental information including dates, pricing, late fees, and current status.")
 operation GetRental {
     input: GetRentalRequest,
     output: GetRentalResponse,
@@ -82,6 +91,7 @@ operation GetRental {
 }
 
 @http(method: "GET", uri: "/rentals")
+@documentation("Lists rental transactions with filtering and pagination. Returns a paginated list of rentals with optional filtering by user ID and rental status. Useful for rental history and management.")
 operation ListRentals {
     input: ListRentalsRequest,
     output: ListRentalsResponse

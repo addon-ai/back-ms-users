@@ -6,15 +6,27 @@ This project generates complete Java Spring Boot applications following **Hexago
 
 ## Features
 
+### Core Generation
 - ✅ **Hexagonal Architecture Structure** with Domain, Application, and Infrastructure layers
 - ✅ **Smithy Integration** - Generates OpenAPI specs from Smithy definitions
 - ✅ **Complete Code Generation** - DTOs, Services, Controllers, Repositories, Entities
+- ✅ **Comprehensive Test Coverage** - Unit tests with 100% code coverage including edge cases
+- ✅ **Component-Based Generator** - Modular architecture with specialized generators
 - ✅ **Dependency Inversion** - All dependencies point toward the domain layer
 - ✅ **Spring Boot 3** with Jakarta EE support
 - ✅ **MapStruct** for entity transformations
 - ✅ **JPA/Hibernate** for persistence
 - ✅ **Bean Validation** with proper annotations
 - ✅ **Lombok** for boilerplate reduction
+- ✅ **Logging Utilities** with MDC support and comprehensive test coverage
+
+### Documentation Generation
+- ✅ **OpenAPI Documentation** - Generates PlantUML diagrams from OpenAPI specifications
+- ✅ **Architecture Diagrams** - Creates hexagonal architecture component diagrams
+- ✅ **Sequence Diagrams** - Generates CRUD sequence diagrams for each service
+- ✅ **Real Code Analysis** - Analyzes actual Java controller files for accurate diagrams
+- ✅ **Template-Based Diagrams** - Uses Mustache templates for consistent diagram generation
+- ✅ **Automated Pipeline** - Integrated documentation generation in code generation pipeline
 
 ## Quick Start
 
@@ -126,55 +138,99 @@ smithy --version
 
 ```
 boiler-plate-code-gen/
+├── libs/
+│   ├── pyjava-backend-codegen/         # Core code generation library
+│   │   ├── code_generator.py           # Main orchestrator
+│   │   ├── generators/                 # Component-based generators
+│   │   │   ├── dto_generator.py        # DTO generation
+│   │   │   ├── domain_generator.py     # Domain layer generation
+│   │   │   ├── application_generator.py # Application layer generation
+│   │   │   ├── infrastructure_generator.py # Infrastructure layer generation
+│   │   │   ├── test_generator.py       # Test generation
+│   │   │   └── project_generator.py    # Project structure generation
+│   │   └── templates/                  # Mustache templates for code generation
+│   ├── openapi-docs-generator/         # OpenAPI documentation generator
+│   │   ├── generators/
+│   │   │   └── puml_generator.py       # PlantUML diagram generator
+│   │   └── templates/
+│   │       ├── class_diagram.mustache  # Entity class diagrams
+│   │       └── api_diagram.mustache    # API operation diagrams
+│   └── architect-docs-generator/       # Architecture documentation generator
+│       ├── core/
+│       │   └── project_analyzer.py     # Java project analyzer
+│       ├── generators/
+│       │   ├── component_diagram_generator.py # Component diagrams
+│       │   └── sequence_diagram_generator.py  # Sequence diagrams
+│       └── templates/
+│           ├── component_diagram.mustache     # Hexagonal architecture diagrams
+│           └── sequence_diagram.mustache      # CRUD sequence diagrams
 ├── scripts/
-│   ├── hexagonal-architecture-generator.py    # Main generator script
+│   ├── code-gen-pipeline.sh            # Complete generation pipeline
+│   ├── hexagonal-architecture-generator.py # Legacy generator script
 │   └── run-hexagonal-architecture-generator.sh # Execution script
-├── templates/
-│   └── java/
-│       ├── pojo.mustache                  # DTOs and Domain Models
-│       ├── apiService.mustache            # Application Services
-│       ├── apiMapper.mustache             # MapStruct Mappers
-│       ├── interface.mustache             # Use Cases and Ports
-│       ├── apiController.mustache         # REST Controllers
-│       ├── apiRepository.mustache         # JPA Repositories & Adapters
-│       ├── apiEntity.mustache             # JPA Entities
-│       ├── Application.mustache           # Main Spring Boot Class
-│       ├── Configuration.mustache         # Spring Configuration
-│       ├── pom.xml.mustache              # Maven POM
-│       ├── application.properties.mustache # Spring Properties
-│       ├── README.md.mustache            # Project README
-│       └── template-config.json          # Generator Configuration
 ├── smithy/
-│   └── user-service.smithy               # Smithy Service Definition
+│   ├── user-service.smithy             # User service definition
+│   ├── movie-service.smithy            # Movie service definition
+│   └── smithy-build.json               # Smithy build configuration
 ├── build/
-│   └── smithy/
-│       └── user_service/
-│           └── openapi/
-│               └── UserService.openapi.json # Generated OpenAPI Spec
-└── generated-project/                    # Output Directory
+│   └── smithy/                         # Generated OpenAPI specifications
+├── docs/
+│   └── puml/                           # Generated PlantUML diagrams
+│       ├── open-api/                   # OpenAPI-based diagrams
+│       └── components/                 # Architecture diagrams
+├── projects/                           # Generated Spring Boot projects
+│   ├── back-ms-users/                  # User microservice
+│   └── back-ms-movies/                 # Movie microservice
+└── generated-project/                  # Legacy output directory
 ```
 
 ## Generator Usage
 
-### Basic Usage
+### Component-Based Generator (Recommended)
 
 ```bash
-python3 scripts/hexagonal-architecture-generator.py <config_path> <templates_dir> <output_dir>
+# Using the new component-based generator
+python3 libs/pyjava-backend-codegen/code_generator.py <config_path> <templates_dir> <output_dir>
 ```
 
 ### Example
 
 ```bash
+python3 libs/pyjava-backend-codegen/code_generator.py \
+  libs/pyjava-backend-codegen/templates/template-config.json \
+  libs/pyjava-backend-codegen/templates \
+  generated-project
+```
+
+### Legacy Generator
+
+```bash
+# Using the legacy monolithic generator
 python3 scripts/hexagonal-architecture-generator.py \
   templates/java/template-config.json \
   templates/java \
   generated-project
 ```
 
-### Using the Shell Script
+### Complete Generation Pipeline (Recommended)
 
 ```bash
+# Run the complete pipeline: code generation + documentation
+./scripts/code-gen-pipeline.sh
+```
+
+### Individual Generators
+
+```bash
+# Code generation only
 ./scripts/run-hexagonal-architecture-generator.sh
+
+# OpenAPI documentation only
+python3 libs/openapi-docs-generator/generators/puml_generator.py
+
+# Architecture documentation only
+python3 libs/architect-docs-generator/generators/component_diagram_generator.py
+python3 libs/architect-docs-generator/generators/sequence_diagram_generator.py
 ```
 
 ## Generated Architecture
@@ -187,12 +243,16 @@ generated-project/
 │   ├── domain/
 │   │   ├── model/User.java                    # Pure domain entities
 │   │   └── ports/
-│   │       ├── input/CreateUserUseCase.java   # Use case interfaces
+│   │       ├── input/UserUseCase.java         # Consolidated use case interface
 │   │       └── output/UserRepositoryPort.java # Repository interfaces
 │   ├── application/
-│   │   ├── dto/CreateUserRequestContent.java  # Data transfer objects
-│   │   ├── service/CreateUserService.java     # Use case implementations
-│   │   └── mapper/UserMapper.java             # Entity mappers
+│   │   ├── dto/                               # Data transfer objects
+│   │   │   ├── CreateUserRequestContent.java
+│   │   │   ├── GetUserResponseContent.java
+│   │   │   └── ...
+│   │   ├── service/UserService.java           # Consolidated use case implementation
+│   │   ├── mapper/UserMapper.java             # Entity mappers
+│   │   └── util/LoggingUtils.java             # Logging utilities with MDC support
 │   └── infrastructure/
 │       ├── config/ApplicationConfiguration.java # Spring configuration
 │       └── adapters/
@@ -201,6 +261,12 @@ generated-project/
 │               ├── entity/UserDbo.java         # JPA entities
 │               ├── repository/JpaUserRepository.java # Spring Data repos
 │               └── adapter/UserRepositoryAdapter.java # Repository implementations
+├── src/test/java/com/example/userservice/
+│   ├── application/
+│   │   ├── service/UserServiceTest.java       # Comprehensive service tests
+│   │   └── util/LoggingUtilsTest.java         # Logging utility tests
+│   └── resources/
+│       └── logback-test.xml                   # Test logging configuration
 └── pom.xml
 ```
 
@@ -255,7 +321,36 @@ Key configuration options:
 
 ## Smithy Service Definition
 
-### 1. Operation Naming Conventions
+### 1. Project Structure Requirements
+
+**IMPORTANT**: Each Smithy service file must have a corresponding projection in `smithy-build.json` to generate the OpenAPI specification.
+
+#### Required Configuration:
+```json
+{
+  "version": "1.0",
+  "projections": {
+    "user_service": {
+      "plugins": {
+        "openapi": {
+          "service": "com.example.userservice#UserService",
+          "protocol": "aws.protocols#restJson1"
+        }
+      }
+    },
+    "movie_service": {
+      "plugins": {
+        "openapi": {
+          "service": "com.example.movieservice#MovieService",
+          "protocol": "aws.protocols#restJson1"
+        }
+      }
+    }
+  }
+}
+```
+
+### 2. Operation Naming Conventions
 
 **IMPORTANT**: The generator expects operations to follow specific CRUD prefixes for proper code generation:
 
@@ -290,7 +385,7 @@ operations: [
 ]
 ```
 
-### 2. Define Your Service in Smithy
+### 3. Define Your Service in Smithy
 
 Create or modify `smithy/user-service.smithy`:
 
@@ -396,8 +491,9 @@ public class UserController {
 }
 ```
 
-## Generated Dependencies
+## Generated Artifacts
 
+### Code Artifacts
 The generated `pom.xml` includes:
 - Spring Boot 3.x (Web, Data JPA, Validation)
 - Jakarta EE APIs
@@ -405,6 +501,16 @@ The generated `pom.xml` includes:
 - Lombok for boilerplate reduction
 - H2/PostgreSQL for database
 - JUnit 5 for testing
+- AssertJ for fluent assertions
+- Mockito for mocking
+- Logback for logging with test configuration
+
+### Documentation Artifacts
+Generated in `docs/puml/`:
+- **OpenAPI Diagrams** (`open-api/`) - Entity class diagrams and API operation diagrams
+- **Component Diagrams** (`components/`) - Hexagonal architecture diagrams showing layer relationships
+- **Sequence Diagrams** (`components/`) - CRUD operation flows for each service
+- **PlantUML Format** - All diagrams in `.puml` format for easy rendering and version control
 
 ## API Endpoints
 
@@ -427,12 +533,51 @@ The generator ensures:
 
 ## Development Workflow
 
-1. **Define Service**: Create/modify Smithy service definition
-2. **Generate Code**: Run the generator script
-3. **Implement Business Logic**: Add specific business rules in services
-4. **Add Tests**: Create unit and integration tests
-5. **Configure Database**: Update `application.properties` for your database
-6. **Deploy**: Build and deploy the Spring Boot application
+1. **Define Service**: Create/modify Smithy service definition with proper @documentation traits
+2. **Generate Everything**: Run the complete pipeline `./scripts/code-gen-pipeline.sh`
+   - Generates Spring Boot projects
+   - Creates OpenAPI specifications
+   - Generates architecture diagrams
+   - Creates sequence diagrams
+3. **Review Documentation**: Check generated PlantUML diagrams in `docs/puml/`
+4. **Implement Business Logic**: Add specific business rules in services
+5. **Add Tests**: Create unit and integration tests
+6. **Configure Database**: Update `application.properties` for your database
+7. **Deploy**: Build and deploy the Spring Boot application
+
+## Component Architecture
+
+The generator uses a modular component-based architecture with three main libraries:
+
+### Code Generation Components (`libs/pyjava-backend-codegen/`)
+
+1. **DTOGenerator** (`dto_generator.py`) - Generates data transfer objects
+2. **DomainGenerator** (`domain_generator.py`) - Creates domain models and ports
+3. **ApplicationGenerator** (`application_generator.py`) - Builds application services and mappers
+4. **InfrastructureGenerator** (`infrastructure_generator.py`) - Creates controllers and adapters
+5. **TestGenerator** (`test_generator.py`) - Generates comprehensive test suites
+6. **ProjectGenerator** (`project_generator.py`) - Sets up project structure and configuration
+
+### Documentation Generation Components
+
+#### OpenAPI Documentation (`libs/openapi-docs-generator/`)
+- **PumlGenerator** - Generates PlantUML diagrams from OpenAPI specifications
+- **Entity Classification** - Separates domain entities from DTOs
+- **API Operation Diagrams** - Creates visual representations of REST endpoints
+
+#### Architecture Documentation (`libs/architect-docs-generator/`)
+- **ProjectAnalyzer** - Analyzes Java project structure and extracts metadata
+- **ComponentDiagramGenerator** - Creates hexagonal architecture diagrams
+- **SequenceDiagramGenerator** - Generates CRUD sequence diagrams from actual controller code
+- **Real Code Analysis** - Extracts method signatures and parameters from Java files
+
+### Test Coverage Features
+
+- **100% Code Coverage** - All generated code includes comprehensive tests
+- **Edge Case Testing** - Tests for null parameters, exceptions, and error conditions
+- **Functional Testing** - LoggingUtils tests use functional approach with assertDoesNotThrow()
+- **MDC Testing** - Complete coverage of logging conditional branches
+- **Repository Testing** - Proper mocking and verification of repository interactions
 
 ## Customization
 
@@ -443,23 +588,20 @@ The generator ensures:
 
 ### Adding New Entities
 
-Modify the `entities` list in the `generate_complete_project()` method:
+Modify the `entities` list in the component generators:
 
 ```python
 entities = ["User", "Product", "Order"]
 ```
 
-### Adding New Operations
-
-Modify the `operations` list:
-
-```python
-operations = ["CreateUser", "GetUser", "UpdateUser", "DeleteUser", "SearchUsers"]
-```
-
 ### Modifying Templates
-1. Edit Mustache templates in `templates/java/`
+1. Edit Mustache templates in `libs/pyjava-backend-codegen/templates/`
 2. Regenerate project to apply changes
+
+### Extending Test Coverage
+1. Modify test templates to add new test scenarios
+2. Update `serviceTest.mustache` for additional edge cases
+3. Enhance `LoggingUtilsTest.mustache` for new logging patterns
 
 ### Extending Entities
 1. Add fields to Smithy structures
@@ -504,12 +646,24 @@ operations = ["CreateUser", "GetUser", "UpdateUser", "DeleteUser", "SearchUsers"
 
 The generator can be extended to:
 
-- Parse OpenAPI specifications directly
-- Generate test classes
-- Add more hexagonal patterns
+### Code Generation Extensions
 - Support different frameworks (Quarkus, Micronaut)
-- Generate documentation
 - Add more adapter types (messaging, external APIs)
+- Generate integration tests
+- Add more hexagonal patterns
+
+### Documentation Extensions
+- Generate API documentation in other formats (Swagger UI, Postman collections)
+- Create deployment diagrams
+- Generate database schema diagrams
+- Add interactive diagram features
+- Support other diagram formats (Mermaid, Draw.io)
+
+### Pipeline Extensions
+- Add code quality checks
+- Integrate with CI/CD pipelines
+- Generate project templates for different IDEs
+- Add Docker containerization
 
 ## Contributing
 

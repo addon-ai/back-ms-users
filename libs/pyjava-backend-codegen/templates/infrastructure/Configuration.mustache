@@ -1,0 +1,69 @@
+package {{packageName}};
+
+{{#entities}}
+import {{basePackage}}.domain.ports.input.{{entityName}}UseCase;
+import {{basePackage}}.domain.ports.output.{{entityName}}RepositoryPort;
+import {{basePackage}}.application.service.{{entityName}}Service;
+import {{basePackage}}.application.mapper.{{entityName}}Mapper;
+import {{basePackage}}.infrastructure.adapters.output.persistence.adapter.{{entityName}}RepositoryAdapter;
+import {{basePackage}}.infrastructure.adapters.output.persistence.repository.Jpa{{entityName}}Repository;
+{{/entities}}
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * Spring configuration class for application beans.
+ * <p>
+ * This configuration class defines beans required by the application,
+ * including security components like password encoders and MapStruct mappers.
+ * It serves as the infrastructure configuration in Clean Architecture.
+ * </p>
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@Configuration
+@Import({OpenApiConfiguration.class})
+public class {{classname}} {
+
+    /**
+     * Configures the password encoder bean for security operations.
+     * 
+     * @return BCryptPasswordEncoder instance for password hashing
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+{{#entities}}
+    /**
+     * Configures the {{entityName}} use case implementation.
+     * 
+     * @param {{entityVarName}}RepositoryPort the repository port
+     * @param {{entityVarName}}Mapper the mapper
+     * @return {{entityName}}UseCase implementation
+     */
+    @Bean
+    public {{entityName}}UseCase {{entityVarName}}UseCase({{entityName}}RepositoryPort {{entityVarName}}RepositoryPort, {{entityName}}Mapper {{entityVarName}}Mapper) {
+        return new {{entityName}}Service({{entityVarName}}RepositoryPort, {{entityVarName}}Mapper);
+    }
+
+    /**
+     * Configures the {{entityName}} repository port implementation.
+     * 
+     * @param jpa{{entityName}}Repository the JPA repository
+     * @param {{entityVarName}}Mapper the mapper
+     * @return {{entityName}}RepositoryPort implementation
+     */
+    @Bean
+    public {{entityName}}RepositoryPort {{entityVarName}}RepositoryPort(Jpa{{entityName}}Repository jpa{{entityName}}Repository, {{entityName}}Mapper {{entityVarName}}Mapper) {
+        return new {{entityName}}RepositoryAdapter(jpa{{entityName}}Repository, {{entityVarName}}Mapper);
+    }
+
+{{/entities}}
+}
