@@ -58,24 +58,34 @@ def main():
         logger.info("Config: libs/config/params-webflux.json (array of project configurations)")
         sys.exit(0)
     
-    config_path = "libs/config/params-webflux.json"
+    config_path = "libs/config/params.json"
     templates_dir = sys.argv[1] if len(sys.argv) > 1 else "libs/pyjava-webflux-backend-codegen/templates"
     
     try:
         # Load all project configurations
-        projects_config = ConfigLoader.load_projects_config(config_path)
+        all_projects_config = ConfigLoader.load_projects_config(config_path)
         
-        logger.info(f"Found {len(projects_config)} WebFlux project(s) to generate...")
+        # Filter only WebFlux projects
+        webflux_projects = [
+            project for project in all_projects_config 
+            if project['project']['general'].get('type') == 'springWebflux'
+        ]
+        
+        if not webflux_projects:
+            logger.info("No WebFlux projects found in configuration")
+            return
+        
+        logger.info(f"Found {len(webflux_projects)} WebFlux project(s) to generate...")
         
         # Generate each WebFlux project
-        for i, project_config in enumerate(projects_config, 1):
+        for i, project_config in enumerate(webflux_projects, 1):
             project_name = project_config['project']['general']['name']
-            logger.info(f"[{i}/{len(projects_config)}] Generating WebFlux project: {project_name}")
+            logger.info(f"[{i}/{len(webflux_projects)}] Generating WebFlux project: {project_name}")
             
             generator = CodeGenerator(config_path, templates_dir, project_config)
             generator.generate_complete_project()
             
-        logger.info(f"✅ Successfully generated {len(projects_config)} WebFlux project(s)!")
+        logger.info(f"✅ Successfully generated {len(webflux_projects)} WebFlux project(s)!")
         
     except Exception as e:
         logger.error(f"❌ Error generating WebFlux projects: {e}")
