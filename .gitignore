@@ -437,5 +437,6 @@ gradle-app.setting
 
 # Generated content
 docs/
-projects/
+build/
 schemas/
+target/

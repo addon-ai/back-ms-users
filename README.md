@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project generates complete Java Spring Boot applications following **Hexagonal Architecture (Ports and Adapters) principles** from Smithy service definitions. It automatically creates a fully functional backend with proper layer separation, dependency inversion, and **GitHub integration**.
+This project generates complete Java Spring Boot applications following **Hexagonal Architecture (Ports and Adapters) principles** from Smithy service definitions. It automatically creates a fully functional backend with proper layer separation, dependency inversion, **GitHub integration**, and **automated pipeline branch management**.
 
 ## Features
 
@@ -19,6 +19,8 @@ This project generates complete Java Spring Boot applications following **Hexago
 - ✅ **Bean Validation** with proper annotations
 - ✅ **Lombok** for boilerplate reduction
 - ✅ **Logging Utilities** with MDC support and comprehensive test coverage
+- ✅ **CI/CD Workflows** - Automated GitHub Actions with parameterized configuration
+- ✅ **Project-Specific Configuration** - Each project uses its own configuration from params.json
 
 ### Documentation Generation
 - ✅ **OpenAPI Documentation** - Generates PlantUML diagrams from OpenAPI specifications
@@ -29,12 +31,20 @@ This project generates complete Java Spring Boot applications following **Hexago
 - ✅ **Automated Pipeline** - Integrated documentation generation in code generation pipeline
 
 ### GitHub Integration
-- ✅ **Repository Management** - Automatically creates GitHub repositories for generated projects
+- ✅ **Repository Management** - Automatically creates private GitHub repositories for generated projects
 - ✅ **Branch Management** - Creates develop, test, staging, and main branches
 - ✅ **Git History Preservation** - Maintains git history when updating existing projects
 - ✅ **Automatic Commits** - Commits and pushes changes to feature branches
 - ✅ **Multi-Project Support** - Handles multiple projects in the projects directory
 - ✅ **Smart Synchronization** - Detects existing repositories and handles updates appropriately
+- ✅ **Project-Specific Configuration** - Each project uses its own GitHub settings from params.json
+
+### Pipeline Branch Management
+- ✅ **Automated Branch Creation** - Creates feature branches for each pipeline execution
+- ✅ **Branch Limit Management** - Maintains maximum of 10 pipeline branches
+- ✅ **Automatic Cleanup** - Removes oldest branches when limit is reached
+- ✅ **Smart Commits** - Commits changes with Smithy repository names in message
+- ✅ **Configurable Settings** - Branch naming and limits configurable via JSON
 
 ## Quick Start
 
@@ -154,23 +164,78 @@ pip3 install pystache requests
 boiler-plate-code-gen/
 ├── libs/
 │   ├── pyjava-backend-codegen/         # Core code generation library
-│   ├── openapi-docs-generator/         # OpenAPI documentation generator
+│   ├── pyopenapi-docs-generator/       # OpenAPI documentation generator
 │   ├── pyarchitect-docs-generator/     # Architecture documentation generator
 │   ├── pygithub-integration/           # GitHub integration library
 │   │   ├── core/
 │   │   │   ├── github_client.py        # GitHub API client
 │   │   │   └── git_manager.py          # Git operations manager
-│   │   └── generators/
-│   │       └── project_sync_generator.py # Project synchronization
+│   │   ├── generators/
+│   │   │   └── project_sync_generator.py # Project synchronization
+│   │   └── .git-backups/               # Git history backups
 │   └── config/
-│       ├── params.json                 # Project configuration
-│       └── github-config.json          # GitHub integration settings
+│       └── params.json                 # Complete project configuration
 ├── scripts/
-│   └── code-gen-pipeline.sh            # Complete generation pipeline
+│   ├── code-gen-pipeline.sh            # Complete generation pipeline
+│   ├── branch_manager.py               # Pipeline branch management
+│   └── pipeline-config.json            # Pipeline configuration
 ├── projects/                           # Generated Spring Boot projects
 ├── docs/puml/                          # Generated documentation
 └── README.md
 ```
+
+## Libraries Documentation
+
+### Core Libraries
+
+#### `pyjava-backend-codegen/`
+**Purpose**: Core code generation engine for Spring Boot applications
+- **Components**: Generates DTOs, Services, Controllers, Repositories, Entities
+- **Architecture**: Implements Hexagonal Architecture patterns
+- **Templates**: Uses Mustache templates for consistent code generation
+- **Features**: Complete CRUD operations, validation, logging, CI/CD workflows
+- **Output**: Fully functional Spring Boot projects with tests
+
+#### `pyopenapi-docs-generator/`
+**Purpose**: Generates documentation from OpenAPI specifications
+- **Formats**: PlantUML diagrams, Markdown, and TXT documentation
+- **Analysis**: Processes OpenAPI specs from Smithy build outputs
+- **Categorization**: Separates entities from DTOs based on naming patterns
+- **Output**: Comprehensive API documentation in multiple formats
+
+#### `pyarchitect-docs-generator/`
+**Purpose**: Creates architectural diagrams from actual Java code
+- **Component Diagrams**: Hexagonal architecture visualization
+- **Sequence Diagrams**: CRUD operation flows for each service
+- **Code Analysis**: Analyzes real Java controller files for accuracy
+- **Templates**: Uses Mustache templates for consistent diagram generation
+- **Output**: PlantUML diagrams showing system architecture and flows
+
+#### `pygithub-integration/`
+**Purpose**: Manages GitHub repositories and Git operations
+- **Repository Management**: Creates and updates GitHub repositories
+- **Branch Management**: Handles multiple branch strategies
+- **History Preservation**: Maintains Git history during updates
+- **Project Synchronization**: Syncs multiple projects with their repositories
+- **Configuration**: Uses project-specific settings from params.json
+
+### Utility Scripts
+
+#### `scripts/branch_manager.py`
+**Purpose**: Manages pipeline execution branches
+- **Branch Creation**: Creates timestamped feature branches
+- **Limit Management**: Maintains maximum branch count (configurable)
+- **Cleanup**: Removes oldest branches automatically
+- **Smart Commits**: Commits with Smithy repository names
+- **Configuration**: Configurable via pipeline-config.json
+
+#### `scripts/code-gen-pipeline.sh`
+**Purpose**: Orchestrates the complete generation pipeline
+- **Branch Management**: Creates pipeline branches automatically
+- **Code Generation**: Executes all generation steps in sequence
+- **Documentation**: Generates all documentation formats
+- **GitHub Integration**: Syncs with repositories
+- **Commit Management**: Commits all changes with descriptive messages
 
 ## GitHub Integration Usage
 
@@ -181,13 +246,19 @@ export GITHUB_TOKEN="your_token"
 ./scripts/code-gen-pipeline.sh
 ```
 
-### Manual Integration
+### Manual Operations
 ```bash
-# Sync all projects
+# Sync all projects with GitHub
 python3 libs/pygithub-integration.py
 
 # Sync specific project
 python3 libs/pygithub-integration.py project-name
+
+# Create pipeline branch only
+python3 scripts/branch_manager.py
+
+# Commit pipeline changes only
+python3 scripts/branch_manager.py --commit
 ```
 
 ### GitHub Integration Features
@@ -227,63 +298,93 @@ projects/[project-name]/
 
 ## Configuration
 
-### GitHub Configuration (`libs/config/github-config.json`)
-```json
-{
-  "github": {
-    "defaultBranches": ["develop", "test", "staging", "main"],
-    "repositorySettings": {
-      "private": false,
-      "autoInit": false
-    }
-  }
-}
-```
-
 ### Project Configuration (`libs/config/params.json`)
+Complete configuration for each project including GitHub settings:
 ```json
 [
   {
     "project": {
       "general": {
         "name": "back-ms-users",
-        "basePackage": "com.example.userservice"
+        "description": "Microservice for users management",
+        "version": "1.0.0"
+      },
+      "params": {
+        "basePackage": "com.example.userservice",
+        "mainClass": "UserServiceApplication"
+      }
+    },
+    "devops": {
+      "ci": {
+        "javaVersion": "21",
+        "coverageThreshold": "85"
+      },
+      "github": {
+        "organization": "addon-ai",
+        "repositorySettings": {
+          "private": true,
+          "description": "Microservice with Hexagonal Architecture"
+        },
+        "defaultBranches": ["develop", "test", "staging", "main"],
+        "gitConfig": {
+          "user.name": "Your Name",
+          "user.email": "your.email@example.com"
+        }
       }
     }
   }
 ]
 ```
 
-## Development Workflow with GitHub Integration
+### Pipeline Configuration (`scripts/pipeline-config.json`)
+Branch management settings:
+```json
+{
+  "branchManagement": {
+    "branchPrefix": "feature/project_generation",
+    "maxBranches": 10,
+    "dateFormat": "%Y%m%d_%H%M%S"
+  }
+}
+```
+
+## Development Workflow
 
 1. **Define Service**: Create/modify Smithy service definition
 2. **Generate Everything**: Run `./scripts/code-gen-pipeline.sh`
-   - Generates Spring Boot projects
-   - Creates documentation and diagrams
-   - Synchronizes with GitHub repositories
-3. **Review Changes**: Check GitHub repositories for:
-   - New repositories (if created)
-   - Feature branches with updates (if existing)
-4. **Create Pull Requests**: Review and merge feature branches
-5. **Deploy**: Use CI/CD workflows in generated repositories
+   - Creates new pipeline branch automatically
+   - Generates Spring Boot projects with Hexagonal Architecture
+   - Creates comprehensive documentation and diagrams
+   - Synchronizes with private GitHub repositories
+   - Commits all changes with Smithy repository names
+3. **Review Changes**: Check pipeline branch for:
+   - Generated code and documentation
+   - Updated GitHub repositories
+   - Automatic commit with descriptive message
+4. **Merge Pipeline Branch**: Review and merge pipeline branch to main
+5. **Deploy**: Use generated CI/CD workflows in repositories
 
-## GitHub Integration Components
+## Key Components
 
-### GitHubClient (`libs/pygithub-integration/core/github_client.py`)
-- Repository existence checking
-- Repository creation
-- User authentication
+### GitHub Integration
+- **GitHubClient**: GitHub API operations, repository management
+- **GitManager**: Git operations, SSH configuration, branch management
+- **ProjectSyncGenerator**: Multi-project synchronization with history preservation
 
-### GitManager (`libs/pygithub-integration/core/git_manager.py`)
-- Git repository initialization
-- Branch creation and management
-- Commit and push operations
-- Git history backup/restore
+### Code Generation
+- **CodeGenerator**: Orchestrates complete project generation
+- **Template System**: Mustache-based templates for consistent output
+- **Component Generators**: Specialized generators for each architecture layer
 
-### ProjectSyncGenerator (`libs/pygithub-integration/generators/project_sync_generator.py`)
-- Multi-project synchronization
-- Smart repository detection
-- Code regeneration with history preservation
+### Documentation Generation
+- **OpenAPI Processor**: Converts Smithy specs to documentation
+- **Architecture Analyzer**: Analyzes Java code for diagram generation
+- **PlantUML Generator**: Creates visual architecture diagrams
+
+### Pipeline Management
+- **BranchManager**: Automated branch lifecycle management
+- **Pipeline Orchestrator**: Coordinates all generation steps
+- **Configuration Manager**: Handles project-specific settings
 
 ## Troubleshooting
 
@@ -327,22 +428,31 @@ git add .
 git push --force-with-lease origin branch-name
 ```
 
+## Pipeline Execution
+
+### Automatic Branch Management
+Each pipeline execution:
+1. Creates branch: `feature/project_generation_YYYYMMDD_HHMMSS`
+2. Maintains maximum 10 pipeline branches
+3. Removes oldest branch when limit reached
+4. Commits changes with Smithy repo names: `"Pipeline generation: back-ms-users, back-ms-movies"`
+
+### Generated Outputs
+- **Projects**: Complete Spring Boot applications in `projects/`
+- **Documentation**: PlantUML diagrams in `docs/puml/`
+- **Schemas**: JSON schemas and fake data in `schemas/`
+- **GitHub Repos**: Private repositories with CI/CD workflows
+- **Git History**: Preserved across regenerations
+
 ## Extension Points
 
-The GitHub integration can be extended to:
-- Support other Git providers (GitLab, Bitbucket)
-- Add pull request automation
-- Integrate with CI/CD platforms
+The system can be extended to:
+- Support additional architecture patterns
+- Add more documentation formats
+- Integrate with other Git providers
+- Support custom pipeline steps
 - Add deployment automation
-- Support custom branch strategies
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Add/modify GitHub integration components
-4. Test with sample projects
-5. Submit pull request
+- Support additional programming languages
 
 ## License
 

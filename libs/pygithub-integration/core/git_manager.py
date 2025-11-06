@@ -12,11 +12,15 @@ class GitManager:
         self.config = self._load_github_config()
     
     def _load_github_config(self) -> Dict:
-        """Load GitHub configuration from config file"""
-        config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'github-config.json')
+        """Load GitHub configuration from params.json"""
+        config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'params.json')
         try:
             with open(config_path, 'r') as f:
-                return json.load(f)
+                params = json.load(f)
+                # Return the first project's devops config as default
+                if params and len(params) > 0:
+                    return params[0].get('devops', {})
+                return {}
         except FileNotFoundError:
             return {}
     
@@ -43,6 +47,11 @@ class GitManager:
     
     def init_repository(self, repo_name: str):
         """Initialize git repository with config and SSH remote"""
+        # Prevent execution in boiler-plate-code-gen repository
+        if 'boiler-plate-code-gen' in self.project_path:
+            print(f"Skipping git init for boiler-plate-code-gen repository: {self.project_path}")
+            return
+            
         os.chdir(self.project_path)
         
         # Set default branch to main globally to avoid master warning
@@ -70,6 +79,11 @@ class GitManager:
     
     def initial_commit_and_push(self, commit_message: str = "Initial commit: Generated Spring Boot project"):
         """Add, commit and push initial changes to main branch"""
+        # Prevent execution in boiler-plate-code-gen repository
+        if 'boiler-plate-code-gen' in self.project_path:
+            print(f"Skipping initial commit for boiler-plate-code-gen repository: {self.project_path}")
+            return
+            
         os.chdir(self.project_path)
         subprocess.run(['git', 'add', '.', '--force'], check=True)
         subprocess.run(['git', 'commit', '-m', commit_message], check=True)
@@ -77,6 +91,11 @@ class GitManager:
     
     def create_branches(self, branches: List[str]):
         """Create and push branches"""
+        # Prevent execution in boiler-plate-code-gen repository
+        if 'boiler-plate-code-gen' in self.project_path:
+            print(f"Skipping branch creation for boiler-plate-code-gen repository: {self.project_path}")
+            return
+            
         os.chdir(self.project_path)
         for branch in branches:
             subprocess.run(['git', 'checkout', '-b', branch], check=True)
@@ -85,6 +104,11 @@ class GitManager:
     
     def commit_and_push(self, branch_name: str, commit_message: str):
         """Add, commit and push changes"""
+        # Prevent execution in boiler-plate-code-gen repository
+        if 'boiler-plate-code-gen' in self.project_path:
+            print(f"Skipping git operations for boiler-plate-code-gen repository: {self.project_path}")
+            return
+            
         os.chdir(self.project_path)
         subprocess.run(['git', 'checkout', '-b', branch_name], check=True)
         subprocess.run(['git', 'add', '.', '--force'], check=True)

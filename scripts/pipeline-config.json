@@ -1,0 +1,7 @@
+{
+  "branchManagement": {
+    "branchPrefix": "feature/project_generation",
+    "maxBranches": 10,
+    "dateFormat": "%Y%m%d_%H%M%S"
+  }
+}

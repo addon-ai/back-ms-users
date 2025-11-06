@@ -29,6 +29,11 @@ echo "📁 Templates: $TEMPLATES_DIR"
 echo "📂 Output: $OUTPUT_DIR"
 echo ""
 
+# Create pipeline branch
+echo "🌿 Creating pipeline branch..."
+python3 "$PROJECT_ROOT/scripts/branch_manager.py"
+echo ""
+
 # Check if Python 3 is available
 echo "🔍 Checking Python 3 availability..."
 if ! command -v python3 &> /dev/null; then
@@ -120,6 +125,14 @@ else
 fi
 
 echo ""
+echo ""
+echo "💾 Committing pipeline changes..."
+echo ""
+
+# Commit all pipeline changes
+python3 "$PROJECT_ROOT/scripts/branch_manager.py" --commit
+
+echo ""
 echo "🎉 Code Generation Pipeline complete!"
 echo "📁 Generated outputs:"
 echo "   • projects/ → Java Spring Boot applications with hexagonal architecture"
@@ -129,4 +142,5 @@ echo "   • docs/puml/open-api/ → OpenAPI documentation (PlantUML, Markdown, 
 echo "   • docs/puml/components/ → Architectural component diagrams (PlantUML)"
 echo "   • docs/puml/sequences/ → CRUD sequence diagrams by service (PlantUML)"
 echo "   • GitHub repositories → Synchronized with generated projects (if GITHUB_TOKEN set)"
+echo "🌿 Pipeline branch: $(git branch --show-current)"
 echo "🚀 Ready to run: cd projects/[project-name] && mvn spring-boot:run"
