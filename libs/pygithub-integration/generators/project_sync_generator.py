@@ -71,27 +71,40 @@ class ProjectSyncGenerator:
         projects = [d for d in os.listdir(self.projects_dir) 
                    if os.path.isdir(os.path.join(self.projects_dir, d))]
         
+        if not projects:
+            print("No projects found in projects directory")
+            return
+            
         for project_name in projects:
-            print(f"Processing project: {project_name}")
+            print(f"\n--- Processing project: {project_name} ---")
             self.sync_project(project_name)
     
     def sync_project(self, project_name: str):
         """Sync a single project with GitHub"""
         project_path = os.path.join(self.projects_dir, project_name)
+        
+        if not os.path.exists(project_path):
+            print(f"Project path {project_path} does not exist")
+            return
+            
         git_manager = GitManager(project_path)
+        
+        # If no GitHub token, assume repos exist and just push
+        if not self.github_client.token:
+            print(f"No GITHUB_TOKEN set. Assuming {project_name} repo exists, pushing branches...")
+            self._update_existing_repository_no_token(project_name, project_path, git_manager)
+            return
+        
+        # Test if token is valid
+        user_info = self.github_client.get_user()
+        if not user_info:
+            print(f"Invalid GITHUB_TOKEN. Assuming {project_name} repo exists, pushing branches...")
+            self._update_existing_repository_no_token(project_name, project_path, git_manager)
+            return
         
         # Get owner from config or user info
         config = self.github_client.config
-        owner = config.get('github', {}).get('organization')
-        
-        if not owner:
-            # Fallback to user login if no organization configured
-            user_info = self.github_client.get_user()
-            owner = user_info.get('login')
-            
-            if not owner:
-                print(f"Failed to get GitHub user info")
-                return
+        owner = config.get('github', {}).get('organization', user_info.get('login'))
         
         # Check if repository exists
         repo_exists = self.github_client.repository_exists(owner, project_name)
@@ -264,6 +277,40 @@ class ProjectSyncGenerator:
             print(f"✅ Included PR template locally in {project_path}")
         except FileNotFoundError:
             print(f"⚠️ PR template file not found: {template_path}")
+    
+    def _update_existing_repository_no_token(self, project_name: str, project_path: str, git_manager: GitManager):
+        """Update existing repository without GitHub token - just push branches"""
+        import subprocess
+        os.chdir(project_path)
+        
+        try:
+            # Fix remote URL if needed
+            git_manager.fix_remote_url(project_name)
+            
+            # Get all local feature branches
+            result = subprocess.run(['git', 'branch'], capture_output=True, text=True, check=True)
+            branches = [line.strip().replace('* ', '') for line in result.stdout.split('\n') if line.strip()]
+            
+            feature_branches = [b for b in branches if b.startswith('feature/push_automatic_')]
+            
+            if not feature_branches:
+                print(f"No feature/push_automatic_ branches found in {project_name}")
+                return
+            
+            for branch in feature_branches:
+                try:
+                    subprocess.run(['git', 'checkout', branch], check=True)
+                    subprocess.run(['git', 'push', '-u', 'origin', branch], check=True)
+                    print(f"✅ Pushed {branch} to GitHub")
+                except subprocess.CalledProcessError as e:
+                    print(f"❌ Failed to push {branch}: {e}")
+            
+            # Return to main branch
+            subprocess.run(['git', 'checkout', 'main'], check=False)
+            print(f"Successfully updated {project_name}")
+                
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️ Failed to update {project_name}: {e}")
     
     def _commit_pr_template(self, git_manager, feature_branch: str):
         """Commit PR template to feature branch"""

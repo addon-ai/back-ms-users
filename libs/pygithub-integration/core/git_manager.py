@@ -183,7 +183,13 @@ class GitManager:
         # Check if there are changes to commit
         result = subprocess.run(['git', 'diff', '--cached', '--quiet'], capture_output=True)
         if result.returncode == 0:
-            print(f"No changes to commit for {self.project_name}")
+            # No changes, but still push the branch
+            print(f"No changes to commit for {self.project_name}, but pushing branch anyway")
+            try:
+                subprocess.run(['git', 'push', '-u', 'origin', feature_branch], check=True)
+                print(f"✅ Successfully pushed empty {feature_branch} to origin")
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Failed to push {feature_branch}: {e}")
             return feature_branch
         
         # Commit and push
