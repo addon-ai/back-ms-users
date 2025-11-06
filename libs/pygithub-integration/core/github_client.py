@@ -122,7 +122,7 @@ class GitHubClient:
         requests.put(github_dir_url, headers=self.headers, json=gitkeep_data)
         
         # Now create PR template
-        url = f"{self.base_url}/repos/{owner}/{repo_name}/contents/.github/pull_request_template.md"
+        url = f"{self.base_url}/repos/{owner}/{repo_name}/contents/.github/PULL_REQUEST_TEMPLATE.md"
         encoded_content = base64.b64encode(template_content.encode()).decode()
         
         data = {

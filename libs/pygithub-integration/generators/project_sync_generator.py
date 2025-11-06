@@ -133,12 +133,15 @@ class ProjectSyncGenerator:
         # Create feature branch with all project code
         feature_branch = git_manager.commit_project_code()
         
-        # Setup branch protection for default branches
+        # Include PR template locally in project AFTER code generation
+        self._include_pr_template_locally(project_path)
+        
+        # Commit PR template to feature branch
+        self._commit_pr_template(git_manager, feature_branch)
+        
+        # Setup branch protection for default branches AFTER PR template
         owner = self.github_client.config.get('github', {}).get('organization', 'addon-ai')
         self.github_client.setup_repository_protection(owner, project_name, default_branches)
-        
-        # Create PR template
-        self._setup_pr_template(owner, project_name)
         
         print(f"Successfully created {project_name} with feature branch: {feature_branch}")
     
@@ -166,17 +169,21 @@ class ProjectSyncGenerator:
                 git_manager.restore_git_history(backup_dir)
                 print("Restored git history")
             
-            # Create feature branch with all project code
-            feature_branch = git_manager.commit_project_code()
-            
-            # Setup branch protection for default branches if not already configured
             project_config = self._get_project_config(project_name)
             default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
             owner = self.github_client.config.get('github', {}).get('organization', 'addon-ai')
-            self.github_client.setup_repository_protection(owner, project_name, default_branches)
             
-            # Create PR template
-            self._setup_pr_template(owner, project_name)
+            # Create feature branch with all project code
+            feature_branch = git_manager.commit_project_code()
+            
+            # Include PR template locally in project AFTER code generation
+            self._include_pr_template_locally(project_path)
+            
+            # Commit PR template to feature branch
+            self._commit_pr_template(git_manager, feature_branch)
+            
+            # Setup branch protection for default branches AFTER PR template
+            self.github_client.setup_repository_protection(owner, project_name, default_branches)
             
             print(f"Successfully updated {project_name} in branch {feature_branch}")
             
@@ -242,6 +249,44 @@ class ProjectSyncGenerator:
                 print(f"❌ Failed to create PR template for {repo_name}")
         except FileNotFoundError:
             print(f"⚠️ PR template file not found: {template_path}")
+    
+    def _include_pr_template_locally(self, project_path: str):
+        """Include PR template as local file in project"""
+        template_path = os.path.join(self.project_root, 'libs', 'pyjava-backend-codegen', 'templates', 'project', 'pull_request_template.md')
+        try:
+            with open(template_path, 'r') as f:
+                template_content = f.read()
+            
+            # Create .github directory in project
+            github_dir = os.path.join(project_path, '.github')
+            os.makedirs(github_dir, exist_ok=True)
+            
+            # Write PR template file (GitHub requires uppercase)
+            pr_template_path = os.path.join(github_dir, 'PULL_REQUEST_TEMPLATE.md')
+            with open(pr_template_path, 'w') as f:
+                f.write(template_content)
+            
+            print(f"✅ Included PR template locally in {project_path}")
+        except FileNotFoundError:
+            print(f"⚠️ PR template file not found: {template_path}")
+    
+    def _commit_pr_template(self, git_manager, feature_branch: str):
+        """Commit PR template to feature branch"""
+        import subprocess
+        os.chdir(git_manager.project_path)
+        
+        try:
+            # Add PR template file
+            subprocess.run(['git', 'add', '.github/PULL_REQUEST_TEMPLATE.md'], check=True)
+            
+            # Check if there are changes to commit
+            result = subprocess.run(['git', 'diff', '--cached', '--quiet'], capture_output=True)
+            if result.returncode != 0:
+                subprocess.run(['git', 'commit', '-m', 'Add PR template'], check=True)
+                subprocess.run(['git', 'push', 'origin', feature_branch], check=True)
+                print(f"✅ Committed PR template to {feature_branch}")
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️ Failed to commit PR template: {e}")
 
 def main():
     """Main entry point"""
