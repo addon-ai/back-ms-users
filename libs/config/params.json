@@ -65,6 +65,31 @@
                 "mavenOpts": "-Xmx1024m",
                 "coverageThreshold": "85",
                 "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-users"
+            },
+            "github": {
+                "organization": "addon-ai",
+                "baseUrl": "https://github.com/addon-ai",
+                "apiUrl": "https://api.github.com",
+                "sshUrl": "git@github.com:addon-ai",
+                "defaultBranches": ["develop", "test", "staging", "main"],
+                "repositorySettings": {
+                    "private": true,
+                    "autoInit": false,
+                    "description": "Generated Spring Boot project with Hexagonal Architecture"
+                },
+                "gitConfig": {
+                    "user.name": "Jiliar Silgado",
+                    "user.email": "jiliar.silgado@gmail.com"
+                },
+                "commitMessages": {
+                    "initial": "Initial commit: Generated Spring Boot project",
+                    "update": "Auto-generated update",
+                    "featureBranch": "feature/push_automatic"
+                }
+            },
+            "projects": {
+                "sourceDirectory": "projects",
+                "backupDirectory": "libs/pygithub-integration/.git-backups"
             }
         }
     },
@@ -134,6 +159,31 @@
                 "mavenOpts": "-Xmx1024m",
                 "coverageThreshold": "85",
                 "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-movies"
+            },
+            "github": {
+                "organization": "addon-ai",
+                "baseUrl": "https://github.com/addon-ai",
+                "apiUrl": "https://api.github.com",
+                "sshUrl": "git@github.com:addon-ai",
+                "defaultBranches": ["develop", "test", "staging", "main"],
+                "repositorySettings": {
+                    "private": true,
+                    "autoInit": false,
+                    "description": "Generated Spring Boot project with Hexagonal Architecture"
+                },
+                "gitConfig": {
+                    "user.name": "Jiliar Silgado",
+                    "user.email": "jiliar.silgado@gmail.com"
+                },
+                "commitMessages": {
+                    "initial": "Initial commit: Generated Spring Boot project",
+                    "update": "Auto-generated update",
+                    "featureBranch": "feature/push_automatic"
+                }
+            },
+            "projects": {
+                "sourceDirectory": "projects",
+                "backupDirectory": "libs/pygithub-integration/.git-backups"
             }
         }
     }

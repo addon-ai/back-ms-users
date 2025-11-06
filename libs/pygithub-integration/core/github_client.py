@@ -14,11 +14,15 @@ class GitHubClient:
         }
     
     def _load_github_config(self) -> Dict:
-        """Load GitHub configuration from config file"""
-        config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'github-config.json')
+        """Load GitHub configuration from params.json"""
+        config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'params.json')
         try:
             with open(config_path, 'r') as f:
-                return json.load(f)
+                params = json.load(f)
+                # Return first project's devops config as default
+                if params and len(params) > 0:
+                    return params[0].get('devops', {})
+                return {}
         except FileNotFoundError:
             return {}
     
