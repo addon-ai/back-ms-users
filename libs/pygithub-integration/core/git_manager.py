@@ -93,6 +93,11 @@ class GitManager:
     
     def fix_remote_url(self, repo_name: str):
         """Fix remote URL if it's pointing to wrong repository"""
+        # Skip if we're in the boiler-plate-code-gen directory
+        if 'boiler-plate-code-gen' in self.project_path and os.path.exists(os.path.join(self.project_path, 'scripts')):
+            print(f"Skipping remote URL fix for boiler-plate-code-gen repository")
+            return False
+            
         os.chdir(self.project_path)
         
         # Get current remote URL
