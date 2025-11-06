@@ -44,13 +44,8 @@ def main():
     run_command("smithy clean")
     run_command("smithy build")
     
-    # Clean and create projects directory
-    projects_dir = Path("projects")
-    if projects_dir.exists():
-        shutil.rmtree(projects_dir)
-        logger.info("🗑️ Cleaned existing projects directory")
-    projects_dir.mkdir(exist_ok=True)
-    logger.info("📁 Created projects directory")
+    # Projects directory is managed by the pipeline
+    logger.info("📁 Using existing projects directory")
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
         logger.info("Usage: python java-webflux-backend-generator.py [templates_dir]")
