@@ -49,6 +49,15 @@ class ProjectSyncGenerator:
         
         for project_name in projects:
             project_path = os.path.join(self.projects_dir, project_name)
+            
+            # Check if GitHub integration is enabled for this project
+            project_config = self._get_project_config(project_name)
+            github_enabled = project_config.get('devops', {}).get('github', {}).get('on', True)
+            
+            if not github_enabled:
+                print(f"⚠️ GitHub integration disabled for {project_name} (devops.github.on = false)")
+                continue
+            
             git_manager = GitManager(project_path)
             
             # Check if repository exists on GitHub
@@ -85,6 +94,14 @@ class ProjectSyncGenerator:
         
         if not os.path.exists(project_path):
             print(f"Project path {project_path} does not exist")
+            return
+        
+        # Check if GitHub integration is enabled for this project
+        project_config = self._get_project_config(project_name)
+        github_enabled = project_config.get('devops', {}).get('github', {}).get('on', True)
+        
+        if not github_enabled:
+            print(f"⚠️ GitHub integration disabled for {project_name} (devops.github.on = false)")
             return
             
         git_manager = GitManager(project_path)

@@ -115,17 +115,34 @@ echo ""
 echo "🐙 Step 6: Synchronizing projects with GitHub repositories..."
 echo ""
 
+# Check if any project has GitHub integration enabled
+GITHUB_ENABLED=$(python3 -c "
+import json
+with open('$CONFIG_PATH', 'r') as f:
+    projects = json.load(f)
+for project in projects:
+    if project.get('devops', {}).get('github', {}).get('on', True):
+        print('true')
+        break
+else:
+    print('false')
+")
+
 # Run the GitHub integration
-if [ -n "$GITHUB_TOKEN" ]; then
-    python3 "$PROJECT_ROOT/libs/py-github-integration.py"
-    echo "✅ GitHub synchronization complete"
-    
-    echo "🔒 Applying branch protection rules..."
-    python3 "$PROJECT_ROOT/libs/pygithub-integration/apply_branch_protection.py"
-    echo "✅ Branch protection applied"
+if [ "$GITHUB_ENABLED" = "true" ]; then
+    if [ -n "$GITHUB_TOKEN" ]; then
+        python3 "$PROJECT_ROOT/libs/py-github-integration.py"
+        echo "✅ GitHub synchronization complete"
+        
+        echo "🔒 Applying branch protection rules..."
+        python3 "$PROJECT_ROOT/libs/pygithub-integration/apply_branch_protection.py"
+        echo "✅ Branch protection applied"
+    else
+        echo "⚠️  GITHUB_TOKEN not set. Skipping GitHub synchronization."
+        echo "   Set GITHUB_TOKEN environment variable to enable GitHub integration."
+    fi
 else
-    echo "⚠️  GITHUB_TOKEN not set. Skipping GitHub synchronization."
-    echo "   Set GITHUB_TOKEN environment variable to enable GitHub integration."
+    echo "⚠️  GitHub integration disabled for all projects (devops.github.on = false)"
 fi
 
 echo ""
