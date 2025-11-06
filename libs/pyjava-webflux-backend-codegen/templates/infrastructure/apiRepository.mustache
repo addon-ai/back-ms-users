@@ -1,0 +1,167 @@
+{{#isJpaRepository}}
+package {{packageName}};
+
+import {{infra_entity}}.{{entityName}}Dbo;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+/**
+ * Spring Data R2DBC Repository for {{entityName}} entities.
+ * <p>
+ * This interface extends R2dbcRepository to provide reactive CRUD operations
+ * and includes custom query methods for specific business requirements.
+ * It operates on {{entityName}}Dbo entities for reactive database persistence.
+ * </p>
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@Repository
+public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, String> {
+    
+    /**
+     * Find entities with search functionality.
+     * {{#hasSearchFields}}
+     * Searches in: {{#searchFields}}{{.}}{{^-last}}, {{/-last}}{{/searchFields}}
+     * {{/hasSearchFields}}
+     * {{^hasSearchFields}}
+     * Searches by ID when no text fields are available.
+     * {{/hasSearchFields}}
+     */
+    @Query("SELECT * FROM {{tableName}} WHERE " +
+           "(:search IS NULL OR " +
+           "{{searchQuery}}) " +
+           "LIMIT :limit OFFSET :offset")
+    Flux<{{entityName}}Dbo> findBySearchTerm(@Param("search") String search, 
+                                             @Param("limit") Long limit, 
+                                             @Param("offset") Long offset);
+    
+    /**
+     * Count entities matching search term.
+     */
+    @Query("SELECT COUNT(*) FROM {{tableName}} WHERE " +
+           "(:search IS NULL OR " +
+           "{{searchQuery}})")
+    Mono<Long> countBySearchTerm(@Param("search") String search);
+    
+    /**
+     * Find all entities with pagination.
+     */
+    @Query("SELECT * FROM {{tableName}} LIMIT :limit OFFSET :offset")
+    Flux<{{entityName}}Dbo> findAllPaged(@Param("limit") Long limit, @Param("offset") Long offset);
+}
+{{/isJpaRepository}}
+
+{{#isAdapter}}
+package {{packageName}};
+
+import {{domain_ports_output}}.{{portName}};
+import {{domain_model}}.{{entityName}};
+import {{infra_entity}}.{{entityName}}Dbo;
+import {{infra_repository}}.{{jpaRepositoryName}};
+import {{application_mapper}}.{{entityName}}Mapper;
+import {{infra_config_exceptions}}.InternalServerErrorException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+/**
+ * Reactive repository adapter implementing the {{entityName}} domain port.
+ * <p>
+ * This adapter serves as the output adapter in Clean Architecture,
+ * implementing the domain repository interface and delegating to
+ * Spring Data R2DBC repository. It handles the conversion between
+ * domain objects and database entities using MapStruct in a reactive manner.
+ * </p>
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class {{classname}} implements {{portName}} {
+
+    private final {{jpaRepositoryName}} r2dbcRepository;
+    private final {{entityName}}Mapper mapper;
+
+    @Override
+    public Mono<{{entityName}}> save({{entityName}} {{entityVarName}}) {
+        log.debug("Saving {{entityName}}: {}", {{entityVarName}});
+        return Mono.fromCallable(() -> mapper.toDbo({{entityVarName}}))
+                .flatMap(r2dbcRepository::save)
+                .map(mapper::toDomain)
+                .doOnError(e -> log.error("Database error while saving {{entityName}}: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to save {{entityName}}", e));
+    }
+
+    @Override
+    public Mono<{{entityName}}> findById(String id) {
+        log.debug("Finding {{entityName}} by id: {}", id);
+        return r2dbcRepository.findById(id)
+                .map(mapper::toDomain)
+                .doOnError(e -> log.error("Database error while finding {{entityName}} by id {}: {}", id, e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to find {{entityName}} by id", e));
+    }
+
+    @Override
+    public Flux<{{entityName}}> findAll() {
+        log.debug("Finding all {{entityNamePlural}}");
+        return r2dbcRepository.findAll()
+                .map(mapper::toDomain)
+                .doOnError(e -> log.error("Database error while finding all {{entityNamePlural}}: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to find all {{entityNamePlural}}", e));
+    }
+
+    @Override
+    public Mono<Void> deleteById(String id) {
+        log.debug("Deleting {{entityName}} by id: {}", id);
+        return r2dbcRepository.deleteById(id)
+                .doOnError(e -> log.error("Database error while deleting {{entityName}} by id {}: {}", id, e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to delete {{entityName}} by id", e));
+    }
+
+    @Override
+    public Mono<Boolean> existsById(String id) {
+        log.debug("Checking if {{entityName}} exists by id: {}", id);
+        return r2dbcRepository.existsById(id)
+                .doOnError(e -> log.error("Database error while checking if {{entityName}} exists by id {}: {}", id, e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to check if {{entityName}} exists by id", e));
+    }
+
+    @Override
+    public Flux<{{entityName}}> findBySearchTerm(String search, Integer page, Integer size) {
+        log.debug("Searching {{entityNamePlural}} with term: {}, page: {}, size: {}", search, page, size);
+        
+        long limit = size != null && size > 0 ? size : 20L;
+        long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
+        
+        if (search == null || search.trim().isEmpty()) {
+            return r2dbcRepository.findAllPaged(limit, offset)
+                    .map(mapper::toDomain)
+                    .doOnError(e -> log.error("Database error while finding all {{entityNamePlural}}: {}", e.getMessage(), e))
+                    .onErrorMap(e -> new InternalServerErrorException("Failed to find all {{entityNamePlural}}", e));
+        }
+        
+        return r2dbcRepository.findBySearchTerm(search, limit, offset)
+                .map(mapper::toDomain)
+                .doOnError(e -> log.error("Database error while searching {{entityNamePlural}}: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to search {{entityNamePlural}}", e));
+    }
+    
+    // Additional business methods for reactive operations
+    public Mono<Long> countBySearchTerm(String search) {
+        log.debug("Counting {{entityNamePlural}} with search term: {}", search);
+        return r2dbcRepository.countBySearchTerm(search)
+                .doOnError(e -> log.error("Database error while counting {{entityNamePlural}}: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to count {{entityNamePlural}}", e));
+    }
+}
+{{/isAdapter}}

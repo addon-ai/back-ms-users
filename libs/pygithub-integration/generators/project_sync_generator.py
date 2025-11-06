@@ -9,7 +9,7 @@ from typing import List, Dict
 # Add the parent directory to the path to import other libraries
 libs_dir = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.append(libs_dir)
-sys.path.append(os.path.join(libs_dir, 'pyjava-backend-codegen'))
+sys.path.append(os.path.join(libs_dir, 'pyjava-springboot-backend-codegen'))
 
 from core.github_client import GitHubClient
 from core.git_manager import GitManager
@@ -214,7 +214,7 @@ class ProjectSyncGenerator:
             result = subprocess.run([
                 'python3', 
                 os.path.join(self.project_root, 'libs', 'java-backend-generator.py'),
-                os.path.join(self.project_root, 'libs', 'pyjava-backend-codegen', 'templates')
+                os.path.join(self.project_root, 'libs', 'pyjava-springboot-backend-codegen', 'templates')
             ], check=True, capture_output=True, text=True)
             print(f"Regenerated project {project_name}")
         except subprocess.CalledProcessError as e:
@@ -239,7 +239,7 @@ class ProjectSyncGenerator:
     
     def _setup_pr_template(self, owner: str, repo_name: str):
         """Setup PR template for repository"""
-        template_path = os.path.join(self.project_root, 'libs', 'pyjava-backend-codegen', 'templates', 'project', 'pull_request_template.md')
+        template_path = os.path.join(self.project_root, 'libs', 'pyjava-springboot-backend-codegen', 'templates', 'project', 'pull_request_template.md')
         try:
             with open(template_path, 'r') as f:
                 template_content = f.read()
@@ -254,7 +254,7 @@ class ProjectSyncGenerator:
     
     def _include_pr_template_locally(self, project_path: str):
         """Include PR template as local file in project"""
-        template_path = os.path.join(self.project_root, 'libs', 'pyjava-backend-codegen', 'templates', 'project', 'pull_request_template.md')
+        template_path = os.path.join(self.project_root, 'libs', 'pyjava-springboot-backend-codegen', 'templates', 'project', 'pull_request_template.md')
         try:
             with open(template_path, 'r') as f:
                 template_content = f.read()

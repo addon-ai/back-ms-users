@@ -1,0 +1,188 @@
+package {{packageName}};
+
+import {{basePackage}}.domain.ports.input.{{entityName}}UseCase;
+{{#dtoImports}}
+import {{.}};
+{{/dtoImports}}
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+/**
+ * Unit tests for {{classname}}.
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@ExtendWith(MockitoExtension.class)
+class {{classname}}Test {
+
+    @Mock
+    private {{entityName}}UseCase {{entityVarName}}UseCase;
+
+    @InjectMocks
+    private {{classname}} {{entityVarName}}Controller;
+
+{{#hasCreate}}
+    @Test
+    void create{{entityName}}_ShouldReturnCreated_WhenValidRequest() {
+        // Given
+        Create{{entityName}}RequestContent request = Create{{entityName}}RequestContent.builder()
+{{#createProperties}}
+{{#required}}
+{{#isString}}
+            .{{name}}("test-{{name}}")
+{{/isString}}
+{{#isEmail}}
+            .{{name}}("test@example.com")
+{{/isEmail}}
+{{#isBoolean}}
+            .{{name}}(true)
+{{/isBoolean}}
+{{#isInteger}}
+            .{{name}}(1)
+{{/isInteger}}
+{{/required}}
+{{/createProperties}}
+            .build();
+        Create{{entityName}}ResponseContent response = Create{{entityName}}ResponseContent.builder()
+            .build();
+        
+        when({{entityVarName}}UseCase.create(any(Create{{entityName}}RequestContent.class)))
+            .thenReturn(response);
+
+        // When
+        ResponseEntity<Create{{entityName}}ResponseContent> result = {{entityVarName}}Controller.create{{entityName}}(request, "test-request-id", null, null);
+
+        // Then
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+{{/hasCreate}}
+
+{{#hasGet}}
+    @Test
+    void get{{entityName}}_ShouldReturnOk_WhenEntityExists() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        Get{{entityName}}ResponseContent response = Get{{entityName}}ResponseContent.builder()
+            .build();
+        
+        when({{entityVarName}}UseCase.get(anyString()))
+            .thenReturn(response);
+
+        // When
+        ResponseEntity<Get{{entityName}}ResponseContent> result = {{entityVarName}}Controller.get{{entityName}}({{entityVarName}}Id, "test-request-id", null, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+{{/hasGet}}
+
+{{#hasUpdate}}
+    @Test
+    void update{{entityName}}_ShouldReturnOk_WhenValidRequest() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        Update{{entityName}}RequestContent request = Update{{entityName}}RequestContent.builder()
+{{#updateProperties}}
+{{#isString}}
+            .{{name}}("updated-{{name}}")
+{{/isString}}
+{{#isEmail}}
+            .{{name}}("updated@example.com")
+{{/isEmail}}
+{{#isBoolean}}
+            .{{name}}(false)
+{{/isBoolean}}
+{{#isInteger}}
+            .{{name}}(2)
+{{/isInteger}}
+{{/updateProperties}}
+            .build();
+        Update{{entityName}}ResponseContent response = Update{{entityName}}ResponseContent.builder()
+            .build();
+        
+        when({{entityVarName}}UseCase.update(anyString(), any(Update{{entityName}}RequestContent.class)))
+            .thenReturn(response);
+
+        // When
+        ResponseEntity<Update{{entityName}}ResponseContent> result = {{entityVarName}}Controller.update{{entityName}}({{entityVarName}}Id, request, "test-request-id", null, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+{{/hasUpdate}}
+
+{{#hasDelete}}
+    @Test
+    void delete{{entityName}}_ShouldReturnOk_WhenEntityExists() {
+        // Given
+        String {{entityVarName}}Id = "test-id";
+        Delete{{entityName}}ResponseContent response = Delete{{entityName}}ResponseContent.builder()
+            .deleted(true)
+            .message("{{entityName}} deleted successfully")
+            .build();
+        
+        when({{entityVarName}}UseCase.delete(anyString()))
+            .thenReturn(response);
+
+        // When
+        ResponseEntity<Delete{{entityName}}ResponseContent> result = {{entityVarName}}Controller.delete{{entityName}}({{entityVarName}}Id, "test-request-id", null, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+{{/hasDelete}}
+
+{{#hasList}}
+    @Test
+    void list{{entityName}}s_ShouldReturnOk() {
+        // Given
+        List{{entityName}}sResponseContent response = List{{entityName}}sResponseContent.builder()
+            .build();
+        
+        when({{entityVarName}}UseCase.list(any(), any(), any()))
+            .thenReturn(response);
+
+        // When
+        ResponseEntity<List{{entityName}}sResponseContent> result = {{entityVarName}}Controller.list{{entityName}}s(1, 20, null, "test-request-id", null, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+{{/hasList}}
+
+{{#complexOperations}}
+    @Test
+    void {{methodName}}_ShouldReturnOk() {
+        // Given
+        {{responseType}} response = {{responseType}}.builder()
+            .build();
+        
+        when({{entityVarName}}UseCase.{{methodName}}())
+            .thenReturn(response);
+
+        // When
+        ResponseEntity<{{responseType}}> result = {{entityVarName}}Controller.{{methodName}}("test-request-id", null, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+
+{{/complexOperations}}
+}

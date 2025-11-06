@@ -1,33 +1,34 @@
-#!/usr/bin/env python3
 """
-Hexagonal Architecture Spring Boot Code Generator v2
-
-Updated version using the pyjava-backend-codegen library.
-This script serves as a bridge to the new modular architecture.
+Main entry point for the PyJava Backend Code Generator.
 """
-
 import sys
 import subprocess
 import shutil
 from pathlib import Path
 
-# Add the library to the Python path
-lib_path = Path(__file__).parent / "pyjava-backend-codegen"
-sys.path.insert(0, str(lib_path))
-sys.path.insert(0, str(lib_path / "core"))
-sys.path.insert(0, str(lib_path / "utils"))
-sys.path.insert(0, str(lib_path / "generators"))
-sys.path.insert(0, str(Path(__file__).parent))
-from config_loader import ConfigLoader
-from code_generator import CodeGenerator
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from common.logging_setup import get_logger, setup_logging
+
+from config_loader import ConfigLoader
+from .core.code_generator import CodeGenerator
 
 setup_logging()
 logger = get_logger(__name__)
 
 
 def run_command(cmd: str) -> str:
-    """Execute a shell command and return its output."""
+    """
+    Execute a shell command and return its output.
+    
+    Args:
+        cmd: Shell command to execute
+        
+    Returns:
+        Command output as string
+        
+    Raises:
+        SystemExit: If command fails
+    """
     logger.info(f"Running: {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
@@ -37,7 +38,12 @@ def run_command(cmd: str) -> str:
 
 
 def main():
-    """Main entry point for the generator."""
+    """
+    Main entry point for the generator.
+    
+    Handles command line arguments, loads configuration, and orchestrates
+    the project generation process for multiple projects.
+    """
     logger.info("📝 Generating OpenAPI from Smithy...")
     run_command("smithy clean")
     run_command("smithy build")
@@ -51,13 +57,13 @@ def main():
     logger.info("📁 Created projects directory")
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
-        logger.info("Usage: python java-backend-generator.py [templates_dir]")
-        logger.info("Example: python java-backend-generator.py libs/pyjava-backend-codegen/templates")
+        logger.info("Usage: python -m pyjava-springboot-backend-codegen [templates_dir]")
+        logger.info("Example: python -m pyjava-springboot-backend-codegen libs/pyjava-springboot-backend-codegen/templates")
         logger.info("Config: libs/config/params.json (array of project configurations)")
         sys.exit(0)
     
-    config_path = "libs/config/params.json"
-    templates_dir = sys.argv[1] if len(sys.argv) > 1 else "libs/pyjava-backend-codegen/templates"
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "libs/config/params.json"
+    templates_dir = str(Path(__file__).parent / "templates")
     
     try:
         # Load all project configurations

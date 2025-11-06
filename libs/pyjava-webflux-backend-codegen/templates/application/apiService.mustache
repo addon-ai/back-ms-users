@@ -1,0 +1,129 @@
+package {{packageName}};
+
+import {{domain_ports_input}}.{{operationName}}UseCase;
+import {{domain_ports_output}}.{{entityName}}RepositoryPort;
+{{#requestType}}{{^requestIsJavaType}}import {{application_dto}}.{{serviceName}}.{{requestType}};{{/requestIsJavaType}}{{/requestType}}
+{{#returnType}}{{^responseIsJavaType}}import {{application_dto}}.{{serviceName}}.{{returnType}};{{/responseIsJavaType}}{{/returnType}}
+import {{domain_model}}.{{entityName}};
+import {{application_mapper}}.{{entityName}}Mapper;
+import {{infra_config_exceptions}}.NotFoundException;
+import {{infra_config_exceptions}}.ConflictException;
+import {{utils}}.LoggingUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;{{#operationName}}
+{{#isListOperation}}
+import java.util.List;
+import java.math.BigDecimal;{{/isListOperation}}
+{{/operationName}}
+
+/**
+ * Reactive application service implementing {{operationName}} use case.
+ * <p>
+ * This service contains the reactive business logic for {{operationName}} operation,
+ * orchestrating domain objects and repository interactions. It serves as
+ * the application layer in Clean Architecture, implementing use case interfaces
+ * defined in the domain layer using Project Reactor.
+ * </p>
+ * 
+ * @author {{author}}
+ * @version {{version}}
+ */
+@Service
+@RequiredArgsConstructor
+public class {{classname}} implements {{operationName}}UseCase {
+
+    private static final LoggingUtils logger = LoggingUtils.getLogger({{classname}}.class);
+    
+    private final {{entityName}}RepositoryPort {{entityVarName}}RepositoryPort;
+    private final {{entityName}}Mapper {{entityVarName}}Mapper;
+
+    {{#isUpdate}}
+    @Override
+    public Mono<{{returnType}}> execute(String {{entityVarName}}Id, {{requestType}} request) {
+        logger.info("Executing {{operationName}} with {{entityVarName}}Id: {} and request: {}", {{entityVarName}}Id, request);
+        
+        return {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
+                .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
+                .flatMap(existing{{entityName}} -> {
+                    // Update existing entity with request data
+                    {{entityName}} updated{{entityName}} = {{entityVarName}}Mapper.fromUpdateRequest(request);
+                    updated{{entityName}}.set{{entityName}}Id({{entityVarName}}Id);
+                    updated{{entityName}}.setCreatedAt(existing{{entityName}}.getCreatedAt());
+                    updated{{entityName}}.setStatus(existing{{entityName}}.getStatus());
+                    
+                    return {{entityVarName}}RepositoryPort.save(updated{{entityName}});
+                })
+                .map(saved{{entityName}} -> {
+                    logger.info("{{entityName}} updated successfully with ID: {}", {{entityVarName}}Id);
+                    return ({{returnType}}) {{entityVarName}}Mapper.toDto(saved{{entityName}});
+                })
+                .doOnError(NotFoundException.class, e -> logger.error("{{entityName}} not found in {{operationName}}", e, {{entityVarName}}Id))
+                .doOnError(ConflictException.class, e -> logger.error("{{entityName}} conflict in {{operationName}}", e, {{entityVarName}}Id))
+                .doOnError(Exception.class, e -> logger.error("Error in {{operationName}}", e, {{entityVarName}}Id));
+    }
+    {{/isUpdate}}
+    {{^isUpdate}}
+    @Override
+    public Mono<{{returnType}}> execute({{requestType}} request) {
+        logger.info("Executing {{operationName}} with request: {}", request);
+        
+        {{#isCreate}}
+        // Convert request to domain model using mapper
+        {{entityName}} {{entityVarName}} = {{entityVarName}}Mapper.fromCreateRequest(request);
+        
+        // Check if entity already exists to prevent conflicts
+        Mono<Boolean> existsCheck = {{entityVarName}}.get{{entityName}}Id() != null 
+            ? {{entityVarName}}RepositoryPort.existsById({{entityVarName}}.get{{entityName}}Id())
+            : Mono.just(false);
+        
+        return existsCheck
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new ConflictException("{{entityName}} with ID " + {{entityVarName}}.get{{entityName}}Id() + " already exists"));
+                    }
+                    return {{entityVarName}}RepositoryPort.save({{entityVarName}});
+                })
+                .map(saved{{entityName}} -> {
+                    logger.info("{{entityName}} created successfully with ID: {}", saved{{entityName}}.get{{entityName}}Id());
+                    return ({{returnType}}) {{entityVarName}}Mapper.toDto(saved{{entityName}});
+                })
+                .doOnError(ConflictException.class, e -> logger.error("{{entityName}} conflict in {{operationName}}", e, request))
+                .doOnError(Exception.class, e -> logger.error("Error in {{operationName}}", e, request));
+        {{/isCreate}}
+        {{#isGet}}
+        return {{entityVarName}}RepositoryPort.findById(request)
+                .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
+                .map({{entityVarName}} -> {
+                    logger.info("{{entityName}} retrieved successfully with ID: {}", request);
+                    return ({{returnType}}) {{entityVarName}}Mapper.toDto({{entityVarName}});
+                })
+                .doOnError(NotFoundException.class, e -> logger.error("{{entityName}} not found in {{operationName}}", e, request))
+                .doOnError(Exception.class, e -> logger.error("Error in {{operationName}}", e, request));
+        {{/isGet}}
+        {{#isDelete}}
+        // Verify entity exists before deletion
+        return {{entityVarName}}RepositoryPort.findById(request)
+                .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
+                .flatMap({{entityVarName}} -> {{entityVarName}}RepositoryPort.deleteById(request))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("{{entityName}} deleted successfully with ID: {}", request);
+                    return ({{returnType}}) new Object();
+                }))
+                .doOnError(NotFoundException.class, e -> logger.error("{{entityName}} not found in {{operationName}}", e, request))
+                .doOnError(Exception.class, e -> logger.error("Error in {{operationName}}", e, request));
+        {{/isDelete}}
+        {{^isCreate}}{{^isGet}}{{^isDelete}}
+        // List operation
+        return {{entityVarName}}RepositoryPort.findAll()
+                .collectList()
+                .map({{entityVarName}}s -> {
+                    logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
+                    return ({{returnType}}) {{entityVarName}}Mapper.toListResponse({{entityVarName}}s);
+                })
+                .doOnError(Exception.class, e -> logger.error("Error in {{operationName}}", e, request));
+        {{/isDelete}}{{/isGet}}{{/isCreate}}
+    }
+    {{/isUpdate}}
+}

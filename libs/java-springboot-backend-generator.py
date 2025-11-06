@@ -1,34 +1,33 @@
+#!/usr/bin/env python3
 """
-Main entry point for the PyJava Backend Code Generator.
+Hexagonal Architecture Spring Boot Code Generator v2
+
+Updated version using the pyjava-springboot-backend-codegen library.
+This script serves as a bridge to the new modular architecture.
 """
+
 import sys
 import subprocess
 import shutil
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from common.logging_setup import get_logger, setup_logging
-
+# Add the library to the Python path
+lib_path = Path(__file__).parent / "pyjava-springboot-backend-codegen"
+sys.path.insert(0, str(lib_path))
+sys.path.insert(0, str(lib_path / "core"))
+sys.path.insert(0, str(lib_path / "utils"))
+sys.path.insert(0, str(lib_path / "generators"))
+sys.path.insert(0, str(Path(__file__).parent))
 from config_loader import ConfigLoader
-from .core.code_generator import CodeGenerator
+from code_generator import CodeGenerator
+from common.logging_setup import get_logger, setup_logging
 
 setup_logging()
 logger = get_logger(__name__)
 
 
 def run_command(cmd: str) -> str:
-    """
-    Execute a shell command and return its output.
-    
-    Args:
-        cmd: Shell command to execute
-        
-    Returns:
-        Command output as string
-        
-    Raises:
-        SystemExit: If command fails
-    """
+    """Execute a shell command and return its output."""
     logger.info(f"Running: {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
@@ -38,12 +37,7 @@ def run_command(cmd: str) -> str:
 
 
 def main():
-    """
-    Main entry point for the generator.
-    
-    Handles command line arguments, loads configuration, and orchestrates
-    the project generation process for multiple projects.
-    """
+    """Main entry point for the generator."""
     logger.info("📝 Generating OpenAPI from Smithy...")
     run_command("smithy clean")
     run_command("smithy build")
@@ -57,29 +51,30 @@ def main():
     logger.info("📁 Created projects directory")
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
-        logger.info("Usage: python -m pyjava-backend-codegen [templates_dir]")
-        logger.info("Example: python -m pyjava-backend-codegen libs/pyjava-backend-codegen/templates")
+        logger.info("Usage: python java-backend-generator.py [templates_dir]")
+        logger.info("Example: python java-backend-generator.py libs/pyjava-springboot-backend-codegen/templates")
         logger.info("Config: libs/config/params.json (array of project configurations)")
         sys.exit(0)
     
-    config_path = sys.argv[1] if len(sys.argv) > 1 else "libs/config/params.json"
-    templates_dir = str(Path(__file__).parent / "templates")
+    config_path = "libs/config/params.json"
+    templates_dir = sys.argv[1] if len(sys.argv) > 1 else "libs/pyjava-springboot-backend-codegen/templates"
     
     try:
-        # Load all project configurations
+        # Load all project configurations and filter Spring Boot projects
         projects_config = ConfigLoader.load_projects_config(config_path)
+        springboot_projects = [p for p in projects_config if p['project']['general'].get('type', 'springBoot') == 'springBoot']
         
-        logger.info(f"Found {len(projects_config)} project(s) to generate...")
+        logger.info(f"Found {len(springboot_projects)} Spring Boot project(s) to generate...")
         
-        # Generate each project
-        for i, project_config in enumerate(projects_config, 1):
+        # Generate each Spring Boot project
+        for i, project_config in enumerate(springboot_projects, 1):
             project_name = project_config['project']['general']['name']
             logger.info(f"[{i}/{len(projects_config)}] Generating project: {project_name}")
             
             generator = CodeGenerator(config_path, templates_dir, project_config)
             generator.generate_complete_project()
             
-        logger.info(f"✅ Successfully generated {len(projects_config)} project(s)!")
+        logger.info(f"✅ Successfully generated {len(springboot_projects)} Spring Boot project(s)!")
         
     except Exception as e:
         logger.error(f"Error generating projects: {e}")

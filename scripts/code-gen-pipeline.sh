@@ -11,7 +11,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Define paths
 CONFIG_PATH="$PROJECT_ROOT/libs/config/params.json"
-TEMPLATES_DIR="$PROJECT_ROOT/libs/pyjava-backend-codegen/templates"
+TEMPLATES_DIR="$PROJECT_ROOT/libs/pyjava-springboot-backend-codegen/templates"
 
 # Get first project name from params.json array
 if [ -f "$PROJECT_ROOT/libs/config/params.json" ]; then
@@ -80,8 +80,8 @@ echo ""
 echo "🏗️  Step 1: Generating Java Backend projects with hexagonal architecture..."
 echo ""
 
-# Run the Java backend generator
-python3 "$PROJECT_ROOT/libs/java-backend-generator.py" "$TEMPLATES_DIR"
+# Process each project based on its type
+python3 "$PROJECT_ROOT/scripts/process_projects.py" "$CONFIG_PATH" "$PROJECT_ROOT" "$TEMPLATES_DIR"
 
 echo ""
 echo "📋 Step 2: Generating JSON Schemas from OpenAPI specifications..."
@@ -147,4 +147,6 @@ echo "   • docs/puml/components/ → Architectural component diagrams (PlantUM
 echo "   • docs/puml/sequences/ → CRUD sequence diagrams by service (PlantUML)"
 echo "   • GitHub repositories → Synchronized with generated projects (if GITHUB_TOKEN set)"
 echo "🌿 Pipeline branch: $(git branch --show-current)"
-echo "🚀 Ready to run: cd projects/[project-name] && mvn spring-boot:run"
+echo "🚀 Ready to run:"
+echo "   • Spring Boot: cd projects/[project-name] && mvn spring-boot:run"
+echo "   • Spring WebFlux: cd projects/[project-name] && mvn spring-boot:run"

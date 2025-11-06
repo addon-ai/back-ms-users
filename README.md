@@ -163,7 +163,7 @@ pip3 install pystache requests
 ```
 boiler-plate-code-gen/
 ├── libs/
-│   ├── pyjava-backend-codegen/         # Core code generation library
+│   ├── pyjava-springboot-backend-codegen/         # Core code generation library
 │   ├── pyopenapi-docs-generator/       # OpenAPI documentation generator
 │   ├── pyarchitect-docs-generator/     # Architecture documentation generator
 │   ├── pygithub-integration/           # GitHub integration library
@@ -188,7 +188,7 @@ boiler-plate-code-gen/
 
 ### Core Libraries
 
-#### `pyjava-backend-codegen/`
+#### `pyjava-springboot-backend-codegen/`
 **Purpose**: Core code generation engine for Spring Boot applications
 - **Components**: Generates DTOs, Services, Controllers, Repositories, Entities
 - **Architecture**: Implements Hexagonal Architecture patterns
