@@ -1,13 +1,5 @@
 name: Java CI/CD Pipeline
 
-env:
-  JAVA_VERSION: '{{devops.ci.javaVersion}}'
-  JAVA_DISTRIBUTION: '{{devops.ci.javaDistribution}}'
-  ARTIFACT_NAME: '{{devops.ci.artifactName}}'
-  ARTIFACT_RETENTION_DAYS: {{devops.ci.artifactRetentionDays}}
-  MAVEN_OPTS: '{{devops.ci.mavenOpts}}'
-  COVERAGE_THRESHOLD: '{{devops.ci.coverageThreshold}}'
-
 on:
   push:
     branches: [ "main", "develop", "staging", "hotfix/*" ]
