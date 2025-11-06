@@ -10,6 +10,10 @@ class GitManager:
         self.project_path = project_path
         self.project_name = os.path.basename(project_path)
         self.config = self._load_github_config()
+        
+        # Prevent execution in boiler-plate-code-gen repository
+        if 'boiler-plate-code-gen' in self.project_path:
+            raise ValueError(f"GitManager should not be used in boiler-plate-code-gen repository: {self.project_path}")
     
     def _load_github_config(self) -> Dict:
         """Load GitHub configuration for specific project from params.json"""
@@ -78,14 +82,20 @@ class GitManager:
         subprocess.run(['git', 'branch', '-M', 'main'], check=True)
     
     def initial_commit_and_push(self, commit_message: str = "Initial commit: Generated Spring Boot project"):
-        """Add, commit and push initial changes to main branch"""
+        """Create initial commit with only README.md for main branch"""
         os.chdir(self.project_path)
-        subprocess.run(['git', 'add', '.', '--force'], check=True)
+        
+        # Create basic README.md for initial commit
+        readme_content = f"# {self.project_name}\n\nGenerated Spring Boot project with Hexagonal Architecture\n"
+        with open('README.md', 'w') as f:
+            f.write(readme_content)
+        
+        subprocess.run(['git', 'add', 'README.md'], check=True)
         subprocess.run(['git', 'commit', '-m', commit_message], check=True)
         subprocess.run(['git', 'push', '-u', 'origin', 'main'], check=True)
     
     def create_branches(self, branches: List[str]):
-        """Create and push branches"""
+        """Create and push empty branches with only README.md"""
         os.chdir(self.project_path)
         for branch in branches:
             subprocess.run(['git', 'checkout', '-b', branch], check=True)
@@ -93,7 +103,7 @@ class GitManager:
         subprocess.run(['git', 'checkout', 'main'], check=True)
     
     def commit_and_push(self, branch_name: str, commit_message: str):
-        """Add, commit and push changes"""
+        """Add, commit and push all project files to feature branch"""
         os.chdir(self.project_path)
         subprocess.run(['git', 'checkout', '-b', branch_name], check=True)
         subprocess.run(['git', 'add', '.', '--force'], check=True)
@@ -111,3 +121,28 @@ class GitManager:
         """Generate feature branch name with timestamp"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return f"feature/push_automatic_{timestamp}"
+    
+    def commit_project_code(self):
+        """Create feature branch with all project code"""
+        os.chdir(self.project_path)
+        
+        # Create feature branch from main
+        feature_branch = self.get_feature_branch_name()
+        subprocess.run(['git', 'checkout', 'main'], check=True)
+        subprocess.run(['git', 'checkout', '-b', feature_branch], check=True)
+        
+        # Add all project files
+        subprocess.run(['git', 'add', '.', '--force'], check=True)
+        
+        # Check if there are changes to commit
+        result = subprocess.run(['git', 'diff', '--cached', '--quiet'], capture_output=True)
+        if result.returncode == 0:
+            print(f"No changes to commit for {self.project_name}")
+            return feature_branch
+        
+        # Commit and push
+        commit_message = f"Auto-generated update: {feature_branch}"
+        subprocess.run(['git', 'commit', '-m', commit_message], check=True)
+        subprocess.run(['git', 'push', '-u', 'origin', feature_branch], check=True)
+        
+        return feature_branch

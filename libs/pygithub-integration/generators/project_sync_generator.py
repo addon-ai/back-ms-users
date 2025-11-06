@@ -122,10 +122,13 @@ class ProjectSyncGenerator:
         # Initial commit and push to main branch
         git_manager.initial_commit_and_push("Initial commit: Generated Spring Boot project")
         
-        # Create and push additional branches
+        # Create and push additional branches (empty with only README.md)
         git_manager.create_branches(self.default_branches[:-1])  # Exclude main as it already exists
         
-        print(f"Successfully created and pushed {project_name}")
+        # Create feature branch with all project code
+        feature_branch = git_manager.commit_project_code()
+        
+        print(f"Successfully created {project_name} with feature branch: {feature_branch}")
     
     def _update_existing_repository(self, project_name: str, project_path: str, git_manager: GitManager):
         """Update existing repository preserving git history"""
@@ -151,10 +154,8 @@ class ProjectSyncGenerator:
                 git_manager.restore_git_history(backup_dir)
                 print("Restored git history")
             
-            # Create feature branch and push changes
-            feature_branch = git_manager.get_feature_branch_name()
-            commit_message = f"Auto-generated update: {feature_branch}"
-            git_manager.commit_and_push(feature_branch, commit_message)
+            # Create feature branch with all project code
+            feature_branch = git_manager.commit_project_code()
             
             print(f"Successfully updated {project_name} in branch {feature_branch}")
             

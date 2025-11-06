@@ -17,6 +17,11 @@ class BranchManager:
         self.branch_prefix = self.config.get('branchManagement', {}).get('branchPrefix', 'feature/project_generation')
         self.max_branches = self.config.get('branchManagement', {}).get('maxBranches', 10)
         self.date_format = self.config.get('branchManagement', {}).get('dateFormat', '%Y%m%d_%H%M%S')
+        
+        # Prevent execution in project directories
+        current_dir = os.getcwd()
+        if '/projects/' in current_dir:
+            raise ValueError(f"BranchManager should not be used in project directories: {current_dir}")
     
     def _load_config(self) -> Dict:
         """Load pipeline configuration"""
