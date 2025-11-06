@@ -3,6 +3,7 @@ import sys
 import tempfile
 import shutil
 import subprocess
+import json
 from typing import List, Dict
 
 # Add the parent directory to the path to import other libraries
@@ -20,7 +21,6 @@ class ProjectSyncGenerator:
         # Get project root relative to this file
         self.project_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
         self.projects_dir = os.path.join(self.project_root, "projects")
-        self.default_branches = ["develop", "test", "staging", "main"]
     
     def backup_existing_projects(self):
         """Backup Git history for projects that exist on GitHub"""
@@ -122,8 +122,13 @@ class ProjectSyncGenerator:
         # Initial commit and push to main branch
         git_manager.initial_commit_and_push("Initial commit: Generated Spring Boot project")
         
+        # Get default branches from project config
+        project_config = self._get_project_config(project_name)
+        default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
+        
         # Create and push additional branches (empty with only README.md)
-        git_manager.create_branches(self.default_branches[:-1])  # Exclude main as it already exists
+        branches_to_create = [b for b in default_branches if b != 'main']  # Exclude main as it already exists
+        git_manager.create_branches(branches_to_create)
         
         # Create feature branch with all project code
         feature_branch = git_manager.commit_project_code()
@@ -193,6 +198,19 @@ class ProjectSyncGenerator:
         finally:
             # Restore original working directory
             os.chdir(original_cwd)
+    
+    def _get_project_config(self, project_name: str):
+        """Get configuration for specific project from params.json"""
+        config_path = os.path.join(self.project_root, 'libs', 'config', 'params.json')
+        try:
+            with open(config_path, 'r') as f:
+                params = json.load(f)
+                for project_config in params:
+                    if project_config.get('project', {}).get('general', {}).get('name') == project_name:
+                        return project_config
+                return params[0] if params else {}
+        except FileNotFoundError:
+            return {}
 
 def main():
     """Main entry point"""
