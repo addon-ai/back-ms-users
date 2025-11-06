@@ -73,7 +73,7 @@
                 "sshUrl": "git@github.com:addon-ai",
                 "defaultBranches": ["develop", "test", "staging", "main"],
                 "repositorySettings": {
-                    "private": true,
+                    "private": false,
                     "autoInit": false,
                     "description": "Generated Spring Boot project with Hexagonal Architecture"
                 },
@@ -167,7 +167,7 @@
                 "sshUrl": "git@github.com:addon-ai",
                 "defaultBranches": ["develop", "test", "staging", "main"],
                 "repositorySettings": {
-                    "private": true,
+                    "private": false,
                     "autoInit": false,
                     "description": "Generated Spring Boot project with Hexagonal Architecture"
                 },
