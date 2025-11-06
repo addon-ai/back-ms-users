@@ -55,15 +55,13 @@ class GitManager:
             shutil.copytree(backup_path, git_path)
     
     def init_repository(self, repo_name: str):
-        """Initialize git repository with config and SSH remote"""
-        # Ensure we're in the correct project directory
+        """Initialize git repository with config and SSH remote - only for NEW repositories"""
         os.chdir(self.project_path)
         
-        # Remove any existing .git directory to ensure clean initialization
-        git_path = os.path.join(self.project_path, '.git')
-        if os.path.exists(git_path):
-            shutil.rmtree(git_path)
-            print(f"Removed existing .git directory from {self.project_name}")
+        # Only initialize if no .git exists (new repository)
+        if self.has_git_repo():
+            print(f"Git repository already exists for {self.project_name}, skipping init")
+            return
         
         # Set default branch to main globally to avoid master warning
         subprocess.run(['git', 'config', '--global', 'init.defaultBranch', 'main'], check=False)
@@ -90,6 +88,11 @@ class GitManager:
         
         # Set default branch to main
         subprocess.run(['git', 'branch', '-M', 'main'], check=True)
+        
+        # Add all files, commit and push
+        subprocess.run(['git', 'add', '.'], check=True)
+        subprocess.run(['git', 'commit', '-m', 'Initial commit: Generated Spring Boot project'], check=True)
+        subprocess.run(['git', 'push', '-u', 'origin', 'main'], check=True)
     
     def fix_remote_url(self, repo_name: str):
         """Fix remote URL if it's pointing to wrong repository"""

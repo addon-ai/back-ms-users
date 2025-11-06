@@ -158,27 +158,21 @@ class ProjectSyncGenerator:
     
     def _update_existing_repository(self, project_name: str, project_path: str, git_manager: GitManager):
         """Update existing repository preserving git history"""
-        # Check for existing backup first
-        backup_base_dir = self.github_client.config.get('projects', {}).get('backupDirectory', '.git-backups')
-        backup_path = os.path.join(backup_base_dir, f"{project_name}_git")
-        
+        # Always backup .git before regeneration if it exists
         backup_dir = None
-        if os.path.exists(backup_path):
-            backup_dir = backup_path
-            print(f"Using existing backup from {backup_dir}")
-        elif git_manager.has_git_repo():
+        if git_manager.has_git_repo():
             backup_dir = tempfile.mkdtemp()
             git_manager.backup_git_history(backup_dir)
             print(f"Backed up git history to {backup_dir}")
         
         try:
-            # Regenerate project using code generator
+            # Regenerate project using code generator (preserves .git)
             self._regenerate_project(project_name, project_path)
             
             # Include PR template locally in project AFTER regeneration
             self._include_pr_template_locally(project_path)
             
-            # Restore git history
+            # Restore git history if we had a backup
             if backup_dir:
                 git_manager.restore_git_history(backup_dir)
                 print("Restored git history")
@@ -196,8 +190,8 @@ class ProjectSyncGenerator:
             print(f"Successfully updated {project_name} in branch {feature_branch}")
             
         finally:
-            # Clean up temporary backup (but keep permanent backups)
-            if backup_dir and backup_dir != backup_path and os.path.exists(backup_dir):
+            # Clean up temporary backup
+            if backup_dir and os.path.exists(backup_dir):
                 shutil.rmtree(backup_dir)
     
     def _regenerate_project(self, project_name: str, project_path: str):
