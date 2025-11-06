@@ -67,7 +67,7 @@ fi
 # Smart cleanup: preserve Git history for existing GitHub repositories
 echo "🔍 Checking existing projects and GitHub repositories..."
 if [ -n "$GITHUB_TOKEN" ] && [ -d "$PROJECT_ROOT/projects" ]; then
-    python3 "$PROJECT_ROOT/libs/pygithub-integration.py" --backup-only
+    python3 "$PROJECT_ROOT/libs/py-github-integration.py" --backup-only
 else
     echo "🗑️  Cleaning up existing projects..."
     if [ -d "$PROJECT_ROOT/projects" ]; then
@@ -117,7 +117,7 @@ echo ""
 
 # Run the GitHub integration
 if [ -n "$GITHUB_TOKEN" ]; then
-    python3 "$PROJECT_ROOT/libs/pygithub-integration.py" --sync
+    python3 "$PROJECT_ROOT/libs/py-github-integration.py" --sync
     echo "✅ GitHub synchronization complete"
 else
     echo "⚠️  GITHUB_TOKEN not set. Skipping GitHub synchronization."

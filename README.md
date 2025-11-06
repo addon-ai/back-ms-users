@@ -249,10 +249,10 @@ export GITHUB_TOKEN="your_token"
 ### Manual Operations
 ```bash
 # Sync all projects with GitHub
-python3 libs/pygithub-integration.py
+python3 libs/py-github-integration.py
 
 # Sync specific project
-python3 libs/pygithub-integration.py project-name
+python3 libs/py-github-integration.py project-name
 
 # Create pipeline branch only
 python3 scripts/branch_manager.py
