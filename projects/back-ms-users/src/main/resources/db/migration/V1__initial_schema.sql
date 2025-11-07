@@ -12,10 +12,10 @@ BEGIN
             CREATE TABLE public."users" (
               "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY -- Unique identifier,
   "user_id" UUID NOT NULL -- Unique identifier for the user account. Generated automatically upon creation.,
-  "username" VARCHAR(255) NOT NULL UNIQUE -- User's unique username. Cannot be changed after account creation.,
-  "email" VARCHAR(255) NOT NULL UNIQUE -- User's email address. Used for notifications and account recovery.,
-  "firstName" VARCHAR(255) -- User's first name. May be null if not provided during registration.,
-  "lastName" VARCHAR(255) -- User's last name. May be null if not provided during registration.,
+  "username" VARCHAR(255) NOT NULL UNIQUE -- Users unique username. Cannot be changed after account creation.,
+  "email" VARCHAR(255) NOT NULL UNIQUE -- Users email address. Used for notifications and account recovery.,
+  "firstName" VARCHAR(255) -- Users first name. May be null if not provided during registration.,
+  "lastName" VARCHAR(255) -- Users last name. May be null if not provided during registration.,
   "status" VARCHAR(255) NOT NULL,
   "createdAt" TIMESTAMPTZ NOT NULL -- Timestamp when the user account was created. ISO 8601 format.,
   "updatedAt" TIMESTAMPTZ NOT NULL -- Timestamp when the user account was last updated. ISO 8601 format.
@@ -24,13 +24,13 @@ BEGIN
     END IF;
 END$$;
 
-CREATE INDEX "idx_users_username" ON "users" ("username"); -- User's unique username. Cannot be changed after account creation.
+CREATE INDEX "idx_users_username" ON "users" ("username"); -- Users unique username. Cannot be changed after account creation.
 
-CREATE INDEX "idx_users_email" ON "users" ("email"); -- User's email address. Used for notifications and account recovery.
+CREATE INDEX "idx_users_email" ON "users" ("email"); -- Users email address. Used for notifications and account recovery.
 
-CREATE INDEX "idx_users_firstName" ON "users" ("firstName"); -- User's first name. May be null if not provided during registration.
+CREATE INDEX "idx_users_firstName" ON "users" ("firstName"); -- Users first name. May be null if not provided during registration.
 
-CREATE INDEX "idx_users_lastName" ON "users" ("lastName"); -- User's last name. May be null if not provided during registration.
+CREATE INDEX "idx_users_lastName" ON "users" ("lastName"); -- Users last name. May be null if not provided during registration.
 
 CREATE INDEX "idx_users_status" ON "users" ("status"); -- Index for status field
 
