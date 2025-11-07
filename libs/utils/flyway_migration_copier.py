@@ -21,14 +21,23 @@ def copy_flyway_migrations():
     for project_config in projects:
         project_name = project_config['project']['general']['name']
         project_folder = project_config['project']['general']['folder']
+        project_type = project_config['project']['general'].get('type', 'springBoot')
         sgbd = project_config['database']['sgbd']
         flyway_scripts = project_config['database']['flywayScripts']
         
         # Source directory for SQL scripts
         sql_source_dir = project_root / "sql" / sgbd
         
+        # Determine actual project directory name based on type
+        if project_type == 'springWebflux':
+            # WebFlux projects use the full project name as directory
+            actual_project_dir = project_name
+        else:
+            # SpringBoot projects use the folder name
+            actual_project_dir = project_folder
+        
         # Target project directory
-        project_dir = project_root / "projects" / project_folder
+        project_dir = project_root / "projects" / actual_project_dir
         
         if not project_dir.exists():
             print(f"⚠️  Project directory not found: {project_dir}")
