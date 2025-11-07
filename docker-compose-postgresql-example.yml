@@ -5,7 +5,7 @@
 version: '3.8'
 
 services:
-  # postgresql Database for Local Development
+  # PostgreSQL Database for Local Development
   postgres:
     image: postgres:15-alpine
     container_name: back-ms-users-postgresql-local
@@ -18,10 +18,11 @@ services:
       - "5432:5432"
     volumes:
       - postgresql_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - back-ms-users-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d back-ms-users_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d back_ms_users_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,7 +38,7 @@ services:
       # Force local profile for Docker Compose
       SPRING_PROFILES_ACTIVE: local
       # Override database host for container networking
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/back-ms-users_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/back_ms_users_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password123
       # JVM settings for development

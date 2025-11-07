@@ -26,7 +26,6 @@ services:
       - "{{database.port}}:{{database.port}}"
     volumes:
       - {{database.sgbd}}_data:/var/lib/{{database.sgbd}}/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - {{project.general.name}}-network
     healthcheck:
