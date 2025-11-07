@@ -1,5 +1,5 @@
 [
-    {
+    { 
         "project": {
             "general": {
                 "name": "back-ms-users",
@@ -41,7 +41,8 @@
             "port": 5432,
             "name": "back_ms_users_db",
             "user": "postgres",
-            "password": "password123"
+            "password": "password123",
+            "flywayScripts": ["back-ms-users.sql", "back-ms-users-location.sql"]
         },
         "maven": {
             "distributionType": "bin",
@@ -73,7 +74,12 @@
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
                 "sshUrl": "git@github.com:addon-ai",
-                "defaultBranches": ["develop", "test", "staging", "main"],
+                "defaultBranches": [
+                    "develop",
+                    "test",
+                    "staging",
+                    "main"
+                ],
                 "repositorySettings": {
                     "private": false,
                     "autoInit": false,
@@ -137,7 +143,8 @@
             "port": 5433,
             "name": "back_ms_movies_db",
             "user": "postgres",
-            "password": "password123"
+            "password": "password123",
+            "flywayScripts": ["back-ms-movies.sql"]
         },
         "maven": {
             "distributionType": "bin",
@@ -169,7 +176,12 @@
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
                 "sshUrl": "git@github.com:addon-ai",
-                "defaultBranches": ["develop", "test", "staging", "main"],
+                "defaultBranches": [
+                    "develop",
+                    "test",
+                    "staging",
+                    "main"
+                ],
                 "repositorySettings": {
                     "private": false,
                     "autoInit": false,
@@ -236,7 +248,8 @@
             "port": 5432,
             "name": "back_ms_users_webflux_db",
             "user": "postgres",
-            "password": "password123"
+            "password": "password123",
+            "flywayScripts": ["back-ms-users.sql", "back-ms-users-location.sql"]
         },
         "maven": {
             "distributionType": "bin",
@@ -268,7 +281,12 @@
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
                 "sshUrl": "git@github.com:addon-ai",
-                "defaultBranches": ["develop", "test", "staging", "main"],
+                "defaultBranches": [
+                    "develop",
+                    "test",
+                    "staging",
+                    "main"
+                ],
                 "repositorySettings": {
                     "private": false,
                     "autoInit": false,
@@ -335,7 +353,8 @@
             "port": 5433,
             "name": "back_ms_movies_webflux_db",
             "user": "postgres",
-            "password": "password123"
+            "password": "password123",
+            "flywayScripts": ["back-ms-movies.sql"]
         },
         "maven": {
             "distributionType": "bin",
@@ -367,7 +386,12 @@
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
                 "sshUrl": "git@github.com:addon-ai",
-                "defaultBranches": ["develop", "test", "staging", "main"],
+                "defaultBranches": [
+                    "develop",
+                    "test",
+                    "staging",
+                    "main"
+                ],
                 "repositorySettings": {
                     "private": false,
                     "autoInit": false,
