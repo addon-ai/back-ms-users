@@ -30,7 +30,8 @@
                 "mavenCompiler": "3.11.0",
                 "mavenSurefire": "3.2.5",
                 "lombokMapstructBinding": "0.2.0",
-                "jacoco": "0.8.11"
+                "jacoco": "0.8.11",
+                "flywayDatabasePostgresql": "10.10.0"
             }
         },
         "database": {
@@ -132,7 +133,8 @@
                 "mavenCompiler": "3.11.0",
                 "mavenSurefire": "3.2.5",
                 "lombokMapstructBinding": "0.2.0",
-                "jacoco": "0.8.11"
+                "jacoco": "0.8.11",
+                "flywayDatabasePostgresql": "10.10.0"
             }
         },
         "database": {
@@ -237,7 +239,8 @@
                 "mavenCompiler": "3.11.0",
                 "mavenSurefire": "3.2.5",
                 "lombokMapstructBinding": "0.2.0",
-                "jacoco": "0.8.11"
+                "jacoco": "0.8.11",
+                "flywayDatabasePostgresql": "10.10.0"
             }
         },
         "database": {
@@ -342,7 +345,8 @@
                 "mavenCompiler": "3.11.0",
                 "mavenSurefire": "3.2.5",
                 "lombokMapstructBinding": "0.2.0",
-                "jacoco": "0.8.11"
+                "jacoco": "0.8.11",
+                "flywayDatabasePostgresql": "10.10.0"
             }
         },
         "database": {
