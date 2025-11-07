@@ -48,13 +48,13 @@ class SqlGenerator:
                 if prop_name == primary_key_field:
                     # This is the primary key
                     uuid_pk_type = get_sql_type({'type': 'uuid_pk'}, self.dialect)
-                    columns.append(f'"{prop_name}" {uuid_pk_type} -- Primary key identifier{comment}')
+                    columns.append(f'{prop_name} {uuid_pk_type} -- Primary key identifier{comment}')
                 else:
                     # This is a foreign key
                     sql_type = 'UUID'
                     if prop_name in required_fields:
                         sql_type += ' NOT NULL'
-                    columns.append(f'"{prop_name}" {sql_type}{comment}')
+                    columns.append(f'{prop_name} {sql_type}{comment}')
                 continue
             
             # Handle timestamp fields
@@ -71,15 +71,15 @@ class SqlGenerator:
             if prop_name in ['username', 'email', 'identification']:
                 sql_type += ' UNIQUE'
             
-            columns.append(f'"{prop_name}" {sql_type}{comment}')
+            columns.append(f'{prop_name} {sql_type}{comment}')
         
         # Add audit fields if not present
         if 'created_at' not in properties and 'createdAt' not in properties:
             default_timestamp = self._get_default_timestamp()
-            columns.append(f'"created_at" {self._get_timestamp_type()} NOT NULL DEFAULT {default_timestamp} -- Record creation timestamp')
+            columns.append(f'created_at {self._get_timestamp_type()} NOT NULL DEFAULT {default_timestamp} -- Record creation timestamp')
         
         if 'updated_at' not in properties and 'updatedAt' not in properties:
-            columns.append(f'"updated_at" {self._get_timestamp_type()} -- Record last update timestamp')
+            columns.append(f'updated_at {self._get_timestamp_type()} -- Record last update timestamp')
         
         # Create the CREATE TABLE statement with IF NOT EXISTS logic
         result += self._get_create_table_if_not_exists(table_name, columns)
@@ -123,7 +123,7 @@ class SqlGenerator:
         for field in search_fields:
             index_name = f"idx_{table_name}_{field}"
             field_description = self._clean_sql_comment(properties.get(field, {}).get('description', f'Index for {field} field'))
-            indexes.append(f'CREATE INDEX "{index_name}" ON "{table_name}" ("{field}"); -- {field_description}')
+            indexes.append(f'CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({field}); -- {field_description}')
         
         return indexes
     
@@ -141,13 +141,13 @@ class SqlGenerator:
         
         # Define columns for enum table
         columns = [
-            f'"id" {uuid_pk_type} -- Unique identifier',
-            '"code" VARCHAR(50) NOT NULL UNIQUE -- Enum code value',
-            '"name" VARCHAR(100) NOT NULL -- Human readable name',
-            '"description" VARCHAR(255) -- Detailed description',
-            '"active" BOOLEAN NOT NULL DEFAULT TRUE -- Whether this enum value is active',
-            f'"created_at" {self._get_timestamp_type()} NOT NULL DEFAULT {default_timestamp} -- Record creation timestamp',
-            f'"updated_at" {self._get_timestamp_type()} -- Record last update timestamp'
+            f'id {uuid_pk_type} -- Unique identifier',
+            'code VARCHAR(50) NOT NULL UNIQUE -- Enum code value',
+            'name VARCHAR(100) NOT NULL -- Human readable name',
+            'description VARCHAR(255) -- Detailed description',
+            'active BOOLEAN NOT NULL DEFAULT TRUE -- Whether this enum value is active',
+            f'created_at {self._get_timestamp_type()} NOT NULL DEFAULT {default_timestamp} -- Record creation timestamp',
+            f'updated_at {self._get_timestamp_type()} -- Record last update timestamp'
         ]
         
         result += self._get_create_table_if_not_exists(table_name, columns)
@@ -159,7 +159,7 @@ class SqlGenerator:
             name = value.replace('_', ' ').title()
             description = self._clean_sql_comment(f"{original_name} - {name}")
             
-            insert_stmt = f"INSERT INTO \"{table_name}\" (code, name, description) VALUES ('{value}', '{name}', '{description}');"
+            insert_stmt = f"INSERT INTO {table_name} (code, name, description) VALUES ('{value}', '{name}', '{description}') ON CONFLICT (code) DO NOTHING;"
             inserts.append(insert_stmt)
         
         # Combine CREATE TABLE and INSERTs
@@ -180,30 +180,30 @@ class SqlGenerator:
         for value in enum_values:
             name = value.replace('_', ' ').title()
             description = self._clean_sql_comment(f"{original_name} - {name}")
-            insert_stmt = f"INSERT INTO \"{table_name}\" (code, name, description) VALUES ('{value}', '{name}', '{description}');"
+            insert_stmt = f"INSERT INTO {table_name} (code, name, description) VALUES ('{value}', '{name}', '{description}') ON CONFLICT (code) DO NOTHING;"
             inserts.append(insert_stmt)
         
         return inserts
     
     def _get_create_table_if_not_exists(self, table_name: str, columns: List[str]) -> str:
         """Generate CREATE TABLE IF NOT EXISTS for each dialect."""
-        columns_str = ',\n  '.join(columns)
+        # Clean column definitions - remove quotes from column names
+        clean_columns = []
+        for col in columns:
+            # Remove quotes from column names but keep them for string values
+            col_clean = col.replace('"', '')
+            clean_columns.append(col_clean)
+        
+        columns_str = ',\n    '.join(clean_columns)
         
         if self.dialect == 'postgresql':
-            return f'''DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '{table_name}') THEN
-        EXECUTE '
-            CREATE TABLE public."{table_name}" (
-              {columns_str}
-            )
-        ';
-    END IF;
-END$$;'''
+            return f'''CREATE TABLE IF NOT EXISTS {table_name} (
+    {columns_str}
+);'''
         
         elif self.dialect == 'mysql':
             return f'''CREATE TABLE IF NOT EXISTS `{table_name}` (
-  {columns_str}
+    {columns_str}
 );'''
         
         elif self.dialect == 'sqlserver':
@@ -231,8 +231,7 @@ END;
 /'''
         
         else:
-            # Fallback to standard CREATE TABLE
-            return f'CREATE TABLE "{table_name}" (\n  {columns_str}\n);'
+            return f'CREATE TABLE {table_name} (\n    {columns_str}\n);'
     
     def _clean_sql_comment(self, text: str) -> str:
         """Clean text for use in SQL comments to prevent syntax errors."""
