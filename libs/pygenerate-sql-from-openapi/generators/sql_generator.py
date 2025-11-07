@@ -187,14 +187,19 @@ class SqlGenerator:
     
     def _get_create_table_if_not_exists(self, table_name: str, columns: List[str]) -> str:
         """Generate CREATE TABLE IF NOT EXISTS for each dialect."""
-        # Clean column definitions - remove quotes from column names
+        # Clean column definitions and add commas
         clean_columns = []
         for i, col in enumerate(columns):
-            # Remove quotes from column names but keep them for string values
+            # Remove quotes from column names
             col_clean = col.replace('"', '')
             # Add comma to all columns except the last one
-            if i < len(columns) - 1 and not col_clean.rstrip().endswith(','):
-                col_clean = col_clean.rstrip() + ','
+            if i < len(columns) - 1:
+                # Find where the comment starts
+                if ' -- ' in col_clean:
+                    parts = col_clean.split(' -- ', 1)
+                    col_clean = parts[0].rstrip() + ', -- ' + parts[1]
+                else:
+                    col_clean = col_clean.rstrip() + ','
             clean_columns.append(col_clean)
         
         columns_str = '\n    '.join(clean_columns)
