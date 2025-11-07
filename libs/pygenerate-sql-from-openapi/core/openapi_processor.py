@@ -42,6 +42,9 @@ class OpenApiProcessor:
         schemas = openapi_spec.get('components', {}).get('schemas', {})
         response_schemas = {}
         
+        # Clean up descriptions in schemas
+        schemas = self._clean_descriptions(schemas)
+        
         # Exclude CRUD operation schemas
         excluded_prefixes = ['Create', 'Delete', 'List', 'Update', 'Get']
         excluded_keywords = ['Error', 'Validation', 'Conflict', 'NotFound']
@@ -95,3 +98,45 @@ class OpenApiProcessor:
             name = name + 's'
         
         return name
+    
+    def _clean_descriptions(self, schemas: Dict[str, Any]) -> Dict[str, Any]:
+        """Clean HTML entities and unwanted characters from descriptions."""
+        cleaned_schemas = {}
+        
+        for schema_name, schema_def in schemas.items():
+            cleaned_schema = schema_def.copy()
+            
+            # Clean schema description
+            if 'description' in cleaned_schema:
+                cleaned_schema['description'] = self._clean_text(cleaned_schema['description'])
+            
+            # Clean property descriptions
+            if 'properties' in cleaned_schema:
+                cleaned_properties = {}
+                for prop_name, prop_def in cleaned_schema['properties'].items():
+                    cleaned_prop = prop_def.copy()
+                    if 'description' in cleaned_prop:
+                        cleaned_prop['description'] = self._clean_text(cleaned_prop['description'])
+                    cleaned_properties[prop_name] = cleaned_prop
+                cleaned_schema['properties'] = cleaned_properties
+            
+            cleaned_schemas[schema_name] = cleaned_schema
+        
+        return cleaned_schemas
+    
+    def _clean_text(self, text: str) -> str:
+        """Clean HTML entities and unwanted characters from text."""
+        if not text:
+            return text
+        
+        # Replace HTML entities
+        text = text.replace('&#39;', "'")
+        text = text.replace('&quot;', '"')
+        text = text.replace('&amp;', '&')
+        text = text.replace('&lt;', '<')
+        text = text.replace('&gt;', '>')
+        
+        # Remove trailing commas and periods
+        text = text.rstrip('.,;')
+        
+        return text
