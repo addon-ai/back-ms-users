@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Reactive repository adapter implementing the Region domain port.
@@ -46,7 +47,7 @@ public class RegionRepositoryAdapter implements RegionRepositoryPort {
     @Override
     public Mono<Region> findById(String id) {
         log.debug("Finding Region by id: {}", id);
-        return r2dbcRepository.findById(id)
+        return r2dbcRepository.findById(UUID.fromString(id))
                 .map(mapper::toDomain)
                 .doOnError(e -> log.error("Database error while finding Region by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find Region by id", e));
@@ -64,7 +65,7 @@ public class RegionRepositoryAdapter implements RegionRepositoryPort {
     @Override
     public Mono<Void> deleteById(String id) {
         log.debug("Deleting Region by id: {}", id);
-        return r2dbcRepository.deleteById(id)
+        return r2dbcRepository.deleteById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while deleting Region by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to delete Region by id", e));
     }
@@ -72,7 +73,7 @@ public class RegionRepositoryAdapter implements RegionRepositoryPort {
     @Override
     public Mono<Boolean> existsById(String id) {
         log.debug("Checking if Region exists by id: {}", id);
-        return r2dbcRepository.existsById(id)
+        return r2dbcRepository.existsById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while checking if Region exists by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to check if Region exists by id", e));
     }

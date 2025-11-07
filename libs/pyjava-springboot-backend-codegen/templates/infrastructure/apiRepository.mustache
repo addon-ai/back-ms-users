@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Spring Data JPA Repository for {{entityName}} entities.
@@ -23,7 +24,7 @@ import java.util.Optional;
  * @version {{version}}
  */
 @Repository
-public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, String> {
+public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, UUID> {
     
     /**
      * Find entities with pagination and search functionality.
@@ -63,6 +64,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository adapter implementing the {{entityName}} domain port.
@@ -101,7 +103,7 @@ public class {{classname}} implements {{portName}} {
     public Optional<{{entityName}}> findById(String id) {
         log.debug("Finding {{entityName}} by id: {}", id);
         try {
-            return jpaRepository.findById(id)
+            return jpaRepository.findById(UUID.fromString(id))
                     .map(mapper::toDomain);
         } catch (Exception e) {
             log.error("Database error while finding {{entityName}} by id {}: {}", id, e.getMessage(), e);
@@ -124,7 +126,7 @@ public class {{classname}} implements {{portName}} {
     public void deleteById(String id) {
         log.debug("Deleting {{entityName}} by id: {}", id);
         try {
-            jpaRepository.deleteById(id);
+            jpaRepository.deleteById(UUID.fromString(id));
         } catch (Exception e) {
             log.error("Database error while deleting {{entityName}} by id {}: {}", id, e.getMessage(), e);
             throw new InternalServerErrorException("Failed to delete {{entityName}} by id", e);
@@ -135,7 +137,7 @@ public class {{classname}} implements {{portName}} {
     public boolean existsById(String id) {
         log.debug("Checking if {{entityName}} exists by id: {}", id);
         try {
-            return jpaRepository.existsById(id);
+            return jpaRepository.existsById(UUID.fromString(id));
         } catch (Exception e) {
             log.error("Database error while checking if {{entityName}} exists by id {}: {}", id, e.getMessage(), e);
             throw new InternalServerErrorException("Failed to check if {{entityName}} exists by id", e);

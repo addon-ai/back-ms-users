@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Spring Data R2DBC Repository for Rental entities.
@@ -21,7 +22,7 @@ import reactor.core.publisher.Mono;
  * @version 1.0.0
  */
 @Repository
-public interface JpaRentalRepository extends R2dbcRepository<RentalDbo, String> {
+public interface JpaRentalRepository extends R2dbcRepository<RentalDbo, UUID> {
     
     /**
      * Find entities with search functionality.

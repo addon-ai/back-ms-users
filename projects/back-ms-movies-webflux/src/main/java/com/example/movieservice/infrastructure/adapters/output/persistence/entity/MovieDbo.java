@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import com.example.movieservice.domain.model.EntityStatus;
+import java.util.UUID;
+import java.time.Instant;
 import java.math.BigDecimal;
 
 /**
@@ -30,7 +32,7 @@ public class MovieDbo {
 
     @Id
     @Column("movie_id")
-    private String id;
+    private UUID id;
 
     @Column("title")
     private String title;
@@ -54,8 +56,8 @@ public class MovieDbo {
     private EntityStatus status = EntityStatus.ACTIVE;
     
     @Column("created_at")
-    private String createdAt;
+    private Instant createdAt;
 
     @Column("updated_at")
-    private String updatedAt;
+    private Instant updatedAt;
 }

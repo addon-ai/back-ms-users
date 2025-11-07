@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Spring Data R2DBC Repository for {{entityName}} entities.
@@ -22,7 +23,7 @@ import reactor.core.publisher.Mono;
  * @version {{version}}
  */
 @Repository
-public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, String> {
+public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> {
     
     /**
      * Find entities with search functionality.
@@ -71,6 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Reactive repository adapter implementing the {{entityName}} domain port.
@@ -105,7 +107,7 @@ public class {{classname}} implements {{portName}} {
     @Override
     public Mono<{{entityName}}> findById(String id) {
         log.debug("Finding {{entityName}} by id: {}", id);
-        return r2dbcRepository.findById(id)
+        return r2dbcRepository.findById(UUID.fromString(id))
                 .map(mapper::toDomain)
                 .doOnError(e -> log.error("Database error while finding {{entityName}} by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find {{entityName}} by id", e));
@@ -123,7 +125,7 @@ public class {{classname}} implements {{portName}} {
     @Override
     public Mono<Void> deleteById(String id) {
         log.debug("Deleting {{entityName}} by id: {}", id);
-        return r2dbcRepository.deleteById(id)
+        return r2dbcRepository.deleteById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while deleting {{entityName}} by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to delete {{entityName}} by id", e));
     }
@@ -131,7 +133,7 @@ public class {{classname}} implements {{portName}} {
     @Override
     public Mono<Boolean> existsById(String id) {
         log.debug("Checking if {{entityName}} exists by id: {}", id);
-        return r2dbcRepository.existsById(id)
+        return r2dbcRepository.existsById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while checking if {{entityName}} exists by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to check if {{entityName}} exists by id", e));
     }

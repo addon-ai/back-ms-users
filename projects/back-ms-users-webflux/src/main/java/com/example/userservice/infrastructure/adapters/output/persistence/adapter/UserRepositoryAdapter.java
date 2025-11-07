@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Reactive repository adapter implementing the User domain port.
@@ -46,7 +47,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public Mono<User> findById(String id) {
         log.debug("Finding User by id: {}", id);
-        return r2dbcRepository.findById(id)
+        return r2dbcRepository.findById(UUID.fromString(id))
                 .map(mapper::toDomain)
                 .doOnError(e -> log.error("Database error while finding User by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find User by id", e));
@@ -64,7 +65,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public Mono<Void> deleteById(String id) {
         log.debug("Deleting User by id: {}", id);
-        return r2dbcRepository.deleteById(id)
+        return r2dbcRepository.deleteById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while deleting User by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to delete User by id", e));
     }
@@ -72,7 +73,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public Mono<Boolean> existsById(String id) {
         log.debug("Checking if User exists by id: {}", id);
-        return r2dbcRepository.existsById(id)
+        return r2dbcRepository.existsById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while checking if User exists by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to check if User exists by id", e));
     }

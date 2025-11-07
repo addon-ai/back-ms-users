@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import com.example.userservice.domain.model.EntityStatus;
+import java.util.UUID;
+import java.time.Instant;
 
 /**
  * R2DBC Entity representing Country data in the database.
@@ -29,7 +31,7 @@ public class CountryDbo {
 
     @Id
     @Column("country_id")
-    private String id;
+    private UUID id;
 
     @Column("name")
     private String name;
@@ -41,8 +43,8 @@ public class CountryDbo {
     private EntityStatus status = EntityStatus.ACTIVE;
     
     @Column("created_at")
-    private String createdAt;
+    private Instant createdAt;
 
     @Column("updated_at")
-    private String updatedAt;
+    private Instant updatedAt;
 }

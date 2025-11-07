@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import com.example.movieservice.domain.model.EntityStatus;
+import java.util.UUID;
+import java.time.Instant;
 
 /**
  * R2DBC Entity representing Rental data in the database.
@@ -29,7 +31,7 @@ public class RentalDbo {
 
     @Id
     @Column("rental_id")
-    private String id;
+    private UUID id;
 
     @Column("movie_id")
     private String movieId;
@@ -51,8 +53,8 @@ public class RentalDbo {
     private EntityStatus status = EntityStatus.ACTIVE;
     
     @Column("created_at")
-    private String createdAt;
+    private Instant createdAt;
 
     @Column("updated_at")
-    private String updatedAt;
+    private Instant updatedAt;
 }

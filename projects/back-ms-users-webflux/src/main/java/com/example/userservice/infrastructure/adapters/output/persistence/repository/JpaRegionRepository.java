@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Spring Data R2DBC Repository for Region entities.
@@ -21,7 +22,7 @@ import reactor.core.publisher.Mono;
  * @version 1.0.0
  */
 @Repository
-public interface JpaRegionRepository extends R2dbcRepository<RegionDbo, String> {
+public interface JpaRegionRepository extends R2dbcRepository<RegionDbo, UUID> {
     
     /**
      * Find entities with search functionality.

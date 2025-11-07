@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Spring Data JPA Repository for City entities.
@@ -22,7 +23,7 @@ import java.util.Optional;
  * @version 1.0.0
  */
 @Repository
-public interface JpaCityRepository extends JpaRepository<CityDbo, String> {
+public interface JpaCityRepository extends JpaRepository<CityDbo, UUID> {
     
     /**
      * Find entities with pagination and search functionality.

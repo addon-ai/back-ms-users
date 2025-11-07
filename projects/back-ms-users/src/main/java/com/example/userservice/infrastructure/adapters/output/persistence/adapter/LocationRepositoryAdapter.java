@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository adapter implementing the Location domain port.
@@ -52,7 +53,7 @@ public class LocationRepositoryAdapter implements LocationRepositoryPort {
     public Optional<Location> findById(String id) {
         log.debug("Finding Location by id: {}", id);
         try {
-            return jpaRepository.findById(id)
+            return jpaRepository.findById(UUID.fromString(id))
                     .map(mapper::toDomain);
         } catch (Exception e) {
             log.error("Database error while finding Location by id {}: {}", id, e.getMessage(), e);
@@ -75,7 +76,7 @@ public class LocationRepositoryAdapter implements LocationRepositoryPort {
     public void deleteById(String id) {
         log.debug("Deleting Location by id: {}", id);
         try {
-            jpaRepository.deleteById(id);
+            jpaRepository.deleteById(UUID.fromString(id));
         } catch (Exception e) {
             log.error("Database error while deleting Location by id {}: {}", id, e.getMessage(), e);
             throw new InternalServerErrorException("Failed to delete Location by id", e);
@@ -86,7 +87,7 @@ public class LocationRepositoryAdapter implements LocationRepositoryPort {
     public boolean existsById(String id) {
         log.debug("Checking if Location exists by id: {}", id);
         try {
-            return jpaRepository.existsById(id);
+            return jpaRepository.existsById(UUID.fromString(id));
         } catch (Exception e) {
             log.error("Database error while checking if Location exists by id {}: {}", id, e.getMessage(), e);
             throw new InternalServerErrorException("Failed to check if Location exists by id", e);

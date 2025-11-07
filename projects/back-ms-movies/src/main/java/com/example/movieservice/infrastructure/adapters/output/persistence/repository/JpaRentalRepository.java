@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Spring Data JPA Repository for Rental entities.
@@ -22,7 +23,7 @@ import java.util.Optional;
  * @version 1.0.0
  */
 @Repository
-public interface JpaRentalRepository extends JpaRepository<RentalDbo, String> {
+public interface JpaRentalRepository extends JpaRepository<RentalDbo, UUID> {
     
     /**
      * Find entities with pagination and search functionality.

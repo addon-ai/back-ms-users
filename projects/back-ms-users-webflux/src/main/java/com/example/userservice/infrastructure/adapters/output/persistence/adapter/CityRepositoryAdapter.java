@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Reactive repository adapter implementing the City domain port.
@@ -46,7 +47,7 @@ public class CityRepositoryAdapter implements CityRepositoryPort {
     @Override
     public Mono<City> findById(String id) {
         log.debug("Finding City by id: {}", id);
-        return r2dbcRepository.findById(id)
+        return r2dbcRepository.findById(UUID.fromString(id))
                 .map(mapper::toDomain)
                 .doOnError(e -> log.error("Database error while finding City by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find City by id", e));
@@ -64,7 +65,7 @@ public class CityRepositoryAdapter implements CityRepositoryPort {
     @Override
     public Mono<Void> deleteById(String id) {
         log.debug("Deleting City by id: {}", id);
-        return r2dbcRepository.deleteById(id)
+        return r2dbcRepository.deleteById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while deleting City by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to delete City by id", e));
     }
@@ -72,7 +73,7 @@ public class CityRepositoryAdapter implements CityRepositoryPort {
     @Override
     public Mono<Boolean> existsById(String id) {
         log.debug("Checking if City exists by id: {}", id);
-        return r2dbcRepository.existsById(id)
+        return r2dbcRepository.existsById(UUID.fromString(id))
                 .doOnError(e -> log.error("Database error while checking if City exists by id {}: {}", id, e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to check if City exists by id", e));
     }

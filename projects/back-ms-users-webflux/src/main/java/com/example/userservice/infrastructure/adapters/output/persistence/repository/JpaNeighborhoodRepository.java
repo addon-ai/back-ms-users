@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 /**
  * Spring Data R2DBC Repository for Neighborhood entities.
@@ -21,7 +22,7 @@ import reactor.core.publisher.Mono;
  * @version 1.0.0
  */
 @Repository
-public interface JpaNeighborhoodRepository extends R2dbcRepository<NeighborhoodDbo, String> {
+public interface JpaNeighborhoodRepository extends R2dbcRepository<NeighborhoodDbo, UUID> {
     
     /**
      * Find entities with search functionality.

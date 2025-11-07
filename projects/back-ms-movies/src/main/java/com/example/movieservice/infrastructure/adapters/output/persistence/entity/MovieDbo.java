@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.GenericGenerator;
 import com.example.movieservice.domain.model.EntityStatus;
+import java.util.UUID;
+import java.time.Instant;
 import java.math.BigDecimal;
 
 /**
@@ -38,7 +40,7 @@ public class MovieDbo {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "movie_id", updatable = false, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -62,8 +64,8 @@ public class MovieDbo {
     @Builder.Default
     private EntityStatus status = EntityStatus.ACTIVE;
     @Column(name = "created_at")
-    private String createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
-    private String updatedAt;
+    private Instant updatedAt;
 }

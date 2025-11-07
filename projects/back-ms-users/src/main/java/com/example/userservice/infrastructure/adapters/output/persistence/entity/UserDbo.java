@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.GenericGenerator;
 import com.example.userservice.domain.model.EntityStatus;
+import java.util.UUID;
+import java.time.Instant;
 
 /**
  * JPA Entity representing User data in the database.
@@ -37,7 +39,7 @@ public class UserDbo {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "user_id", updatable = false, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "username", nullable = false)
     private String username;
@@ -53,8 +55,8 @@ public class UserDbo {
     @Builder.Default
     private EntityStatus status = EntityStatus.ACTIVE;
     @Column(name = "created_at")
-    private String createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
-    private String updatedAt;
+    private Instant updatedAt;
 }

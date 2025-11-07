@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.GenericGenerator;
 import com.example.userservice.domain.model.EntityStatus;
+import java.util.UUID;
+import java.time.Instant;
 
 /**
  * JPA Entity representing Location data in the database.
@@ -37,7 +39,7 @@ public class LocationDbo {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "location_id", updatable = false, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -65,8 +67,8 @@ public class LocationDbo {
     @Builder.Default
     private EntityStatus status = EntityStatus.ACTIVE;
     @Column(name = "created_at")
-    private String createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
-    private String updatedAt;
+    private Instant updatedAt;
 }
