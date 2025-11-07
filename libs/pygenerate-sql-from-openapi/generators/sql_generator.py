@@ -189,12 +189,15 @@ class SqlGenerator:
         """Generate CREATE TABLE IF NOT EXISTS for each dialect."""
         # Clean column definitions - remove quotes from column names
         clean_columns = []
-        for col in columns:
+        for i, col in enumerate(columns):
             # Remove quotes from column names but keep them for string values
             col_clean = col.replace('"', '')
+            # Add comma to all columns except the last one
+            if i < len(columns) - 1 and not col_clean.rstrip().endswith(','):
+                col_clean = col_clean.rstrip() + ','
             clean_columns.append(col_clean)
         
-        columns_str = ',\n    '.join(clean_columns)
+        columns_str = '\n    '.join(clean_columns)
         
         if self.dialect == 'postgresql':
             return f'''CREATE TABLE IF NOT EXISTS {table_name} (
@@ -202,11 +205,13 @@ class SqlGenerator:
 );'''
         
         elif self.dialect == 'mysql':
+            columns_str = '\n    '.join(clean_columns)
             return f'''CREATE TABLE IF NOT EXISTS `{table_name}` (
     {columns_str}
 );'''
         
         elif self.dialect == 'sqlserver':
+            columns_str = '\n        '.join(clean_columns)
             return f'''IF NOT EXISTS (SELECT * FROM sysobjects WHERE name = '{table_name}' AND xtype = 'U')
 BEGIN
     CREATE TABLE dbo.[{table_name}] (
@@ -216,6 +221,7 @@ END
 GO'''
         
         elif self.dialect == 'oracle':
+            columns_str = '\n                '.join(clean_columns)
             return f'''DECLARE
     v_count NUMBER;
 BEGIN
@@ -231,6 +237,7 @@ END;
 /'''
         
         else:
+            columns_str = '\n    '.join(clean_columns)
             return f'CREATE TABLE {table_name} (\n    {columns_str}\n);'
     
     def _clean_sql_comment(self, text: str) -> str:
