@@ -11,25 +11,25 @@ services:
     container_name: {{project.general.name}}-{{database.sgbd}}-local
     restart: unless-stopped
     environment:
-      {{#database.postgresql}}POSTGRES_DB: {{project.general.name}}_db
+      {{#database.postgresql}}POSTGRES_DB: {{project.general.name_underscore}}_db
       POSTGRES_USER: {{database.username}}
       POSTGRES_PASSWORD: {{database.password}}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"{{/database.postgresql}}{{#database.mysql}}MYSQL_DATABASE: {{project.general.name}}_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"{{/database.postgresql}}{{#database.mysql}}MYSQL_DATABASE: {{project.general.name_underscore}}_db
       MYSQL_USER: {{database.username}}
       MYSQL_PASSWORD: {{database.password}}
-      MYSQL_ROOT_PASSWORD: {{database.password}}{{/database.mysql}}{{#database.oracle}}ORACLE_SID: {{project.general.name}}_db
+      MYSQL_ROOT_PASSWORD: {{database.password}}{{/database.mysql}}{{#database.oracle}}ORACLE_SID: {{project.general.name_underscore}}_db
       ORACLE_PWD: {{database.password}}
       ORACLE_CHARACTERSET: AL32UTF8{{/database.oracle}}{{#database.sqlserver}}ACCEPT_EULA: Y
       SA_PASSWORD: {{database.password}}
-      MSSQL_DB: {{project.general.name}}_db{{/database.sqlserver}}
+      MSSQL_DB: {{project.general.name_underscore}}_db{{/database.sqlserver}}
     ports:
       - "{{database.port}}:{{database.port}}"
     volumes:
       - {{database.sgbd}}_data:/var/lib/{{database.sgbd}}/data
     networks:
-      - {{project.general.name}}-network
+      - {{project.general.name_underscore}}_network
     healthcheck:
-      test: {{#database.postgresql}}["CMD-SHELL", "pg_isready -U {{database.username}} -d {{project.general.name}}_db"]{{/database.postgresql}}{{#database.mysql}}["CMD", "mysqladmin", "ping", "-h", "localhost"]{{/database.mysql}}{{#database.oracle}}["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -s {{database.username}}/{{database.password}}@localhost:1521/{{project.general.name}}_db"]{{/database.oracle}}{{#database.sqlserver}}["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P {{database.password}} -Q 'SELECT 1'"]{{/database.sqlserver}}
+      test: {{#database.postgresql}}["CMD-SHELL", "pg_isready -U {{database.username}} -d {{project.general.name_underscore}}_db"]{{/database.postgresql}}{{#database.mysql}}["CMD", "mysqladmin", "ping", "-h", "localhost"]{{/database.mysql}}{{#database.oracle}}["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -s {{database.username}}/{{database.password}}@localhost:1521/{{project.general.name_underscore}}_db"]{{/database.oracle}}{{#database.sqlserver}}["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P {{database.password}} -Q 'SELECT 1'"]{{/database.sqlserver}}
       interval: 10s
       timeout: 5s
       retries: 5
@@ -45,7 +45,7 @@ services:
       # Force local profile for Docker Compose
       SPRING_PROFILES_ACTIVE: local
       # Override database host for container networking
-      SPRING_DATASOURCE_URL: jdbc:{{database.sgbd}}://{{database.sgbd}}:{{database.port}}/{{project.general.name}}_db
+      SPRING_DATASOURCE_URL: jdbc:{{database.sgbd}}://{{database.sgbd}}:{{database.port}}/{{project.general.name_underscore}}_db
       SPRING_DATASOURCE_USERNAME: {{database.username}}
       SPRING_DATASOURCE_PASSWORD: {{database.password}}
       # JVM settings for development
@@ -56,7 +56,7 @@ services:
       {{database.sgbd}}:
         condition: service_healthy
     networks:
-      - {{project.general.name}}-network
+      - {{project.general.name_underscore}}_network
     volumes:
       # Mount logs for debugging
       - ./logs:/app/logs
@@ -81,7 +81,7 @@ services:
     depends_on:
       - {{database.sgbd}}
     networks:
-      - {{project.general.name}}-network
+      - {{project.general.name_underscore}}_network
     profiles:
       - tools{{/database.postgresql}}{{#database.mysql}}phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
@@ -96,7 +96,7 @@ services:
     depends_on:
       - {{database.sgbd}}
     networks:
-      - {{project.general.name}}-network
+      - {{project.general.name_underscore}}_network
     profiles:
       - tools{{/database.mysql}}
 
@@ -105,6 +105,6 @@ volumes:
     driver: local
 
 networks:
-  {{project.general.name}}-network:
+  {{project.general.name_underscore}}_network:
     driver: bridge
-    name: {{project.general.name}}-local-network
+    name: {{project.general.name_underscore}}_local_network

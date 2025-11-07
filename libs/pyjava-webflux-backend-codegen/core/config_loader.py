@@ -77,7 +77,13 @@ class ConfigLoader:
             context['author'] = project_config['project']['general'].get('author', 'Generator')
             context['version'] = project_config['project']['general'].get('version', '1.0.0')
             context['artifactVersion'] = project_config['project']['params'].get('artifactVersion', '1.0.0')
-            context['project'] = project_config['project']
+            
+            # Create modified project config with underscores for Docker compatibility
+            project_copy = project_config['project'].copy()
+            project_copy['general'] = project_copy['general'].copy()
+            project_copy['general']['name_underscore'] = project_copy['general']['name'].replace('-', '_')
+            
+            context['project'] = project_copy
             context.update(project_config['project']['params'])
         
         # Add infrastructure configuration
