@@ -37,10 +37,18 @@ services:
     environment:
       # Force local profile for Docker Compose
       SPRING_PROFILES_ACTIVE: local
-      # Override database host for container networking
+      
+      # Database connection variables
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/back_ms_users_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password123
+
+      # --- CAMBIO AQUÍ ---
+      # Reduced logging level from DEBUG to INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_JDBC: INFO
+      LOGGING_LEVEL_ORG_FLYWAYDB: INFO
+      # --- FIN DEL CAMBIO ---
+
       # JVM settings for development
       JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
     ports:

@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/back_ms_users_db
-    username: postgres
-    password: password123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/back_ms_users_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password123}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -23,8 +23,8 @@ server:
 
 logging:
   level:
-    root: DEBUG
-    org.springframework.security: DEBUG
+    root: INFO
+    org.springframework.security: INFO
 
 springdoc:
   api-docs:
