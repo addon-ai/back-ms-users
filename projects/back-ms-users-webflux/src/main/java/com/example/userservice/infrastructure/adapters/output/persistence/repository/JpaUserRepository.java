@@ -33,7 +33,10 @@ public interface JpaUserRepository extends R2dbcRepository<UserDbo, UUID> {
      */
     @Query("SELECT * FROM users u WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
            "ORDER BY u.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<UserDbo> findBySearchTerm(@Param("search") String search, 
@@ -45,7 +48,10 @@ public interface JpaUserRepository extends R2dbcRepository<UserDbo, UUID> {
      */
     @Query("SELECT COUNT(*) FROM users u WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%')))")
     Mono<Long> countBySearchTerm(@Param("search") String search);
     
     /**
@@ -53,5 +59,11 @@ public interface JpaUserRepository extends R2dbcRepository<UserDbo, UUID> {
      */
     @Query("SELECT * FROM users u ORDER BY u.created_at DESC LIMIT :limit OFFSET :offset")
     Flux<UserDbo> findAllPaged(@Param("limit") Long limit, @Param("offset") Long offset);
+    
+    /**
+     * Count all entities.
+     */
+    @Query("SELECT COUNT(*) FROM users")
+    Mono<Long> countAll();
 }
 

@@ -19,6 +19,8 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.math.BigDecimal;
+import java.time.Instant;
+import org.mapstruct.Named;
 
 /**
  * MapStruct mapper for User transformations between layers.
@@ -37,12 +39,29 @@ public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
+    /**
+     * Audit field conversion methods
+     */
+    @Named("instantToString")
+    default String instantToString(Instant instant) {
+        return instant != null ? instant.toString() : null;
+    }
+    
+    @Named("stringToInstant")
+    default Instant stringToInstant(String dateString) {
+        return dateString != null ? Instant.parse(dateString) : null;
+    }
+
     // Domain to DBO mappings
     @Mapping(source = "userId", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "stringToInstant")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "stringToInstant")
     @org.mapstruct.Named("domainToDbo")
     UserDbo toDbo(User domain);
     
     @Mapping(source = "id", target = "userId")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "instantToString")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "instantToString")
     @org.mapstruct.Named("dboToDomain")
     User toDomain(UserDbo dbo);
     

@@ -29,4 +29,8 @@ public interface UserRepositoryPort {
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
+    
+    Mono<Long> countBySearchTerm(String search);
+    
+    Mono<Long> countAll();
 }

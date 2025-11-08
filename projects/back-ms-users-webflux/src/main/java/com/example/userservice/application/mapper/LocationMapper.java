@@ -57,18 +57,32 @@ public interface LocationMapper {
     @Mapping(target = "status", constant = "ACTIVE")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now().toString())")
     @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now().toString())")
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "neighborhood", ignore = true)
     Location fromCreateRequest(CreateLocationRequestContent request);
     
     @Mapping(target = "locationId", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "neighborhood", ignore = true)
     Location fromUpdateRequest(UpdateLocationRequestContent request);
     
     @Mapping(target = "locationId", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "neighborhood", ignore = true)
     void updateEntityFromRequest(UpdateLocationRequestContent request, @org.mapstruct.MappingTarget Location entity);
 
     // Basic mapping methods - MapStruct will handle field mapping automatically
@@ -79,6 +93,10 @@ public interface LocationMapper {
     List<LocationResponse> toDtoList(List<Location> domains);
 
     // Specific response mapping methods
+    @Mapping(target = "countryId", ignore = true)
+    @Mapping(target = "regionId", ignore = true)
+    @Mapping(target = "cityId", ignore = true)
+    @Mapping(target = "neighborhoodId", ignore = true)
     CreateLocationResponseContent toCreateResponse(Location domain);
     GetLocationResponseContent toGetResponse(Location domain);
     UpdateLocationResponseContent toUpdateResponse(Location domain);

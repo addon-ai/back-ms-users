@@ -105,11 +105,19 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
                 .onErrorMap(e -> new InternalServerErrorException("Failed to search Users", e));
     }
     
-    // Additional business methods for reactive operations
+    @Override
     public Mono<Long> countBySearchTerm(String search) {
         log.debug("Counting Users with search term: {}", search);
         return r2dbcRepository.countBySearchTerm(search)
                 .doOnError(e -> log.error("Database error while counting Users: {}", e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count Users", e));
+    }
+    
+    @Override
+    public Mono<Long> countAll() {
+        log.debug("Counting all Users");
+        return r2dbcRepository.countAll()
+                .doOnError(e -> log.error("Database error while counting all Users: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to count all Users", e));
     }
 }
