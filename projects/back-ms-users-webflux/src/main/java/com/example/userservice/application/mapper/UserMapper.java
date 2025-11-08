@@ -63,12 +63,14 @@ public interface UserMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "username", ignore = true)
     User fromUpdateRequest(UpdateUserRequestContent request);
     
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "username", ignore = true)
     void updateEntityFromRequest(UpdateUserRequestContent request, @org.mapstruct.MappingTarget User entity);
 
     // Basic mapping methods - MapStruct will handle field mapping automatically

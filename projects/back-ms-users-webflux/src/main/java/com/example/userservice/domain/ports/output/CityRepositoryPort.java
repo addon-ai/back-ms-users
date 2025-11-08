@@ -29,4 +29,6 @@ public interface CityRepositoryPort {
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
+    
+    Flux<City> findAllPaged(Integer page, Integer size);
 }

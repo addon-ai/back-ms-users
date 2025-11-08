@@ -57,18 +57,32 @@ public interface LocationMapper {
     @Mapping(target = "status", constant = "ACTIVE")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now().toString())")
     @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now().toString())")
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "neighborhood", ignore = true)
     Location fromCreateRequest(CreateLocationRequestContent request);
     
     @Mapping(target = "locationId", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "neighborhood", ignore = true)
     Location fromUpdateRequest(UpdateLocationRequestContent request);
     
     @Mapping(target = "locationId", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "neighborhood", ignore = true)
     void updateEntityFromRequest(UpdateLocationRequestContent request, @org.mapstruct.MappingTarget Location entity);
 
     // Basic mapping methods - MapStruct will handle field mapping automatically

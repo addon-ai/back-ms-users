@@ -29,4 +29,6 @@ public interface CountryRepositoryPort {
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
+    
+    Flux<Country> findAllPaged(Integer page, Integer size);
 }

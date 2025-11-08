@@ -47,12 +47,15 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     private Throwable mapRepositoryException(Throwable ex) {
         // Business logic exceptions - propagate to service layer
         if (ex instanceof org.springframework.dao.DuplicateKeyException) {
+            log.debug("Duplicate key constraint violation: {}", ex.getMessage());
             return ex;
         }
         if (ex instanceof org.springframework.dao.DataIntegrityViolationException) {
+            log.debug("Data integrity violation: {}", ex.getMessage());
             return ex;
         }
         // Technical exceptions - convert to infrastructure errors
+        log.error("Technical database error: {}", ex.getMessage(), ex);
         return new InternalServerErrorException("Failed to save User", ex);
     }
 

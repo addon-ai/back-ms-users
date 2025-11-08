@@ -29,4 +29,6 @@ public interface UserRepositoryPort {
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
+    
+    Flux<User> findAllPaged(Integer page, Integer size);
 }

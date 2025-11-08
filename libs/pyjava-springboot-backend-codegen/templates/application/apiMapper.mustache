@@ -53,6 +53,9 @@ public interface {{classname}} {
     @Mapping(target = "status", constant = "ACTIVE")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now().toString())")
     @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now().toString())")
+{{#unmappedTargetFields}}
+    @Mapping(target = "{{fieldName}}", ignore = true)
+{{/unmappedTargetFields}}
 {{#relationMappings}}
     @Mapping(source = "{{sourceField}}", target = "{{targetField}}")
 {{/relationMappings}}
@@ -64,6 +67,9 @@ public interface {{classname}} {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+{{#unmappedUpdateFields}}
+    @Mapping(target = "{{fieldName}}", ignore = true)
+{{/unmappedUpdateFields}}
 {{#relationMappings}}
     @Mapping(source = "{{sourceField}}", target = "{{targetField}}")
 {{/relationMappings}}
@@ -73,6 +79,9 @@ public interface {{classname}} {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+{{#unmappedUpdateFields}}
+    @Mapping(target = "{{fieldName}}", ignore = true)
+{{/unmappedUpdateFields}}
 {{#relationMappings}}
     @Mapping(source = "{{sourceField}}", target = "{{targetField}}")
 {{/relationMappings}}

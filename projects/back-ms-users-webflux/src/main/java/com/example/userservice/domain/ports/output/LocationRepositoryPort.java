@@ -36,4 +36,6 @@ public interface LocationRepositoryPort {
     
     Flux<Location> findCitiesByRegion(String regionId);
     
+    Flux<Location> findAllPaged(Integer page, Integer size);
+    
 }
