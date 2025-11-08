@@ -1,8 +1,8 @@
 package com.example.userservice.infrastructure.config.exceptions;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -88,9 +88,10 @@ public class GlobalExceptionHandler {
         logger.warn("Duplicate key constraint violation: {}", ex.getMessage());
         
         String message = "Resource already exists";
-        if (ex.getMessage().contains("users_username_key")) {
+        String exMessage = ex.getMessage().toLowerCase();
+        if (exMessage.contains("username")) {
             message = "Username already exists";
-        } else if (ex.getMessage().contains("users_email_key")) {
+        } else if (exMessage.contains("email")) {
             message = "Email already exists";
         }
         
