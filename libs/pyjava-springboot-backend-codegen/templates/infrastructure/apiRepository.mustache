@@ -160,18 +160,17 @@ public class {{classname}} implements {{portName}} {
     public List<{{entityName}}> findBySearchTerm(String search, Integer page, Integer size) {
         log.debug("Searching {{entityNamePlural}} with term: {}, page: {}, size: {}", search, page, size);
         try {
-            if (search == null || search.trim().isEmpty()) {
-                return mapper.toDomainList(jpaRepository.findAll());
-            }
-            
             org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
                 page != null && page > 0 ? page - 1 : 0, 
                 size != null && size > 0 ? size : 20
             );
             
-            return jpaRepository.findBySearchTerm(search, pageable)
+            return jpaRepository.findBySearchTerm(search != null ? search : "", pageable)
                     .map(mapper::toDomain)
                     .getContent();
+        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+            log.error("Database constraint violation while searching {{entityNamePlural}}: {}", e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
             log.error("Database error while searching {{entityNamePlural}}: {}", e.getMessage(), e);
             throw new InternalServerErrorException("Failed to search {{entityNamePlural}}", e);

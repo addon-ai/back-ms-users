@@ -164,17 +164,10 @@ public class {{classname}} implements {{portName}} {
         long limit = size != null && size > 0 ? size : 20L;
         long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
         
-        if (search == null || search.trim().isEmpty()) {
-            return r2dbcRepository.findAllPaged(limit, offset)
-                    .map(mapper::toDomain)
-                    .doOnError(e -> log.error("Database error while finding all {{entityNamePlural}}: {}", e.getMessage(), e))
-                    .onErrorMap(e -> new InternalServerErrorException("Failed to find all {{entityNamePlural}}", e));
-        }
-        
         return r2dbcRepository.findBySearchTerm(search, limit, offset)
                 .map(mapper::toDomain)
                 .doOnError(e -> log.error("Database error while searching {{entityNamePlural}}: {}", e.getMessage(), e))
-                .onErrorMap(e -> new InternalServerErrorException("Failed to search {{entityNamePlural}}", e));
+                .onErrorMap(this::mapRepositoryException);
     }
     
     // Additional business methods for reactive operations
