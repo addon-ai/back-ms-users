@@ -123,8 +123,6 @@ public class {{classname}} implements {{operationName}}UseCase {
         
         int pageNum = page != null && page > 0 ? page : 1;
         int pageSize = size != null && size > 0 ? size : 20;
-        long limit = pageSize;
-        long offset = (pageNum - 1) * pageSize;
         
         Mono<Long> totalCountMono;
         Flux<{{entityName}}> entityFlux;
@@ -133,8 +131,8 @@ public class {{classname}} implements {{operationName}}UseCase {
             totalCountMono = (({{entityName}}RepositoryAdapter) {{entityVarName}}RepositoryPort).countBySearchTerm(search);
             entityFlux = {{entityVarName}}RepositoryPort.findBySearchTerm(search, pageNum, pageSize);
         } else {
-            totalCountMono = Mono.just(0L); // Will be replaced with actual count
-            entityFlux = {{entityVarName}}RepositoryPort.findAll();
+            totalCountMono = (({{entityName}}RepositoryAdapter) {{entityVarName}}RepositoryPort).countAll();
+            entityFlux = {{entityVarName}}RepositoryPort.findBySearchTerm("", pageNum, pageSize);
         }
         
         return Mono.zip(

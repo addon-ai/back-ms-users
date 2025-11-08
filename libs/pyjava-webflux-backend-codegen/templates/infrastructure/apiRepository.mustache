@@ -27,16 +27,13 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
     
     /**
      * Find entities with search functionality.
-     * {{#hasSearchFields}}
-     * Searches in: {{#searchFields}}{{.}}{{^-last}}, {{/-last}}{{/searchFields}}
-     * {{/hasSearchFields}}
-     * {{^hasSearchFields}}
-     * Searches by ID when no text fields are available.
-     * {{/hasSearchFields}}
      */
     @Query("SELECT * FROM {{tableName}} u WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "{{searchQuery}}) " +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
            "ORDER BY u.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<{{entityName}}Dbo> findBySearchTerm(@Param("search") String search, 
@@ -48,7 +45,10 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
      */
     @Query("SELECT COUNT(*) FROM {{tableName}} u WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "{{searchQuery}})")
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%')))")
     Mono<Long> countBySearchTerm(@Param("search") String search);
     
     /**
@@ -56,6 +56,12 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
      */
     @Query("SELECT * FROM {{tableName}} u ORDER BY u.created_at DESC LIMIT :limit OFFSET :offset")
     Flux<{{entityName}}Dbo> findAllPaged(@Param("limit") Long limit, @Param("offset") Long offset);
+    
+    /**
+     * Count all entities.
+     */
+    @Query("SELECT COUNT(*) FROM {{tableName}}")
+    Mono<Long> countAll();
 }
 {{/isJpaRepository}}
 
@@ -177,6 +183,13 @@ public class {{classname}} implements {{portName}} {
         return r2dbcRepository.countBySearchTerm(search)
                 .doOnError(e -> log.error("Database error while counting {{entityNamePlural}}: {}", e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count {{entityNamePlural}}", e));
+    }
+    
+    public Mono<Long> countAll() {
+        log.debug("Counting all {{entityNamePlural}}");
+        return r2dbcRepository.countAll()
+                .doOnError(e -> log.error("Database error while counting all {{entityNamePlural}}: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to count all {{entityNamePlural}}", e));
     }
 {{#hasComplexMethods}}
     

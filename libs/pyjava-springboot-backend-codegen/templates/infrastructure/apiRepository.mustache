@@ -28,23 +28,31 @@ public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, UUID> {
     
     /**
      * Find entities with pagination and search functionality.
-     * {{#hasSearchFields}}
-     * Searches in: {{#searchFields}}{{.}}{{^-last}}, {{/-last}}{{/searchFields}}
-     * {{/hasSearchFields}}
-     * {{^hasSearchFields}}
-     * Searches by ID when no text fields are available.
-     * {{/hasSearchFields}}
      */
-    @Query("SELECT e FROM {{tableName}} e WHERE " +
+    @Query("SELECT e FROM {{entityName}}Dbo e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "{{searchQuery}}) " +
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
            "ORDER BY e.createdAt DESC")
     Page<{{entityName}}Dbo> findBySearchTerm(@Param("search") String search, Pageable pageable);
     
     /**
+     * Count entities matching search term.
+     */
+    @Query("SELECT COUNT(e) FROM {{entityName}}Dbo e WHERE " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Long countBySearchTerm(@Param("search") String search);
+    
+    /**
      * Find all entities with pagination.
      */
-    @Query("SELECT e FROM {{tableName}} e ORDER BY e.createdAt DESC")
+    @Query("SELECT e FROM {{entityName}}Dbo e ORDER BY e.createdAt DESC")
     Page<{{entityName}}Dbo> findAllPaged(Pageable pageable);
 }
 {{/isJpaRepository}}
