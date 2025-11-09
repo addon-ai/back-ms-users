@@ -7,8 +7,8 @@ import com.example.userservice.infrastructure.adapters.output.persistence.entity
 import com.example.userservice.infrastructure.adapters.output.persistence.repository.JpaCountryRepository;
 import com.example.userservice.application.mapper.CountryMapper;
 import com.example.userservice.infrastructure.config.exceptions.InternalServerErrorException;
+import .LoggingUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,108 +26,112 @@ import java.util.UUID;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CountryRepositoryAdapter implements CountryRepositoryPort {
 
+    private static final LoggingUtils logger = LoggingUtils.getLogger(CountryRepositoryAdapter.class);
+    
     private final JpaCountryRepository r2dbcRepository;
     private final CountryMapper mapper;
 
     @Override
     public Mono<Country> save(Country country) {
-        log.debug("Saving Country: {}", country);
+        logger.debug("Saving Country: {}", country);
         return Mono.fromCallable(() -> mapper.toDbo(country))
                 .flatMap(r2dbcRepository::save)
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while saving Country: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while saving Country", e, country))
                 .onErrorMap(this::mapRepositoryException);
     }
 
     private Throwable mapRepositoryException(Throwable ex) {
         // Business logic exceptions - propagate to service layer
         if (ex instanceof org.springframework.dao.DuplicateKeyException) {
+            logger.debug("Duplicate key constraint violation: {}", ex.getMessage());
             return ex;
         }
         if (ex instanceof org.springframework.dao.DataIntegrityViolationException) {
+            logger.debug("Data integrity violation: {}", ex.getMessage());
             return ex;
         }
         // Technical exceptions - convert to infrastructure errors
+        logger.error("Technical database error", ex);
         return new InternalServerErrorException("Failed to save Country", ex);
     }
 
     @Override
     public Mono<Country> findById(String id) {
-        log.debug("Finding Country by id: {}", id);
+        logger.debug("Finding Country by id: {}", id);
         return r2dbcRepository.findById(UUID.fromString(id))
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while finding Country by id {}: {}", id, e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while finding Country by id", e, id))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find Country by id", e));
     }
 
     @Override
     public Flux<Country> findAll() {
-        log.debug("Finding all Countries");
+        logger.debug("Finding all Countries");
         return r2dbcRepository.findAll()
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while finding all Countries: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while finding all Countries", e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find all Countries", e));
     }
 
     @Override
     public Mono<Void> deleteById(String id) {
-        log.debug("Deleting Country by id: {}", id);
+        logger.debug("Deleting Country by id: {}", id);
         return r2dbcRepository.deleteById(UUID.fromString(id))
-                .doOnError(e -> log.error("Database error while deleting Country by id {}: {}", id, e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while deleting Country by id", e, id))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to delete Country by id", e));
     }
 
     @Override
     public Mono<Boolean> existsById(String id) {
-        log.debug("Checking if Country exists by id: {}", id);
+        logger.debug("Checking if Country exists by id: {}", id);
         return r2dbcRepository.existsById(UUID.fromString(id))
-                .doOnError(e -> log.error("Database error while checking if Country exists by id {}: {}", id, e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while checking if Country exists by id", e, id))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to check if Country exists by id", e));
     }
 
     @Override
     public Flux<Country> findBySearchTerm(String search, Integer page, Integer size) {
-        log.debug("Searching Countries with term: {}, page: {}, size: {}", search, page, size);
+        logger.debug("Searching Countries with term: {}, page: {}, size: {}", search, page, size);
         
         long limit = size != null && size > 0 ? size : 20L;
         long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
         
         return r2dbcRepository.findBySearchTerm(search, limit, offset)
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while searching Countries: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while searching Countries", e, search))
                 .onErrorMap(this::mapRepositoryException);
     }
     
     // Additional business methods for reactive operations
     public Mono<Long> countBySearchTerm(String search) {
-        log.debug("Counting Countries with search term: {}", search);
+        logger.debug("Counting Countries with search term: {}", search);
         return r2dbcRepository.countBySearchTerm(search)
-                .doOnError(e -> log.error("Database error while counting Countries: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while counting Countries", e, search))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count Countries", e));
     }
     
     @Override
     public Flux<Country> findAllPaged(Integer page, Integer size) {
-        log.debug("Finding all Countries with pagination: page={}, size={}", page, size);
+        logger.debug("Finding all Countries with pagination: page={}, size={}", page, size);
         
         long limit = size != null && size > 0 ? size : 20L;
         long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
         
         return r2dbcRepository.findAllPaged(limit, offset)
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while finding all Countries: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while finding all Countries paged", e))
                 .onErrorMap(this::mapRepositoryException);
     }
     
     public Mono<Long> countAll() {
-        log.debug("Counting all Countries");
+        logger.debug("Counting all Countries");
         return r2dbcRepository.countAll()
-                .doOnError(e -> log.error("Database error while counting all Countries: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while counting all Countries", e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count all Countries", e));
     }
 }

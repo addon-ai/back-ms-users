@@ -43,10 +43,7 @@ public class UserService implements UserUseCase {
                     logger.info("User created successfully with ID: {}", savedUser.getUserId());
                     return userMapper.toCreateResponse(savedUser);
                 })
-                .doOnError(e -> {
-                    logger.error("Error in CreateUser: {}", e.getMessage());
-                    logger.debug("Full error details", e);
-                });
+                .doOnError(e -> logger.error("Error in CreateUser", e, request));
     }
 
     @Override

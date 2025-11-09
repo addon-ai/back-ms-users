@@ -7,8 +7,8 @@ import com.example.movieservice.infrastructure.adapters.output.persistence.entit
 import com.example.movieservice.infrastructure.adapters.output.persistence.repository.JpaMovieRepository;
 import com.example.movieservice.application.mapper.MovieMapper;
 import com.example.movieservice.infrastructure.config.exceptions.InternalServerErrorException;
+import .LoggingUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,108 +26,112 @@ import java.util.UUID;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MovieRepositoryAdapter implements MovieRepositoryPort {
 
+    private static final LoggingUtils logger = LoggingUtils.getLogger(MovieRepositoryAdapter.class);
+    
     private final JpaMovieRepository r2dbcRepository;
     private final MovieMapper mapper;
 
     @Override
     public Mono<Movie> save(Movie movie) {
-        log.debug("Saving Movie: {}", movie);
+        logger.debug("Saving Movie: {}", movie);
         return Mono.fromCallable(() -> mapper.toDbo(movie))
                 .flatMap(r2dbcRepository::save)
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while saving Movie: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while saving Movie", e, movie))
                 .onErrorMap(this::mapRepositoryException);
     }
 
     private Throwable mapRepositoryException(Throwable ex) {
         // Business logic exceptions - propagate to service layer
         if (ex instanceof org.springframework.dao.DuplicateKeyException) {
+            logger.debug("Duplicate key constraint violation: {}", ex.getMessage());
             return ex;
         }
         if (ex instanceof org.springframework.dao.DataIntegrityViolationException) {
+            logger.debug("Data integrity violation: {}", ex.getMessage());
             return ex;
         }
         // Technical exceptions - convert to infrastructure errors
+        logger.error("Technical database error", ex);
         return new InternalServerErrorException("Failed to save Movie", ex);
     }
 
     @Override
     public Mono<Movie> findById(String id) {
-        log.debug("Finding Movie by id: {}", id);
+        logger.debug("Finding Movie by id: {}", id);
         return r2dbcRepository.findById(UUID.fromString(id))
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while finding Movie by id {}: {}", id, e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while finding Movie by id", e, id))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find Movie by id", e));
     }
 
     @Override
     public Flux<Movie> findAll() {
-        log.debug("Finding all Movies");
+        logger.debug("Finding all Movies");
         return r2dbcRepository.findAll()
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while finding all Movies: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while finding all Movies", e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to find all Movies", e));
     }
 
     @Override
     public Mono<Void> deleteById(String id) {
-        log.debug("Deleting Movie by id: {}", id);
+        logger.debug("Deleting Movie by id: {}", id);
         return r2dbcRepository.deleteById(UUID.fromString(id))
-                .doOnError(e -> log.error("Database error while deleting Movie by id {}: {}", id, e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while deleting Movie by id", e, id))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to delete Movie by id", e));
     }
 
     @Override
     public Mono<Boolean> existsById(String id) {
-        log.debug("Checking if Movie exists by id: {}", id);
+        logger.debug("Checking if Movie exists by id: {}", id);
         return r2dbcRepository.existsById(UUID.fromString(id))
-                .doOnError(e -> log.error("Database error while checking if Movie exists by id {}: {}", id, e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while checking if Movie exists by id", e, id))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to check if Movie exists by id", e));
     }
 
     @Override
     public Flux<Movie> findBySearchTerm(String search, Integer page, Integer size) {
-        log.debug("Searching Movies with term: {}, page: {}, size: {}", search, page, size);
+        logger.debug("Searching Movies with term: {}, page: {}, size: {}", search, page, size);
         
         long limit = size != null && size > 0 ? size : 20L;
         long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
         
         return r2dbcRepository.findBySearchTerm(search, limit, offset)
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while searching Movies: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while searching Movies", e, search))
                 .onErrorMap(this::mapRepositoryException);
     }
     
     // Additional business methods for reactive operations
     public Mono<Long> countBySearchTerm(String search) {
-        log.debug("Counting Movies with search term: {}", search);
+        logger.debug("Counting Movies with search term: {}", search);
         return r2dbcRepository.countBySearchTerm(search)
-                .doOnError(e -> log.error("Database error while counting Movies: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while counting Movies", e, search))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count Movies", e));
     }
     
     @Override
     public Flux<Movie> findAllPaged(Integer page, Integer size) {
-        log.debug("Finding all Movies with pagination: page={}, size={}", page, size);
+        logger.debug("Finding all Movies with pagination: page={}, size={}", page, size);
         
         long limit = size != null && size > 0 ? size : 20L;
         long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
         
         return r2dbcRepository.findAllPaged(limit, offset)
                 .map(mapper::toDomain)
-                .doOnError(e -> log.error("Database error while finding all Movies: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while finding all Movies paged", e))
                 .onErrorMap(this::mapRepositoryException);
     }
     
     public Mono<Long> countAll() {
-        log.debug("Counting all Movies");
+        logger.debug("Counting all Movies");
         return r2dbcRepository.countAll()
-                .doOnError(e -> log.error("Database error while counting all Movies: {}", e.getMessage(), e))
+                .doOnError(e -> logger.error("Database error while counting all Movies", e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count all Movies", e));
     }
 }

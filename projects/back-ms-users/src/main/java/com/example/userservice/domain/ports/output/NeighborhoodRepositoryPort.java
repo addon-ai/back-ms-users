@@ -26,6 +26,8 @@ public interface NeighborhoodRepositoryPort {
     
     List<Neighborhood> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<Neighborhood> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);

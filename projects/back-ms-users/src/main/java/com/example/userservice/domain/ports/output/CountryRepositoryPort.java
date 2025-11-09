@@ -26,6 +26,8 @@ public interface CountryRepositoryPort {
     
     List<Country> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<Country> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);

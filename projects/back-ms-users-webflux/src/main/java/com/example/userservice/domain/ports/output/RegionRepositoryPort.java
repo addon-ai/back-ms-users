@@ -26,9 +26,9 @@ public interface RegionRepositoryPort {
     
     Flux<Region> findBySearchTerm(String search, Integer page, Integer size);
     
+    Flux<Region> findAllPaged(Integer page, Integer size);
+    
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
-    
-    Flux<Region> findAllPaged(Integer page, Integer size);
 }

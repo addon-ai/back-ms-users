@@ -26,6 +26,8 @@ public interface LocationRepositoryPort {
     
     Flux<Location> findBySearchTerm(String search, Integer page, Integer size);
     
+    Flux<Location> findAllPaged(Integer page, Integer size);
+    
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
@@ -35,7 +37,5 @@ public interface LocationRepositoryPort {
     Flux<Location> findRegionsByCountry(String countryId);
     
     Flux<Location> findCitiesByRegion(String regionId);
-    
-    Flux<Location> findAllPaged(Integer page, Integer size);
     
 }

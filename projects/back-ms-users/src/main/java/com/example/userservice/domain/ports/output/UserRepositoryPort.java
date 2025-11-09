@@ -26,6 +26,8 @@ public interface UserRepositoryPort {
     
     List<User> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<User> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);

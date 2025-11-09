@@ -26,9 +26,9 @@ public interface NeighborhoodRepositoryPort {
     
     Flux<Neighborhood> findBySearchTerm(String search, Integer page, Integer size);
     
+    Flux<Neighborhood> findAllPaged(Integer page, Integer size);
+    
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
-    
-    Flux<Neighborhood> findAllPaged(Integer page, Integer size);
 }

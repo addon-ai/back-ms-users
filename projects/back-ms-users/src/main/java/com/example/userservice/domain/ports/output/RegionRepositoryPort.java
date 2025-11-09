@@ -26,6 +26,8 @@ public interface RegionRepositoryPort {
     
     List<Region> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<Region> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);

@@ -26,6 +26,8 @@ public interface RentalRepositoryPort {
     
     List<Rental> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<Rental> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);

@@ -26,6 +26,8 @@ public interface LocationRepositoryPort {
     
     List<Location> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<Location> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);

@@ -26,6 +26,8 @@ public interface MovieRepositoryPort {
     
     List<Movie> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<Movie> findAllPaged(Integer page, Integer size);
+    
     void deleteById(String id);
     
     boolean existsById(String id);
