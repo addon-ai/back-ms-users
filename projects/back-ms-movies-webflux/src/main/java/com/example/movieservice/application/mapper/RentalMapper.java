@@ -88,13 +88,13 @@ public interface RentalMapper {
         
         int totalPages = (int) Math.ceil((double) totalCount / size);
         
-        return ListRentalsResponseContent.builder()
-            .rentals(toDtoList(domains))
-            .page(java.math.BigDecimal.valueOf(page))
-            .size(java.math.BigDecimal.valueOf(size))
-            .total(java.math.BigDecimal.valueOf(totalCount))
-            .totalPages(java.math.BigDecimal.valueOf(totalPages))
-            .build();
+        ListRentalsResponseContent response = new ListRentalsResponseContent();
+        response.setRentals(toDtoList(domains));
+        response.setPage(java.math.BigDecimal.valueOf(page));
+        response.setSize(java.math.BigDecimal.valueOf(size));
+        response.setTotal(java.math.BigDecimal.valueOf(totalCount));
+        response.setTotalPages(java.math.BigDecimal.valueOf(totalPages));
+        return response;
     }
     
     // Overloaded method for backward compatibility

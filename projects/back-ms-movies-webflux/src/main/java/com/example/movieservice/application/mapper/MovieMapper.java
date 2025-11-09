@@ -85,10 +85,10 @@ public interface MovieMapper {
     
     // Delete response method - available when delete DTO exists
     default DeleteMovieResponseContent toDeleteResponse(Movie domain) {
-        return DeleteMovieResponseContent.builder()
-            .deleted(true)
-            .message("Movie deleted successfully")
-            .build();
+        DeleteMovieResponseContent response = new DeleteMovieResponseContent();
+        response.setDeleted(true);
+        response.setMessage("Movie deleted successfully");
+        return response;
     }
     
     // Pagination support for list responses with proper total count
@@ -97,13 +97,13 @@ public interface MovieMapper {
         
         int totalPages = (int) Math.ceil((double) totalCount / size);
         
-        return ListMoviesResponseContent.builder()
-            .movies(toDtoList(domains))
-            .page(java.math.BigDecimal.valueOf(page))
-            .size(java.math.BigDecimal.valueOf(size))
-            .total(java.math.BigDecimal.valueOf(totalCount))
-            .totalPages(java.math.BigDecimal.valueOf(totalPages))
-            .build();
+        ListMoviesResponseContent response = new ListMoviesResponseContent();
+        response.setMovies(toDtoList(domains));
+        response.setPage(java.math.BigDecimal.valueOf(page));
+        response.setSize(java.math.BigDecimal.valueOf(size));
+        response.setTotal(java.math.BigDecimal.valueOf(totalCount));
+        response.setTotalPages(java.math.BigDecimal.valueOf(totalPages));
+        return response;
     }
     
     // Overloaded method for backward compatibility

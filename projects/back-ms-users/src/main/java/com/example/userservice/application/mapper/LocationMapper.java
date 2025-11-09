@@ -85,10 +85,10 @@ public interface LocationMapper {
     
     // Delete response method - available when delete DTO exists
     default DeleteLocationResponseContent toDeleteResponse(Location domain) {
-        return DeleteLocationResponseContent.builder()
-            .deleted(true)
-            .message("Location deleted successfully")
-            .build();
+        DeleteLocationResponseContent response = new DeleteLocationResponseContent();
+        response.setDeleted(true);
+        response.setMessage("Location deleted successfully");
+        return response;
     }
     
     // Pagination support for list responses with proper total count
@@ -97,13 +97,13 @@ public interface LocationMapper {
         
         int totalPages = (int) Math.ceil((double) totalCount / size);
         
-        return ListLocationsResponseContent.builder()
-            .locations(toDtoList(domains))
-            .page(java.math.BigDecimal.valueOf(page))
-            .size(java.math.BigDecimal.valueOf(size))
-            .total(java.math.BigDecimal.valueOf(totalCount))
-            .totalPages(java.math.BigDecimal.valueOf(totalPages))
-            .build();
+        ListLocationsResponseContent response = new ListLocationsResponseContent();
+        response.setLocations(toDtoList(domains));
+        response.setPage(java.math.BigDecimal.valueOf(page));
+        response.setSize(java.math.BigDecimal.valueOf(size));
+        response.setTotal(java.math.BigDecimal.valueOf(totalCount));
+        response.setTotalPages(java.math.BigDecimal.valueOf(totalPages));
+        return response;
     }
     
     // Overloaded method for backward compatibility
