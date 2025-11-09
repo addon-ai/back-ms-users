@@ -175,7 +175,7 @@ public class UserController {
         return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
                 .then(Mono.fromCallable(() -> {
                     logger.info("Listing users with page: {}, size: {}, search: {}", page, size, search);
-                    return search;
+                    return search == null ? "": search;
                 }))
                 .flatMap(searchTerm -> userUseCase.list(page, size, searchTerm))
                 .doFinally(signal -> LoggingUtils.clearRequestContext());

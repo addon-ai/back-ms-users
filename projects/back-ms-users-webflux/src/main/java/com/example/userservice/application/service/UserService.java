@@ -87,10 +87,10 @@ public class UserService implements UserUseCase {
                 .flatMap(user -> userRepositoryPort.deleteById(userId))
                 .then(Mono.fromCallable(() -> {
                     logger.info("User deleted successfully with ID: {}", userId);
-                    return DeleteUserResponseContent.builder()
-                            .deleted(true)
-                            .message("User deleted successfully")
-                            .build();
+                    DeleteUserResponseContent response = new DeleteUserResponseContent();
+                    response.setDeleted(true);
+                    response.setMessage("User deleted successfully");
+                    return response;
                 }))
                 .doOnError(e -> logger.error("Error in DeleteUser", e, userId));
     }
@@ -103,7 +103,7 @@ public class UserService implements UserUseCase {
         if (search != null && !search.trim().isEmpty()) {
             userFlux = userRepositoryPort.findBySearchTerm(search, page, size);
         } else {
-            userFlux = userRepositoryPort.findAll();
+            userFlux = userRepositoryPort.findAllPaged(page, size);
         }
         
         return userFlux

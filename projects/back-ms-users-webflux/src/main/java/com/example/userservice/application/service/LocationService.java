@@ -106,7 +106,7 @@ public class LocationService implements LocationUseCase {
         if (search != null && !search.trim().isEmpty()) {
             locationFlux = locationRepositoryPort.findBySearchTerm(search, page, size);
         } else {
-            locationFlux = locationRepositoryPort.findAll();
+            locationFlux = locationRepositoryPort.findAllPaged(page, size);
         }
         
         return locationFlux
@@ -115,6 +115,7 @@ public class LocationService implements LocationUseCase {
                     logger.info("Retrieved {} locations successfully", locations.size());
                     int pageNum = page != null ? page : 1;
                     int pageSize = size != null ? size : 20;
+                    logger.info("locations: {}, pageNum: {}, pageSize: {}", locations, pageNum, pageSize);
                     return locationMapper.toListResponse(locations, pageNum, pageSize);
                 })
                 .doOnError(e -> logger.error("Error in ListLocations", e));
