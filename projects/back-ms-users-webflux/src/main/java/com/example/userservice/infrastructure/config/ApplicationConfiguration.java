@@ -44,52 +44,5 @@ public class ApplicationConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configures the User use case implementation.
-     * 
-     * @param userRepositoryPort the repository port
-     * @param userMapper the mapper
-     * @return UserUseCase implementation
-     */
-    @Bean
-    public UserUseCase userUseCase(UserRepositoryPort userRepositoryPort, UserMapper userMapper) {
-        return new UserService(userRepositoryPort, userMapper);
-    }
-
-    /**
-     * Configures the User repository port implementation.
-     * 
-     * @param jpaUserRepository the JPA repository
-     * @param userMapper the mapper
-     * @return UserRepositoryPort implementation
-     */
-    @Bean
-    public UserRepositoryPort userRepositoryPort(JpaUserRepository jpaUserRepository, UserMapper userMapper) {
-        return new UserRepositoryAdapter(jpaUserRepository, userMapper);
-    }
-
-    /**
-     * Configures the Location use case implementation.
-     * 
-     * @param locationRepositoryPort the repository port
-     * @param locationMapper the mapper
-     * @return LocationUseCase implementation
-     */
-    @Bean
-    public LocationUseCase locationUseCase(LocationRepositoryPort locationRepositoryPort, LocationMapper locationMapper) {
-        return new LocationService(locationRepositoryPort, locationMapper);
-    }
-
-    /**
-     * Configures the Location repository port implementation.
-     * 
-     * @param jpaLocationRepository the JPA repository
-     * @param locationMapper the mapper
-     * @return LocationRepositoryPort implementation
-     */
-    @Bean
-    public LocationRepositoryPort locationRepositoryPort(JpaLocationRepository jpaLocationRepository, LocationMapper locationMapper) {
-        return new LocationRepositoryAdapter(jpaLocationRepository, locationMapper);
-    }
 
 }

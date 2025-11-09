@@ -40,30 +40,5 @@ public class {{classname}} {
         return new BCryptPasswordEncoder();
     }
 
-{{#entities}}
-    /**
-     * Configures the {{entityName}} use case implementation.
-     * 
-     * @param {{entityVarName}}RepositoryPort the repository port
-     * @param {{entityVarName}}Mapper the mapper
-     * @return {{entityName}}UseCase implementation
-     */
-    @Bean
-    public {{entityName}}UseCase {{entityVarName}}UseCase({{entityName}}RepositoryPort {{entityVarName}}RepositoryPort, {{entityName}}Mapper {{entityVarName}}Mapper) {
-        return new {{entityName}}Service({{entityVarName}}RepositoryPort, {{entityVarName}}Mapper);
-    }
 
-    /**
-     * Configures the {{entityName}} repository port implementation.
-     * 
-     * @param jpa{{entityName}}Repository the JPA repository
-     * @param {{entityVarName}}Mapper the mapper
-     * @return {{entityName}}RepositoryPort implementation
-     */
-    @Bean
-    public {{entityName}}RepositoryPort {{entityVarName}}RepositoryPort(Jpa{{entityName}}Repository jpa{{entityName}}Repository, {{entityName}}Mapper {{entityVarName}}Mapper) {
-        return new {{entityName}}RepositoryAdapter(jpa{{entityName}}Repository, {{entityVarName}}Mapper);
-    }
-
-{{/entities}}
 }
