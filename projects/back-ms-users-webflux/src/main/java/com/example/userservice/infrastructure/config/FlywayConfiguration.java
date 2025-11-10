@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0.0
  */
 @Configuration
-@ConditionalOnProperty(name = "spring.flyway.enabled", havingValue = "true", matchIfMissing = true)
 public class FlywayConfiguration {
 
     @Value("${spring.flyway.url}")
@@ -42,8 +41,8 @@ public class FlywayConfiguration {
      * 
      * @return configured Flyway instance
      */
-    @Bean(initMethod = "migrate")
-    public Flyway flyway() {
+    @Bean(name = "customFlyway", initMethod = "migrate")
+    public Flyway customFlyway() {
         return Flyway.configure()
                 .dataSource(flywayUrl, flywayUser, flywayPassword)
                 .locations(flywayLocations)
