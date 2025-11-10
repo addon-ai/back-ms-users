@@ -177,6 +177,32 @@ class InfrastructureGenerator:
             return 'regionId'
         return 'id'
     
+    def _extract_path_info_from_operation(self, operation_id: str) -> Dict[str, Any]:
+        """Extract path information from operation ID based on Smithy URI patterns."""
+        path_variables = []
+        path_segment = ''
+        
+        if operation_id == 'GetRegionsByCountry':
+            # /countries/{countryId}/regions
+            path_variables = [{'name': 'countryId', 'type': 'String', 'hasMore': False}]
+            path_segment = 'countries/{countryId}/regions'
+        elif operation_id == 'GetCitiesByRegion':
+            # /regions/{regionId}/cities
+            path_variables = [{'name': 'regionId', 'type': 'String', 'hasMore': False}]
+            path_segment = 'regions/{regionId}/cities'
+        elif operation_id == 'GetNeighborhoodsByCity':
+            # /cities/{cityId}/neighborhoods
+            path_variables = [{'name': 'cityId', 'type': 'String', 'hasMore': False}]
+            path_segment = 'cities/{cityId}/neighborhoods'
+        else:
+            # Default fallback
+            path_segment = operation_id.lower().replace('get', '')
+        
+        return {
+            'pathSegment': path_segment,
+            'pathVariables': path_variables
+        }
+    
     def generate_rest_controller(self, entity: str, operations: List[str], service: str, mustache_context: Dict[str, Any]):
         """Generate REST controller."""
         crud_operations = [op for op in operations if any(op.startswith(prefix + entity) for prefix in ['Create', 'Get', 'Update', 'Delete']) or op == f'List{entity}s']
@@ -208,11 +234,14 @@ class InfrastructureGenerator:
         complex_ops_info = []
         for op in complex_operations:
             method_name = op[0].lower() + op[1:] if op else ''
-            path_segment = op.lower().replace('get', '').replace('by', '-by-') if op.startswith('Get') else op.lower()
+            # Extract path variables and build path segment
+            path_info = self._extract_path_info_from_operation(op)
             complex_ops_info.append({
                 'operationId': op,
                 'methodName': method_name,
-                'pathSegment': path_segment,
+                'pathSegment': path_info['pathSegment'],
+                'pathVariables': path_info['pathVariables'],
+                'hasPathVariables': len(path_info['pathVariables']) > 0,
                 'responseType': f'{op}ResponseContent'
             })
         

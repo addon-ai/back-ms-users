@@ -173,15 +173,15 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
 {{#hasComplexOperations}}
 {{#complexOperations}}
     @Override
-    public {{responseType}} {{methodName}}() {
-        logger.info("Executing {{operationId}}");
+    public {{responseType}} {{methodName}}({{#hasPathVariables}}{{#pathVariables}}String {{name}}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}) {
+        logger.info("Executing {{operationId}}{{#hasPathVariables}} with {{#pathVariables}}{{name}}: {}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}", {{#hasPathVariables}}{{#pathVariables}}{{name}}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
         
         try {
-            List<{{entityName}}> {{entityVarName}}s = {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{defaultParameter}});
+            List<{{entityName}}> {{entityVarName}}s = {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{#hasPathVariables}}{{#pathVariables}}{{name}}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
             logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
             return {{responseType}}.builder().build();
         } catch (Exception e) {
-            logger.error("Error in {{operationId}}", e);
+            logger.error("Error in {{operationId}}", e{{#hasPathVariables}}, {{#pathVariables}}{{name}}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
             throw e;
         }
     }

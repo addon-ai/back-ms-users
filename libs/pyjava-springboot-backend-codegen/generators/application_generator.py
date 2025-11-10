@@ -161,10 +161,13 @@ class ApplicationGenerator:
             for op in complex_ops:
                 if self.file_manager.check_dto_exists(dto_base_path, f'{op}ResponseContent'):
                     method_name = op[0].lower() + op[1:] if op else ''
+                    path_info = self._extract_path_info_from_operation(op)
                     complex_ops_info.append({
                         'operationId': op,
                         'methodName': method_name,
-                        'responseType': f'{op}ResponseContent'
+                        'responseType': f'{op}ResponseContent',
+                        'pathVariables': path_info['pathVariables'],
+                        'hasPathVariables': len(path_info['pathVariables']) > 0
                     })
         
         context = mustache_context.copy()
@@ -203,13 +206,14 @@ class ApplicationGenerator:
             for op in complex_ops:
                 method_name = op[0].lower() + op[1:] if op else ''
                 repository_method = self._convert_operation_to_repository_method(op)
-                default_param = self._get_default_parameter(op)
+                path_info = self._extract_path_info_from_operation(op)
                 complex_ops_info.append({
                     'operationId': op,
                     'methodName': method_name,
                     'responseType': f'{op}ResponseContent',
                     'repositoryMethod': repository_method,
-                    'defaultParameter': default_param
+                    'pathVariables': path_info['pathVariables'],
+                    'hasPathVariables': len(path_info['pathVariables']) > 0
                 })
         
         context = mustache_context.copy()
@@ -240,12 +244,17 @@ class ApplicationGenerator:
             return 'find' + operation_id[3:]
         return 'findAll'
     
-    def _get_default_parameter(self, operation_id: str) -> str:
-        """Get default parameter for operation."""
-        if 'ByCity' in operation_id:
-            return '"defaultCityId"'
-        elif 'ByCountry' in operation_id:
-            return '"defaultCountryId"'
-        elif 'ByRegion' in operation_id:
-            return '"defaultRegionId"'
-        return '"defaultId"'
+    def _extract_path_info_from_operation(self, operation_id: str) -> Dict[str, Any]:
+        """Extract path information from operation ID based on Smithy URI patterns."""
+        path_variables = []
+        
+        if operation_id == 'GetRegionsByCountry':
+            path_variables = [{'name': 'countryId', 'type': 'String', 'hasMore': False}]
+        elif operation_id == 'GetCitiesByRegion':
+            path_variables = [{'name': 'regionId', 'type': 'String', 'hasMore': False}]
+        elif operation_id == 'GetNeighborhoodsByCity':
+            path_variables = [{'name': 'cityId', 'type': 'String', 'hasMore': False}]
+        
+        return {
+            'pathVariables': path_variables
+        }
