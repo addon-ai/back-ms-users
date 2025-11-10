@@ -296,7 +296,7 @@
                 "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-users-webflux"
             },
             "github": {
-                "on": false,
+                "on": true,
                 "organization": "addon-ai",
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
