@@ -48,34 +48,17 @@ class TestSchemaGenerator:
             return entity.lower() + 's'
     
     def _extract_columns(self, entity: str, openapi_specs: List[Dict[str, Any]]) -> List[Dict[str, str]]:
-        """Extract columns from OpenAPI specs."""
+        """Extract columns from entity Dbo file."""
         columns = []
         
-        for spec_info in openapi_specs:
-            schemas = spec_info['spec'].get('components', {}).get('schemas', {})
-            
-            # Look for entity schema
-            for schema_name, schema_data in schemas.items():
-                if entity in schema_name and 'Response' in schema_name:
-                    properties = schema_data.get('properties', {})
-                    required = schema_data.get('required', [])
-                    
-                    for prop_name, prop_data in properties.items():
-                        # Skip ID field (already in primary key)
-                        if prop_name == f'{entity.lower()}Id' or prop_name == 'id':
-                            continue
-                        
-                        col_type = self._map_type_to_h2(prop_data.get('type'), prop_data.get('format'))
-                        constraints = self._build_constraints(prop_name, prop_data, required)
-                        
-                        columns.append({
-                            'name': self._to_snake_case(prop_name),
-                            'type': col_type,
-                            'constraints': constraints
-                        })
-                    break
+        # Try to read from generated entity file
+        entity_file = self.output_dir / 'src' / 'main' / 'java' / 'com' / 'example' / 'userservice' / 'infrastructure' / 'adapters' / 'output' / 'persistence' / 'entity' / f'{entity}Dbo.java'
         
-        # Add default columns if not found
+        if entity_file.exists():
+            content = entity_file.read_text(encoding='utf-8')
+            columns = self._parse_entity_file(content)
+        
+        # Fallback: Add default columns if not found
         if not columns:
             columns = [
                 {'name': 'status', 'type': 'VARCHAR(255)', 'constraints': ' NOT NULL'},
@@ -84,6 +67,54 @@ class TestSchemaGenerator:
             ]
         
         return columns
+    
+    def _parse_entity_file(self, content: str) -> List[Dict[str, str]]:
+        """Parse entity Dbo Java file to extract columns."""
+        import re
+        columns = []
+        
+        # Find all @Column annotations with their fields
+        column_pattern = r'@Column\("([^"]+)"\)\s+(?:@Builder\.Default\s+)?private\s+(\w+(?:<\w+>)?(?:\[\])?(?:\.\w+)?)\s+(\w+);'
+        
+        for match in re.finditer(column_pattern, content):
+            col_name = match.group(1)
+            java_type = match.group(2)
+            field_name = match.group(3)
+            
+            # Skip primary id, createdAt, updatedAt, status (handled separately)
+            if field_name in ['id', 'createdAt', 'updatedAt', 'status']:
+                continue
+            
+            sql_type = self._java_type_to_h2(java_type)
+            # Optional fields: neighborhood, postalCode, latitude, longitude, firstName, lastName
+            constraints = ' NOT NULL' if field_name not in ['neighborhood', 'postalCode', 'latitude', 'longitude', 'firstName', 'lastName'] else ''
+            
+            columns.append({
+                'name': col_name,
+                'type': sql_type,
+                'constraints': constraints
+            })
+        
+        # Always add status, created_at, updated_at at the end
+        columns.append({'name': 'status', 'type': 'VARCHAR(255)', 'constraints': ' NOT NULL'})
+        columns.append({'name': 'created_at', 'type': 'TIMESTAMP', 'constraints': ''})
+        columns.append({'name': 'updated_at', 'type': 'TIMESTAMP', 'constraints': ''})
+        
+        return columns
+    
+    def _java_type_to_h2(self, java_type: str) -> str:
+        """Map Java type to H2 SQL type."""
+        type_mapping = {
+            'String': 'VARCHAR(255)',
+            'Integer': 'INTEGER',
+            'Long': 'BIGINT',
+            'Double': 'DOUBLE PRECISION',
+            'Boolean': 'BOOLEAN',
+            'Instant': 'TIMESTAMP',
+            'UUID': 'UUID',
+            'EntityStatus': 'VARCHAR(255)'
+        }
+        return type_mapping.get(java_type, 'VARCHAR(255)')
     
     def _map_type_to_h2(self, json_type: str, json_format: str = None) -> str:
         """Map JSON schema type to H2 SQL type."""

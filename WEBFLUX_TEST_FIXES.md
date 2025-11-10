@@ -1,7 +1,7 @@
 # WebFlux Test Fixes - Template Corrections
 
 ## Summary
-Fixed 3 critical issues in WebFlux code generation templates that were causing test failures.
+Fixed 4 critical issues in WebFlux code generation templates that were causing test failures.
 
 ## Issues Fixed
 
@@ -182,6 +182,9 @@ mvn clean test
    - Updated `_build_constraints()` to skip NOT NULL for timestamp fields
    - Removed DEFAULT CURRENT_TIMESTAMP from timestamp fields
    - Updated default columns to have nullable timestamps
+   - **Changed `_extract_columns()` to read from entity Dbo files instead of OpenAPI DTOs**
+   - **Added `_parse_entity_file()` to parse Java entity files with regex**
+   - **Added `_java_type_to_h2()` to map Java types to H2 SQL types**
 
 ---
 
@@ -200,6 +203,91 @@ mvn clean test
 ✅ Future generated projects will have correct configuration  
 ✅ No manual fixes needed for new projects  
 ✅ Existing projects can be regenerated to apply fixes
+
+---
+
+### ✅ Issue 4: Schema Generator Reading from DTOs Instead of Entities
+**File:** `libs/pyjava-webflux-backend-codegen/generators/test_schema_generator.py`  
+**Method:** `_extract_columns()`  
+**Error:** `BadSqlGrammar executeMany; bad SQL grammar [INSERT INTO locations ...]`
+
+**Problem:**
+The schema generator was extracting columns from OpenAPI Response DTOs instead of actual Entity (Dbo) Java files. This caused:
+- Missing required columns (e.g., `user_id`, `country_id`, `region_id`, `city_id`)
+- Wrong table structures
+- INSERT statement failures in tests
+
+**Before:**
+```python
+def _extract_columns(self, entity: str, openapi_specs: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """Extract columns from OpenAPI specs."""
+    for spec_info in openapi_specs:
+        schemas = spec_info['spec'].get('components', {}).get('schemas', {})
+        for schema_name, schema_data in schemas.items():
+            if entity in schema_name and 'Response' in schema_name:  # ❌ Wrong source
+                # Extract from DTO...
+```
+
+**After:**
+```python
+def _extract_columns(self, entity: str, openapi_specs: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """Extract columns from entity Dbo file."""
+    # Read from actual entity file
+    entity_file = self.output_dir / 'src' / 'main' / 'java' / ... / f'{entity}Dbo.java'
+    if entity_file.exists():
+        content = entity_file.read_text(encoding='utf-8')
+        columns = self._parse_entity_file(content)  # ✅ Parse actual entity
+
+def _parse_entity_file(self, content: str) -> List[Dict[str, str]]:
+    """Parse entity Dbo Java file to extract columns."""
+    import re
+    # Regex to find @Column annotations with their Java types
+    column_pattern = r'@Column\("([^"]+)"\)\s+(?:@Builder\.Default\s+)?private\s+(\w+(?:<\w+>)?(?:\[\])?(?:\.\w+)?)\s+(\w+);'
+    # Extract all columns from actual entity definition
+```
+
+**Reason:**
+1. DTOs don't represent database structure (they're API contracts)
+2. Entities (Dbo files) have the actual @Column annotations
+3. Foreign keys like `user_id`, `country_id` exist in entities but not in DTOs
+4. Schema must match entity structure for R2DBC to work
+
+**Generated Schema Example:**
+
+**Before (from DTOs):**
+```sql
+CREATE TABLE IF NOT EXISTS regions (
+    region_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    cities VARCHAR(1000) NOT NULL  -- ❌ Wrong! This is from DTO array
+);
+
+CREATE TABLE IF NOT EXISTS neighborhoods (
+    neighborhood_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    neighborhoods VARCHAR(1000) NOT NULL  -- ❌ Wrong! This is from DTO array
+);
+```
+
+**After (from Entities):**
+```sql
+CREATE TABLE IF NOT EXISTS regions (
+    region_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(255) NOT NULL,
+    country_id VARCHAR(255) NOT NULL,  -- ✅ Correct foreign key
+    status VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS neighborhoods (
+    neighborhood_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    city_id VARCHAR(255) NOT NULL,  -- ✅ Correct foreign key
+    status VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+```
 
 ---
 
