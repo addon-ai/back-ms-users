@@ -27,13 +27,14 @@ public interface JpaLocationRepository extends R2dbcRepository<LocationDbo, UUID
     /**
      * Find entities with search functionality.
      */
-    @Query("SELECT * FROM locations u WHERE " +
+    @Query("SELECT * FROM locations l WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "ORDER BY u.created_at DESC " +
+           "LOWER(l.country) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.region) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.city) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.neighborhood) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.address) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY l.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<LocationDbo> findBySearchTerm(@Param("search") String search, 
                                              @Param("limit") Long limit, 
@@ -42,27 +43,29 @@ public interface JpaLocationRepository extends R2dbcRepository<LocationDbo, UUID
     /**
      * Count entities matching search term.
      */
-    @Query("SELECT COUNT(*) FROM locations u WHERE " +
+    @Query("SELECT COUNT(*) FROM locations l WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "LOWER(l.country) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.region) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.city) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.neighborhood) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.address) LIKE LOWER(CONCAT('%', :search, '%')))")
     Mono<Long> countBySearchTerm(@Param("search") String search);
     
     /**
      * Find entities with comprehensive filtering.
      */
-    @Query("SELECT * FROM locations u WHERE " +
+    @Query("SELECT * FROM locations l WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "AND (:status IS NULL OR :status = '' OR u.status = :status) " +
-           "AND (:dateFrom IS NULL OR :dateFrom = '' OR u.created_at >= CAST(:dateFrom AS TIMESTAMP)) " +
-           "AND (:dateTo IS NULL OR :dateTo = '' OR u.created_at <= CAST(:dateTo AS TIMESTAMP)) " +
-           "ORDER BY u.created_at DESC " +
+           "LOWER(l.country) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.region) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.city) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.neighborhood) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(l.address) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:status IS NULL OR :status = '' OR l.status = :status) " +
+           "AND (:dateFrom IS NULL OR :dateFrom = '' OR l.created_at >= CAST(:dateFrom AS TIMESTAMP)) " +
+           "AND (:dateTo IS NULL OR :dateTo = '' OR l.created_at <= CAST(:dateTo AS TIMESTAMP)) " +
+           "ORDER BY l.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<LocationDbo> findByFilters(@Param("search") String search,
                                           @Param("status") String status,
@@ -74,7 +77,7 @@ public interface JpaLocationRepository extends R2dbcRepository<LocationDbo, UUID
     /**
      * Find all entities with pagination.
      */
-    @Query("SELECT * FROM locations u ORDER BY u.created_at DESC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM locations l ORDER BY l.created_at DESC LIMIT :limit OFFSET :offset")
     Flux<LocationDbo> findAllPaged(@Param("limit") Long limit, @Param("offset") Long offset);
     
     /**

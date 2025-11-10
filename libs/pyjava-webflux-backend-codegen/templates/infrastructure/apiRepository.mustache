@@ -28,13 +28,15 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
     /**
      * Find entities with search functionality.
      */
-    @Query("SELECT * FROM {{tableName}} u WHERE " +
+    @Query("SELECT * FROM {{tableName}} e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "ORDER BY u.created_at DESC " +
+           {{#hasSearchFields}}
+           "{{searchQuery}}) " +
+           {{/hasSearchFields}}
+           {{^hasSearchFields}}
+           "CAST(e.id AS TEXT) LIKE CONCAT('%', :search, '%')) " +
+           {{/hasSearchFields}}
+           "ORDER BY e.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<{{entityName}}Dbo> findBySearchTerm(@Param("search") String search, 
                                              @Param("limit") Long limit, 
@@ -43,27 +45,31 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
     /**
      * Count entities matching search term.
      */
-    @Query("SELECT COUNT(*) FROM {{tableName}} u WHERE " +
+    @Query("SELECT COUNT(*) FROM {{tableName}} e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%')))")
+           {{#hasSearchFields}}
+           "{{searchQuery}})")
+           {{/hasSearchFields}}
+           {{^hasSearchFields}}
+           "CAST(e.id AS TEXT) LIKE CONCAT('%', :search, '%'))")
+           {{/hasSearchFields}}
     Mono<Long> countBySearchTerm(@Param("search") String search);
     
     /**
      * Find entities with comprehensive filtering.
      */
-    @Query("SELECT * FROM {{tableName}} u WHERE " +
+    @Query("SELECT * FROM {{tableName}} e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "AND (:status IS NULL OR :status = '' OR u.status = :status) " +
-           "AND (:dateFrom IS NULL OR :dateFrom = '' OR u.created_at >= CAST(:dateFrom AS TIMESTAMP)) " +
-           "AND (:dateTo IS NULL OR :dateTo = '' OR u.created_at <= CAST(:dateTo AS TIMESTAMP)) " +
-           "ORDER BY u.created_at DESC " +
+           {{#hasSearchFields}}
+           "{{searchQuery}}) " +
+           {{/hasSearchFields}}
+           {{^hasSearchFields}}
+           "CAST(e.id AS TEXT) LIKE CONCAT('%', :search, '%')) " +
+           {{/hasSearchFields}}
+           "AND (:status IS NULL OR :status = '' OR e.status = :status) " +
+           "AND (:dateFrom IS NULL OR :dateFrom = '' OR e.created_at >= CAST(:dateFrom AS TIMESTAMP)) " +
+           "AND (:dateTo IS NULL OR :dateTo = '' OR e.created_at <= CAST(:dateTo AS TIMESTAMP)) " +
+           "ORDER BY e.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<{{entityName}}Dbo> findByFilters(@Param("search") String search,
                                           @Param("status") String status,
@@ -75,7 +81,7 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
     /**
      * Find all entities with pagination.
      */
-    @Query("SELECT * FROM {{tableName}} u ORDER BY u.created_at DESC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM {{tableName}} e ORDER BY e.created_at DESC LIMIT :limit OFFSET :offset")
     Flux<{{entityName}}Dbo> findAllPaged(@Param("limit") Long limit, @Param("offset") Long offset);
     
     /**

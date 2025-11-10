@@ -31,10 +31,12 @@ public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, UUID> {
      */
     @Query("SELECT e FROM {{entityName}}Dbo e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           {{#hasSearchFields}}
+           "{{searchQuery}}) " +
+           {{/hasSearchFields}}
+           {{^hasSearchFields}}
+           "CAST(e.id AS STRING) LIKE CONCAT('%', :search, '%')) " +
+           {{/hasSearchFields}}
            "ORDER BY e.createdAt DESC")
     Page<{{entityName}}Dbo> findBySearchTerm(@Param("search") String search, Pageable pageable);
     
@@ -43,10 +45,12 @@ public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, UUID> {
      */
     @Query("SELECT COUNT(e) FROM {{entityName}}Dbo e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%')))")
+           {{#hasSearchFields}}
+           "{{searchQuery}})")
+           {{/hasSearchFields}}
+           {{^hasSearchFields}}
+           "CAST(e.id AS STRING) LIKE CONCAT('%', :search, '%'))")
+           {{/hasSearchFields}}
     Long countBySearchTerm(@Param("search") String search);
     
     /**
@@ -54,10 +58,12 @@ public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, UUID> {
      */
     @Query("SELECT e FROM {{entityName}}Dbo e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           {{#hasSearchFields}}
+           "{{searchQuery}}) " +
+           {{/hasSearchFields}}
+           {{^hasSearchFields}}
+           "CAST(e.id AS STRING) LIKE CONCAT('%', :search, '%')) " +
+           {{/hasSearchFields}}
            "AND (:status IS NULL OR :status = '' OR e.status = :status) " +
            "AND (:dateFrom IS NULL OR :dateFrom = '' OR e.createdAt >= CAST(:dateFrom AS TIMESTAMP)) " +
            "AND (:dateTo IS NULL OR :dateTo = '' OR e.createdAt <= CAST(:dateTo AS TIMESTAMP)) " +
