@@ -1,12 +1,16 @@
 apiVersion: backstage.io/v1alpha1
-kind: Location
+kind: Component
 metadata:
-  name: golden-paths-templates
-  description: Golden Path templates for Java microservices
+  name: hexagonal-architecture-templates
+  description: |
+    Spring Boot service templates with Hexagonal Architecture (Ports and Adapters).
+    Includes both traditional Spring Boot and reactive WebFlux implementations.
+  links:
+    - title: Documentation
+      url: https://github.com/addon-ai/backstage-templates/blob/main/README.md
   annotations:
-    backstage.io/managed-by-location: 'file:catalog-info.yaml'
+    github.com/project-slug: addon-ai/backstage-templates
 spec:
-  type: url
-  targets:
-    - ./springboot-service/template.yaml
-    - ./webflux-service/template.yaml
+  type: template-collection
+  owner: platform-team
+  lifecycle: production

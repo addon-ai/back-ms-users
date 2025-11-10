@@ -58,11 +58,15 @@ class BackstageGoldenPathGenerator:
     
     def generate_golden_path(self, source_project: Path, output_path: Path, project_config: dict, stack_type: str):
         """Generate a single Golden Path."""
-        # 1. Create skeleton directory
+        # 1. Create skeleton directory (exclude .java and .sql files)
         skeleton_path = output_path / 'skeleton'
         if skeleton_path.exists():
             shutil.rmtree(skeleton_path)
-        shutil.copytree(source_project, skeleton_path)
+        
+        def ignore_files(dir, files):
+            return [f for f in files if f.endswith(('.java', '.sql'))]
+        
+        shutil.copytree(source_project, skeleton_path, ignore=ignore_files)
         
         # 2. Re-parametrize skeleton
         project_info = project_config['project']
@@ -183,28 +187,32 @@ class BackstageGoldenPathGenerator:
         output_path.write_text(rendered, encoding='utf-8')
     
     def _generate_root_catalog(self, output_path: Path, template_info: list):
-        """Generate root catalog-info.yaml for importing all templates into Backstage."""
+        """Generate catalog-info.yaml as Component kind."""
+        github_org = self.projects[0].get('devops', {}).get('github', {}).get('organization', 'your-org')
+        
         catalog_content = [
             "apiVersion: backstage.io/v1alpha1",
-            "kind: Location",
+            "kind: Component",
             "metadata:",
-            "  name: golden-paths-templates",
-            "  description: Golden Path templates for Java microservices",
+            "  name: hexagonal-architecture-templates",
+            "  description: |",
+            "    Spring Boot service templates with Hexagonal Architecture (Ports and Adapters).",
+            "    Includes both traditional Spring Boot and reactive WebFlux implementations.",
+            "  links:",
+            "    - title: Documentation",
+            f"      url: https://github.com/{github_org}/backstage-templates/blob/main/README.md",
             "  annotations:",
-            "    backstage.io/managed-by-location: 'file:catalog-info.yaml'",
+            f"    github.com/project-slug: {github_org}/backstage-templates",
             "spec:",
-            "  type: url",
-            "  targets:"
+            "  type: template-collection",
+            "  owner: platform-team",
+            "  lifecycle: production"
         ]
-        
-        for info in template_info:
-            catalog_content.append(f"    - ./{info['template_folder']}/template.yaml")
         
         catalog_file = output_path / 'catalog-info.yaml'
         catalog_file.write_text('\n'.join(catalog_content), encoding='utf-8')
         
-        print(f"\n📋 Root catalog created at {catalog_file}")
-        print(f"   Import in Backstage: {catalog_file.absolute()}")
+        print(f"\n📋 Catalog generated: {catalog_file}")
 
 
 def main():
@@ -224,9 +232,9 @@ def main():
     
     print("\n✅ All Golden Paths generated successfully!")
     print("\n📖 Next steps:")
-    print("   1. Register in Backstage: Import the catalog-info.yaml file")
-    print(f"   2. File location: {Path(output_dir).absolute()}/catalog-info.yaml")
-    print("   3. Or use Backstage UI: Create → Register Existing Component")
+    print("   1. Push backstage-templates/ to GitHub")
+    print("   2. Add URLs to app-config.yaml (see catalog-info.yaml)")
+    print(f"   3. Instructions: {Path(output_dir).absolute()}/IMPORT_INSTRUCTIONS.md")
 
 
 if __name__ == '__main__':
