@@ -178,24 +178,45 @@ class InfrastructureGenerator:
         return 'id'
     
     def _extract_path_info_from_operation(self, operation_id: str) -> Dict[str, Any]:
-        """Extract path information from operation ID based on Smithy URI patterns."""
+        """Extract path information from OpenAPI specs for any operation."""
+        import glob
+        import json
+        import re
+        
         path_variables = []
         path_segment = ''
         
-        if operation_id == 'GetRegionsByCountry':
-            # /countries/{countryId}/regions
-            path_variables = [{'name': 'countryId', 'type': 'String'}]
-            path_segment = 'countries/{countryId}/regions'
-        elif operation_id == 'GetCitiesByRegion':
-            # /regions/{regionId}/cities
-            path_variables = [{'name': 'regionId', 'type': 'String'}]
-            path_segment = 'regions/{regionId}/cities'
-        elif operation_id == 'GetNeighborhoodsByCity':
-            # /cities/{cityId}/neighborhoods
-            path_variables = [{'name': 'cityId', 'type': 'String'}]
-            path_segment = 'cities/{cityId}/neighborhoods'
-        else:
-            # Default fallback
+        # Load OpenAPI specs to find the actual URI pattern
+        openapi_files = glob.glob("build/smithy/*/openapi/*.openapi.json")
+        
+        for file_path in openapi_files:
+            try:
+                with open(file_path, 'r') as f:
+                    spec = json.load(f)
+                    paths = spec.get('paths', {})
+                    
+                    for path, methods in paths.items():
+                        for method, operation_data in methods.items():
+                            if operation_data.get('operationId') == operation_id:
+                                # Extract path variables from URI pattern
+                                path_vars = re.findall(r'\{([^}]+)\}', path)
+                                for var_name in path_vars:
+                                    # Determine type based on naming convention
+                                    var_type = 'String' if var_name.endswith('Id') or var_name.endswith('_id') else 'String'
+                                    path_variables.append({'name': var_name, 'type': var_type})
+                                
+                                # Remove leading slash and use as path segment
+                                path_segment = path.lstrip('/')
+                                break
+                        if path_segment:
+                            break
+                    if path_segment:
+                        break
+            except (json.JSONDecodeError, FileNotFoundError):
+                continue
+        
+        # Fallback if not found in OpenAPI specs
+        if not path_segment:
             path_segment = operation_id.lower().replace('get', '')
         
         # Set hasMore flag for comma separation
