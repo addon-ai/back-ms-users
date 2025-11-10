@@ -126,13 +126,14 @@ echo ""
 python3 "$PROJECT_ROOT/libs/utils/flyway_migration_copier.py"
 
 echo ""
-echo "🎯 Step 7: Generating Backstage files..."
+echo "🎯 Step 7: Generating Backstage templates..."
 echo ""
 
-# Generate Backstage files in each project BEFORE GitHub sync
+# Generate Backstage templates with skeletons
 python3 "$PROJECT_ROOT/libs/py-backstage-goldenpath-gen/main.py" \
     "$CONFIG_PATH" \
-    "$PROJECT_ROOT/projects"
+    "$PROJECT_ROOT/projects" \
+    "$PROJECT_ROOT/backstage-templates"
 
 echo ""
 echo "🐙 Step 8: Synchronizing projects with GitHub repositories..."
@@ -185,8 +186,7 @@ echo "   • docs/puml/open-api/ → OpenAPI documentation (PlantUML, Markdown, 
 echo "   • docs/puml/components/ → Architectural component diagrams (PlantUML)"
 echo "   • docs/puml/sequences/ → CRUD sequence diagrams by service (PlantUML)"
 echo "   • sql/ → SQL DDL scripts for database creation"
-echo "   • projects/*/template.yaml → Backstage template definitions"
-echo "   • projects/*/catalog-info.yaml → Backstage catalog entries"
+echo "   • backstage-templates/ → Backstage Software Templates with skeletons"
 echo "   • GitHub repositories → Synchronized with generated projects (if GITHUB_TOKEN set)"
 echo "🌿 Pipeline branch: $(git branch --show-current)"
 echo "🚀 Ready to run:"

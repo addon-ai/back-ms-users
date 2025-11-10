@@ -1,12 +1,13 @@
+{{=<% %>=}}{% set repo = values.repoUrl | parseRepoUrl %}<%={{ }}=%>
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: {{=<% %>=}}${{ values.component_id }}<%={{ }}=%>
   description: {{=<% %>=}}${{ values.description }}<%={{ }}=%>
   annotations:
-    github.com/project-slug: {{=<% %>=}}${{ values.destination.owner + "/" + values.destination.repo }}<%={{ }}=%>
+    github.com/project-slug: {{=<% %>=}}${{ repo.owner + '/' + repo.repo }}<%={{ }}=%>
     backstage.io/techdocs-ref: dir:.
-    backstage.io/source-location: url:https://github.com/{{=<% %>=}}${{ values.destination.owner }}<%={{ }}=%>/{{=<% %>=}}${{ values.destination.repo }}<%={{ }}=%>
+    backstage.io/source-location: url:{{=<% %>=}}${{ values.repoUrl }}<%={{ }}=%>
   tags:
     - java
     - spring-boot
@@ -15,10 +16,10 @@ metadata:
     - reactive
     - r2dbc{{/is_webflux}}
   links:
-    - url: https://github.com/{{=<% %>=}}${{ values.destination.owner }}<%={{ }}=%>/{{=<% %>=}}${{ values.destination.repo }}<%={{ }}=%>
+    - url: {{=<% %>=}}${{ values.repoUrl }}<%={{ }}=%>
       title: Repository
       icon: github
-    - url: https://github.com/{{=<% %>=}}${{ values.destination.owner }}<%={{ }}=%>/{{=<% %>=}}${{ values.destination.repo }}<%={{ }}=%>/blob/main/README.md
+    - url: {{=<% %>=}}${{ values.repoUrl }}<%={{ }}=%>/blob/main/README.md
       title: Documentation
       icon: docs
 spec:
