@@ -127,7 +127,7 @@ public class {{classname}} implements {{portName}} {
             {{entityName}}Dbo dbo = mapper.toDbo({{entityVarName}});
             {{entityName}}Dbo savedDbo = jpaRepository.save(dbo);
             return mapper.toDomain(savedDbo);
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while saving {{entityName}}: {}", e.getMessage(), e);
             throw e; // Propagate business exceptions to service layer
         } catch (Exception e) {
@@ -193,7 +193,7 @@ public class {{classname}} implements {{portName}} {
             return jpaRepository.findBySearchTerm(search != null ? search : "", pageable)
                     .map(mapper::toDomain)
                     .getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while searching {{entityNamePlural}}: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
@@ -219,7 +219,7 @@ public class {{classname}} implements {{portName}} {
                 dateTo != null ? dateTo : "",
                 pageable
             ).map(mapper::toDomain).getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while filtering {{entityNamePlural}}: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
