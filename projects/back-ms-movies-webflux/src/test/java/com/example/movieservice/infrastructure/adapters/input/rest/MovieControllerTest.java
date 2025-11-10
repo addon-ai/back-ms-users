@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -54,12 +52,11 @@ class MovieControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<CreateMovieResponseContent> result = movieController.createMovie(request, "test-request-id", null, null)
+        CreateMovieResponseContent result = movieController.createMovie(request, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
     @Test
@@ -73,12 +70,11 @@ class MovieControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<GetMovieResponseContent> result = movieController.getMovie(movieId, "test-request-id", null, null)
+        GetMovieResponseContent result = movieController.getMovie(movieId, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
     @Test
@@ -98,12 +94,11 @@ class MovieControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<UpdateMovieResponseContent> result = movieController.updateMovie(movieId, request, "test-request-id", null, null)
+        UpdateMovieResponseContent result = movieController.updateMovie(movieId, request, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
     @Test
@@ -119,12 +114,11 @@ class MovieControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<DeleteMovieResponseContent> result = movieController.deleteMovie(movieId, "test-request-id", null, null)
+        DeleteMovieResponseContent result = movieController.deleteMovie(movieId, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
     @Test
@@ -137,12 +131,11 @@ class MovieControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<ListMoviesResponseContent> result = movieController.listMovies(1, 20, null, null, null, null, "test-request-id", null, null)
+        ListMoviesResponseContent result = movieController.listMovies(1, 20, null, null, null, null, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
 }

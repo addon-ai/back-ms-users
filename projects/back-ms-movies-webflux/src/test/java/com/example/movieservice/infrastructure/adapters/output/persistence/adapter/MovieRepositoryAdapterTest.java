@@ -170,7 +170,7 @@ class MovieRepositoryAdapterTest {
         Long offset = 0L;
         Long limit = 10L;
         
-        when(jpaMovieRepository.findBySearchTerm(searchTerm, offset, limit))
+        when(jpaMovieRepository.findBySearchTerm(searchTerm, limit, offset))
             .thenReturn(Flux.just(movieDbo));
         when(movieMapper.toDomain(movieDbo)).thenReturn(domainMovie);
 
@@ -197,7 +197,7 @@ class MovieRepositoryAdapterTest {
         Long offset = 0L;
         Long limit = 10L;
         
-        when(jpaMovieRepository.findByFilters(search, status, dateFrom, dateTo, offset, limit))
+        when(jpaMovieRepository.findByFilters(search, status, dateFrom, dateTo, limit, offset))
             .thenReturn(Flux.just(movieDbo));
         when(movieMapper.toDomain(movieDbo)).thenReturn(domainMovie);
 

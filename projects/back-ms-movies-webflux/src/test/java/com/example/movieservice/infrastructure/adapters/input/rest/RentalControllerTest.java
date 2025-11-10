@@ -12,8 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -52,12 +50,11 @@ class RentalControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<CreateRentalResponseContent> result = rentalController.createRental(request, "test-request-id", null, null)
+        CreateRentalResponseContent result = rentalController.createRental(request, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
     @Test
@@ -71,12 +68,11 @@ class RentalControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<GetRentalResponseContent> result = rentalController.getRental(rentalId, "test-request-id", null, null)
+        GetRentalResponseContent result = rentalController.getRental(rentalId, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
     @Test
@@ -94,12 +90,11 @@ class RentalControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<UpdateRentalResponseContent> result = rentalController.updateRental(rentalId, request, "test-request-id", null, null)
+        UpdateRentalResponseContent result = rentalController.updateRental(rentalId, request, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
 
@@ -113,12 +108,11 @@ class RentalControllerTest {
             .thenReturn(Mono.just(response));
 
         // When
-        ResponseEntity<ListRentalsResponseContent> result = rentalController.listRentals(1, 20, null, null, null, null, "test-request-id", null, null)
+        ListRentalsResponseContent result = rentalController.listRentals(1, 20, null, null, null, null, "test-request-id", null, null)
             .block(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertEquals(response, result);
     }
 
 }

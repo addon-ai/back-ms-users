@@ -170,7 +170,7 @@ class RentalRepositoryAdapterTest {
         Long offset = 0L;
         Long limit = 10L;
         
-        when(jpaRentalRepository.findBySearchTerm(searchTerm, offset, limit))
+        when(jpaRentalRepository.findBySearchTerm(searchTerm, limit, offset))
             .thenReturn(Flux.just(rentalDbo));
         when(rentalMapper.toDomain(rentalDbo)).thenReturn(domainRental);
 
@@ -197,7 +197,7 @@ class RentalRepositoryAdapterTest {
         Long offset = 0L;
         Long limit = 10L;
         
-        when(jpaRentalRepository.findByFilters(search, status, dateFrom, dateTo, offset, limit))
+        when(jpaRentalRepository.findByFilters(search, status, dateFrom, dateTo, limit, offset))
             .thenReturn(Flux.just(rentalDbo));
         when(rentalMapper.toDomain(rentalDbo)).thenReturn(domainRental);
 
