@@ -27,10 +27,11 @@ class JpaMovieRepositoryTest {
     private JpaMovieRepository movieRepository;
 
     private MovieDbo createMovieDbo() {
+        UUID randomUUID = UUID.randomUUID();
         return MovieDbo.builder()
-            .title("test-title")
-            .director("test-director")
-            .genre("test-genre")
+            .title("test-title-" + randomUUID)
+            .director("test-director-" + randomUUID)
+            .genre("test-genre-" + randomUUID)
             .releaseYear(java.math.BigDecimal.valueOf(1.0))
             .duration(java.math.BigDecimal.valueOf(1.0))
             .availableCopies(java.math.BigDecimal.valueOf(1.0))

@@ -9,9 +9,9 @@ import com.example.movieservice.application.dto.movie.UpdateMovieRequestContent;
 import com.example.movieservice.application.dto.movie.UpdateMovieResponseContent;
 import com.example.movieservice.application.dto.movie.GetMovieResponseContent;
 import com.example.movieservice.application.dto.movie.MovieResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,11 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@SpringBootTest
 class MovieMapperTest {
 
-    @Autowired
     private MovieMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = Mappers.getMapper(MovieMapper.class);
+    }
 
     @Test
     void fromCreateRequest_ShouldMapCorrectly() {

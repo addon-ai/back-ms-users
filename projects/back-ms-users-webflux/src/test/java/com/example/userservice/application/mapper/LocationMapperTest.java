@@ -9,9 +9,9 @@ import com.example.userservice.application.dto.location.UpdateLocationRequestCon
 import com.example.userservice.application.dto.location.UpdateLocationResponseContent;
 import com.example.userservice.application.dto.location.GetLocationResponseContent;
 import com.example.userservice.application.dto.location.LocationResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,11 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@SpringBootTest
 class LocationMapperTest {
 
-    @Autowired
     private LocationMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = Mappers.getMapper(LocationMapper.class);
+    }
 
     @Test
     void fromCreateRequest_ShouldMapCorrectly() {

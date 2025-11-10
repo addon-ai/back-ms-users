@@ -4,9 +4,9 @@ import com.example.userservice.domain.model.City;
 import com.example.userservice.domain.model.EntityStatus;
 import com.example.userservice.infrastructure.adapters.output.persistence.entity.CityDbo;
 import com.example.userservice.application.dto.location.CityResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,11 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@SpringBootTest
 class CityMapperTest {
 
-    @Autowired
     private CityMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = Mappers.getMapper(CityMapper.class);
+    }
 
 
 

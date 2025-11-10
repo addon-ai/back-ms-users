@@ -9,9 +9,9 @@ import com.example.userservice.application.dto.user.UpdateUserRequestContent;
 import com.example.userservice.application.dto.user.UpdateUserResponseContent;
 import com.example.userservice.application.dto.user.GetUserResponseContent;
 import com.example.userservice.application.dto.user.UserResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,11 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@SpringBootTest
 class UserMapperTest {
 
-    @Autowired
     private UserMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = Mappers.getMapper(UserMapper.class);
+    }
 
     @Test
     void fromCreateRequest_ShouldMapCorrectly() {

@@ -27,13 +27,14 @@ class JpaLocationRepositoryTest {
     private JpaLocationRepository locationRepository;
 
     private LocationDbo createLocationDbo() {
+        UUID randomUUID = UUID.randomUUID();
         return LocationDbo.builder()
-            .userId(UUID.randomUUID().toString())
-            .country("test-country-" + UUID.randomUUID())
-            .region("test-region-" + UUID.randomUUID())
-            .city("test-city-" + UUID.randomUUID())
-            .address("test-address-" + UUID.randomUUID())
-            .locationType("test-locationType-" + UUID.randomUUID())
+            .userId("test-userId-" + randomUUID)
+            .country("test-country-" + randomUUID)
+            .region("test-region-" + randomUUID)
+            .city("test-city-" + randomUUID)
+            .address("test-address-" + randomUUID)
+            .locationType("test-locationType-" + randomUUID)
             .status(EntityStatus.ACTIVE)
             .build();
     }

@@ -27,11 +27,12 @@ class JpaRentalRepositoryTest {
     private JpaRentalRepository rentalRepository;
 
     private RentalDbo createRentalDbo() {
+        UUID randomUUID = UUID.randomUUID();
         return RentalDbo.builder()
-            .movieId("test-movieId")
-            .userId("test-userId")
-            .rentalDate("test-rentalDate")
-            .dueDate("test-dueDate")
+            .movieId("test-movieId-" + randomUUID)
+            .userId("test-userId-" + randomUUID)
+            .rentalDate("test-rentalDate-" + randomUUID)
+            .dueDate("test-dueDate-" + randomUUID)
             .totalPrice(1.0)
             .status(EntityStatus.ACTIVE)
             .build();

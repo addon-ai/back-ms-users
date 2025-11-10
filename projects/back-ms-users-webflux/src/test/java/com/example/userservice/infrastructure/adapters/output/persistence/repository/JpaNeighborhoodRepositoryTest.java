@@ -27,9 +27,10 @@ class JpaNeighborhoodRepositoryTest {
     private JpaNeighborhoodRepository neighborhoodRepository;
 
     private NeighborhoodDbo createNeighborhoodDbo() {
+        UUID randomUUID = UUID.randomUUID();
         return NeighborhoodDbo.builder()
-            .name("test-name-" + UUID.randomUUID())
-            .cityId(UUID.randomUUID().toString())
+            .name("test-name-" + randomUUID)
+            .cityId("test-cityId-" + randomUUID)
             .status(EntityStatus.ACTIVE)
             .build();
     }

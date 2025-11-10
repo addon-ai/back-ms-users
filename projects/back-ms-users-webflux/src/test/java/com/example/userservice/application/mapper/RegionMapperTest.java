@@ -4,9 +4,9 @@ import com.example.userservice.domain.model.Region;
 import com.example.userservice.domain.model.EntityStatus;
 import com.example.userservice.infrastructure.adapters.output.persistence.entity.RegionDbo;
 import com.example.userservice.application.dto.location.RegionResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,11 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@SpringBootTest
 class RegionMapperTest {
 
-    @Autowired
     private RegionMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = Mappers.getMapper(RegionMapper.class);
+    }
 
 
 
