@@ -233,8 +233,8 @@ public class {{classname}} {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         LoggingUtils.setRequestContext(requestId, correlationId, clientId);
         try {
-            logger.info("Executing {{operationId}}{{#hasPathVariables}} with {{#pathVariables}}{{name}}: {}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}", {{#hasPathVariables}}{{#pathVariables}}{{name}}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
-            {{responseType}} response = {{entityVarName}}UseCase.{{methodName}}({{#hasPathVariables}}{{#pathVariables}}{{name}}{{^hasMore}}{{/hasMore}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
+            logger.info("Executing {{operationId}}{{#hasPathVariables}} with {{#pathVariables}}{{name}}: {}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}", {{#hasPathVariables}}{{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
+            {{responseType}} response = {{entityVarName}}UseCase.{{methodName}}({{#hasPathVariables}}{{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
             return ResponseEntity.ok(response);
         } finally {
             LoggingUtils.clearRequestContext();

@@ -249,11 +249,15 @@ class ApplicationGenerator:
         path_variables = []
         
         if operation_id == 'GetRegionsByCountry':
-            path_variables = [{'name': 'countryId', 'type': 'String', 'hasMore': False}]
+            path_variables = [{'name': 'countryId', 'type': 'String'}]
         elif operation_id == 'GetCitiesByRegion':
-            path_variables = [{'name': 'regionId', 'type': 'String', 'hasMore': False}]
+            path_variables = [{'name': 'regionId', 'type': 'String'}]
         elif operation_id == 'GetNeighborhoodsByCity':
-            path_variables = [{'name': 'cityId', 'type': 'String', 'hasMore': False}]
+            path_variables = [{'name': 'cityId', 'type': 'String'}]
+        
+        # Set hasMore flag for comma separation
+        for i, var in enumerate(path_variables):
+            var['hasMore'] = i < len(path_variables) - 1
         
         return {
             'pathVariables': path_variables

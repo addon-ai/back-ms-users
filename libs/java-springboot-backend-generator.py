@@ -48,18 +48,23 @@ def main():
     logger.info("� Ensured projects directory exists")
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
-        logger.info("Usage: python java-backend-generator.py [templates_dir]")
-        logger.info("Example: python java-backend-generator.py libs/pyjava-springboot-backend-codegen/templates")
+        logger.info("Usage: python java-backend-generator.py [project_name] [templates_dir]")
+        logger.info("Example: python java-backend-generator.py back-ms-users libs/pyjava-springboot-backend-codegen/templates")
         logger.info("Config: libs/config/params.json (array of project configurations)")
         sys.exit(0)
     
     config_path = "libs/config/params.json"
-    templates_dir = sys.argv[1] if len(sys.argv) > 1 else "libs/pyjava-springboot-backend-codegen/templates"
+    project_filter = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('libs/') else None
+    templates_dir = sys.argv[2] if len(sys.argv) > 2 else (sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].startswith('libs/') else "libs/pyjava-springboot-backend-codegen/templates")
     
     try:
         # Load all project configurations and filter Spring Boot projects
         projects_config = ConfigLoader.load_projects_config(config_path)
         springboot_projects = [p for p in projects_config if p['project']['general'].get('type', 'springBoot') == 'springBoot']
+        
+        # Filter by project name if specified
+        if project_filter:
+            springboot_projects = [p for p in springboot_projects if p['project']['general']['name'] == project_filter]
         
         logger.info(f"Found {len(springboot_projects)} Spring Boot project(s) to generate...")
         

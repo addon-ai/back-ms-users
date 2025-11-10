@@ -184,19 +184,23 @@ class InfrastructureGenerator:
         
         if operation_id == 'GetRegionsByCountry':
             # /countries/{countryId}/regions
-            path_variables = [{'name': 'countryId', 'type': 'String', 'hasMore': False}]
+            path_variables = [{'name': 'countryId', 'type': 'String'}]
             path_segment = 'countries/{countryId}/regions'
         elif operation_id == 'GetCitiesByRegion':
             # /regions/{regionId}/cities
-            path_variables = [{'name': 'regionId', 'type': 'String', 'hasMore': False}]
+            path_variables = [{'name': 'regionId', 'type': 'String'}]
             path_segment = 'regions/{regionId}/cities'
         elif operation_id == 'GetNeighborhoodsByCity':
             # /cities/{cityId}/neighborhoods
-            path_variables = [{'name': 'cityId', 'type': 'String', 'hasMore': False}]
+            path_variables = [{'name': 'cityId', 'type': 'String'}]
             path_segment = 'cities/{cityId}/neighborhoods'
         else:
             # Default fallback
             path_segment = operation_id.lower().replace('get', '')
+        
+        # Set hasMore flag for comma separation
+        for i, var in enumerate(path_variables):
+            var['hasMore'] = i < len(path_variables) - 1
         
         return {
             'pathSegment': path_segment,
