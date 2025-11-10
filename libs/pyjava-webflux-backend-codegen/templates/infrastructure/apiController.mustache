@@ -164,7 +164,8 @@ public class {{classname}} {
     @GetMapping
     @Operation(summary = "List {{entityName}}s", description = "Retrieves a paginated list of {{entityName}}s with optional search, status filter and date range")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "{{entityName}}s retrieved successfully")
+        @ApiResponse(responseCode = "200", description = "{{entityName}}s retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid date range or format")
     })
     public Mono<List{{entityName}}sResponseContent> list{{entityName}}s(
             @Parameter(description = "Page number (1-based)", example = "1")
@@ -187,6 +188,19 @@ public class {{classname}} {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
                 .then(Mono.fromCallable(() -> {
+                    // Validate date range
+                    if (dateFrom != null && dateTo != null && !dateFrom.trim().isEmpty() && !dateTo.trim().isEmpty()) {
+                        try {
+                            java.time.Instant fromInstant = java.time.Instant.parse(dateFrom);
+                            java.time.Instant toInstant = java.time.Instant.parse(dateTo);
+                            if (fromInstant.isAfter(toInstant)) {
+                                throw new IllegalArgumentException("dateFrom cannot be after dateTo");
+                            }
+                        } catch (java.time.format.DateTimeParseException e) {
+                            throw new IllegalArgumentException("Invalid date format. Use ISO format: 2024-01-01T00:00:00Z");
+                        }
+                    }
+                    
                     logger.info("Listing {{entityVarName}}s with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
                                page, size, search, status, dateFrom, dateTo);
                     return search == null ? "": search;
