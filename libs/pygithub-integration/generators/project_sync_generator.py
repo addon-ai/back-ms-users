@@ -90,6 +90,11 @@ class ProjectSyncGenerator:
     
     def sync_project(self, project_name: str):
         """Sync a single project with GitHub"""
+        # CRITICAL: Never process boiler-plate-code-gen as a project
+        if project_name == 'boiler-plate-code-gen':
+            print(f"⚠️  PROTECTED: Skipping boiler-plate-code-gen repository")
+            return
+            
         project_path = os.path.join(self.projects_dir, project_name)
         
         if not os.path.exists(project_path):

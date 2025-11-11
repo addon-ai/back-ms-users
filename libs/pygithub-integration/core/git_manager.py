@@ -7,12 +7,12 @@ from typing import List, Dict
 
 class GitManager:
     def __init__(self, project_path: str):
-        self.project_path = project_path
-        self.project_name = os.path.basename(project_path)
+        self.project_path = os.path.abspath(project_path)
+        self.project_name = os.path.basename(self.project_path)
         self.config = self._load_github_config()
         
-        # Prevent execution in boiler-plate-code-gen root directory only
-        if os.path.basename(self.project_path) == 'boiler-plate-code-gen' and os.path.exists(os.path.join(self.project_path, 'scripts')):
+        # Prevent execution in boiler-plate-code-gen root directory
+        if 'boiler-plate-code-gen' in self.project_path and os.path.exists(os.path.join(self.project_path, 'scripts', 'code-gen-pipeline.sh')):
             raise ValueError(f"GitManager should not be used in boiler-plate-code-gen repository: {self.project_path}")
     
     def _load_github_config(self) -> Dict:
@@ -96,9 +96,9 @@ class GitManager:
     
     def fix_remote_url(self, repo_name: str):
         """Fix remote URL if it's pointing to wrong repository"""
-        # Skip if we're in the boiler-plate-code-gen directory
-        if 'boiler-plate-code-gen' in self.project_path and os.path.exists(os.path.join(self.project_path, 'scripts')):
-            print(f"Skipping remote URL fix for boiler-plate-code-gen repository")
+        # CRITICAL: Never modify boiler-plate-code-gen repository remote
+        if 'boiler-plate-code-gen' in self.project_path and os.path.exists(os.path.join(self.project_path, 'scripts', 'code-gen-pipeline.sh')):
+            print(f"⚠️  PROTECTED: Skipping remote URL fix for boiler-plate-code-gen repository")
             return False
             
         os.chdir(self.project_path)

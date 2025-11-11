@@ -29,6 +29,11 @@ echo "📁 Templates: $TEMPLATES_DIR"
 echo "📂 Output: $OUTPUT_DIR"
 echo ""
 
+# Protect main repository remote
+echo "🔒 Protecting main repository remote..."
+python3 "$PROJECT_ROOT/libs/utils/protect_main_repo.py"
+echo ""
+
 # Create pipeline branch
 echo "🌿 Creating pipeline branch..."
 python3 "$PROJECT_ROOT/libs/utils/branch_manager.py"
