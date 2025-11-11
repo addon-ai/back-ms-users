@@ -34,7 +34,7 @@ def apply_branch_protection():
         # Check if repository exists
         if github_client.repository_exists(organization, project_name):
             # Apply protection to all default branches
-            default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
+            default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'master'])
             github_client.setup_repository_protection(organization, project_name, default_branches)
         else:
             print(f"⚠️  Repository {project_name} not found")

@@ -79,7 +79,7 @@
                     "develop",
                     "test",
                     "staging",
-                    "main"
+                    "master"
                 ],
                 "repositorySettings": {
                     "private": false,
@@ -190,7 +190,7 @@
                     "develop",
                     "test",
                     "staging",
-                    "main"
+                    "master"
                 ],
                 "repositorySettings": {
                     "private": false,
@@ -305,7 +305,7 @@
                     "develop",
                     "test",
                     "staging",
-                    "main"
+                    "master"
                 ],
                 "repositorySettings": {
                     "private": false,
@@ -420,7 +420,7 @@
                     "develop",
                     "test",
                     "staging",
-                    "main"
+                    "master"
                 ],
                 "repositorySettings": {
                     "private": false,

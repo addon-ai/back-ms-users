@@ -158,10 +158,10 @@ class ProjectSyncGenerator:
         
         # Get default branches from project config
         project_config = self._get_project_config(project_name)
-        default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
+        default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'master'])
         
         # Create and push additional branches (with README.md and PR template)
-        branches_to_create = [b for b in default_branches if b != 'main']  # Exclude main as it already exists
+        branches_to_create = [b for b in default_branches if b != 'master']  # Exclude master as it already exists
         git_manager.create_branches(branches_to_create)
         
         # Create feature branch with all project code (PR template already included)
@@ -195,7 +195,7 @@ class ProjectSyncGenerator:
                 print("Restored git history")
             
             project_config = self._get_project_config(project_name)
-            default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
+            default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'master'])
             owner = self.github_client.config.get('github', {}).get('organization', 'addon-ai')
             
             # Create feature branch with all project code (PR template already included)
@@ -316,8 +316,8 @@ class ProjectSyncGenerator:
                 except subprocess.CalledProcessError as e:
                     print(f"❌ Failed to push {branch}: {e}")
             
-            # Return to main branch
-            subprocess.run(['git', 'checkout', 'main'], check=False)
+            # Return to master branch
+            subprocess.run(['git', 'checkout', 'master'], check=False)
             print(f"Successfully updated {project_name}")
                 
         except subprocess.CalledProcessError as e:

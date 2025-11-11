@@ -63,8 +63,8 @@ class GitManager:
             print(f"Git repository already exists for {self.project_name}, skipping init")
             return
         
-        # Set default branch to main globally to avoid master warning
-        subprocess.run(['git', 'config', '--global', 'init.defaultBranch', 'main'], check=False)
+        # Set default branch to master globally
+        subprocess.run(['git', 'config', '--global', 'init.defaultBranch', 'master'], check=False)
         
         # Initialize new git repository
         subprocess.run(['git', 'init'], check=True)
@@ -86,13 +86,13 @@ class GitManager:
         subprocess.run(['git', 'remote', 'add', 'origin', ssh_remote_url], check=True)
         print(f"Set remote origin to: {ssh_remote_url}")
         
-        # Set default branch to main
-        subprocess.run(['git', 'branch', '-M', 'main'], check=True)
+        # Set default branch to master
+        subprocess.run(['git', 'branch', '-M', 'master'], check=True)
         
         # Add all files, commit and push
         subprocess.run(['git', 'add', '.'], check=True)
         subprocess.run(['git', 'commit', '-m', 'Initial commit: Generated Spring Boot project'], check=True)
-        subprocess.run(['git', 'push', '-u', 'origin', 'main'], check=True)
+        subprocess.run(['git', 'push', '-u', 'origin', 'master'], check=True)
     
     def fix_remote_url(self, repo_name: str):
         """Fix remote URL if it's pointing to wrong repository"""
@@ -137,7 +137,7 @@ class GitManager:
         if os.path.exists('.github/PULL_REQUEST_TEMPLATE.md'):
             subprocess.run(['git', 'add', '.github/PULL_REQUEST_TEMPLATE.md'], check=True)
         subprocess.run(['git', 'commit', '-m', commit_message], check=True)
-        subprocess.run(['git', 'push', '-u', 'origin', 'main'], check=True)
+        subprocess.run(['git', 'push', '-u', 'origin', 'master'], check=True)
     
     def create_branches(self, branches: List[str]):
         """Create and push empty branches with only README.md"""
@@ -145,7 +145,7 @@ class GitManager:
         for branch in branches:
             subprocess.run(['git', 'checkout', '-b', branch], check=True)
             subprocess.run(['git', 'push', '-u', 'origin', branch], check=True)
-        subprocess.run(['git', 'checkout', 'main'], check=True)
+        subprocess.run(['git', 'checkout', 'master'], check=True)
     
     def commit_and_push(self, branch_name: str, commit_message: str):
         """Add, commit and push all project files to feature branch"""
@@ -189,9 +189,9 @@ class GitManager:
         if result.returncode != 0:
             subprocess.run(['git', 'commit', '-m', 'Auto-commit pending changes'], check=False)
         
-        # Create feature branch from main
+        # Create feature branch from master
         feature_branch = self.get_feature_branch_name()
-        subprocess.run(['git', 'checkout', 'main'], check=True)
+        subprocess.run(['git', 'checkout', 'master'], check=True)
         subprocess.run(['git', 'checkout', '-b', feature_branch], check=True)
         
         # Add all project files
