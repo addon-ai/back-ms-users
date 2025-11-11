@@ -1,3 +1,0 @@
-# back-ms-movies-webflux
-
-Documentation coming soon...

@@ -1,3 +1,0 @@
-# back-ms-users
-
-Documentation coming soon...
