@@ -11,7 +11,7 @@ metadata:
   tags:
     - java
     - spring-boot
-    - springWebflux
+    - spring-webflux
     - hexagonal-architecture
     - reactive
     - r2dbc

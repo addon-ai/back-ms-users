@@ -5,7 +5,7 @@ metadata:
   description: Microservice for users management
   tags:
     - java
-    - springBoot
+    - spring-boot
     - hexagonal-architecture
     - template
   annotations:
@@ -14,4 +14,3 @@ spec:
   type: template
   owner: platform-team
   lifecycle: production
-  subcomponentOf: hexagonal-architecture-templates

@@ -11,7 +11,7 @@ metadata:
   tags:
     - java
     - spring-boot
-    - springBoot
+    - spring-boot
     - hexagonal-architecture
   links:
     - url: ${{ values.repoUrl }}

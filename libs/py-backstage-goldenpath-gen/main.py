@@ -26,7 +26,7 @@ class BackstageGoldenPathGenerator:
         
         # Generate collection files
         self._generate_collection_components(configs)
-        self._generate_mkdocs()
+        self._generate_root_mkdocs()
         
         print(f"✅ Backstage collection files generated in {self.output_dir}/")
     
@@ -36,13 +36,21 @@ class BackstageGoldenPathGenerator:
         
         project_dir = os.path.join(self.output_dir, project_name)
         skeleton_dir = os.path.join(project_dir, "skeleton")
+        docs_dir = os.path.join(project_dir, "docs")
         os.makedirs(skeleton_dir, exist_ok=True)
+        os.makedirs(docs_dir, exist_ok=True)
         
         # Generate template.yaml
         self._generate_template_yaml(project_name, config, project_dir)
         
         # Generate catalog-info.yaml (for the template itself)
         self._generate_template_catalog_info(project_name, config, project_dir)
+        
+        # Generate mkdocs.yml
+        self._generate_mkdocs(project_name, config, project_dir)
+        
+        # Generate docs/index.md
+        self._generate_docs_index(project_name, docs_dir)
         
         # Generate skeleton/catalog-info.yaml (for generated projects)
         self._generate_skeleton_catalog(project_name, config, skeleton_dir)
@@ -81,11 +89,12 @@ class BackstageGoldenPathGenerator:
             template = f.read()
         
         stack_type = config['project']['general'].get('type', 'springBoot')
+        stack_type_kebab = 'spring-webflux' if 'webflux' in stack_type.lower() else 'spring-boot'
         
         data = {
             'template_id': project_name,
             'template_description': config['project']['general']['description'],
-            'stack_type': stack_type,
+            'stack_type_kebab': stack_type_kebab,
             'github_org': config['devops']['github']['organization'],
             'default_owner': 'platform-team'
         }
@@ -102,9 +111,10 @@ class BackstageGoldenPathGenerator:
             template = f.read()
         
         stack_type = config['project']['general'].get('type', 'springBoot')
+        stack_type_kebab = 'spring-webflux' if 'webflux' in stack_type.lower() else 'spring-boot'
         
         data = {
-            'stack_type': stack_type,
+            'stack_type_kebab': stack_type_kebab,
             'is_webflux': 'webflux' in stack_type.lower(),
             'system_name': 'default-system'
         }
@@ -113,6 +123,61 @@ class BackstageGoldenPathGenerator:
         
         with open(os.path.join(skeleton_dir, "catalog-info.yaml"), 'w') as f:
             f.write(output)
+        
+        # Generate README.md
+        self._generate_skeleton_readme(skeleton_dir)
+        
+        # Generate .gitignore
+        self._generate_skeleton_gitignore(skeleton_dir)
+    
+    def _generate_skeleton_readme(self, skeleton_dir):
+        """Generate skeleton/README.md"""
+        template_path = os.path.join(self.templates_dir, "skeleton-README.md.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        with open(os.path.join(skeleton_dir, "README.md"), 'w') as f:
+            f.write(template)
+    
+    def _generate_skeleton_gitignore(self, skeleton_dir):
+        """Generate skeleton/.gitignore"""
+        template_path = os.path.join(self.templates_dir, "skeleton-gitignore.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        with open(os.path.join(skeleton_dir, ".gitignore"), 'w') as f:
+            f.write(template)
+    
+    def _generate_mkdocs(self, project_name, config, project_dir):
+        """Generate mkdocs.yml"""
+        template_path = os.path.join(self.templates_dir, "project-mkdocs.yml.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        data = {
+            'project_name': project_name,
+            'project_description': config['project']['general']['description']
+        }
+        
+        output = pystache.render(template, data)
+        
+        with open(os.path.join(project_dir, "mkdocs.yml"), 'w') as f:
+            f.write(output)
+    
+    def _generate_docs_index(self, project_name, docs_dir):
+        """Generate docs/index.md from project README.md"""
+        readme_path = os.path.join(self.projects_dir, project_name, "README.md")
+        
+        if os.path.exists(readme_path):
+            with open(readme_path, 'r') as f:
+                readme_content = f.read()
+            
+            with open(os.path.join(docs_dir, "index.md"), 'w') as f:
+                f.write(readme_content)
+        else:
+            # Fallback content if README doesn't exist
+            with open(os.path.join(docs_dir, "index.md"), 'w') as f:
+                f.write(f"# {project_name}\n\nDocumentation coming soon...\n")
     
     def _generate_collection_components(self, configs):
         """Generate collection-components.yml"""
@@ -131,8 +196,8 @@ class BackstageGoldenPathGenerator:
         with open(os.path.join(self.output_dir, "collection-components.yml"), 'w') as f:
             f.write(output)
     
-    def _generate_mkdocs(self):
-        """Generate mkdocs.yml"""
+    def _generate_root_mkdocs(self):
+        """Generate root mkdocs.yml"""
         template_path = os.path.join(self.templates_dir, "root-mkdocs.yml.mustache")
         if not os.path.exists(template_path):
             return
