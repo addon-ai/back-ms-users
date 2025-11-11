@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import pystache
 
 class RootGenerator:
     """Generates root-level files for backstage-templates"""
@@ -7,6 +8,28 @@ class RootGenerator:
     def __init__(self, templates_dir, output_dir):
         self.templates_dir = templates_dir
         self.output_dir = output_dir
+    
+    def generate_readme(self, configs):
+        """Generate README.md"""
+        template_path = os.path.join(self.templates_dir, "README.md.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        projects = []
+        for config in configs:
+            name = config['project']['general']['name']
+            description = config['project']['general']['description']
+            is_webflux = '-webflux' in name
+            projects.append({
+                'name': name,
+                'description': description,
+                'isWebflux': is_webflux
+            })
+        
+        content = pystache.render(template, {'projects': projects})
+        
+        with open(os.path.join(self.output_dir, "README.md"), 'w') as f:
+            f.write(content)
     
     def generate_gitignore(self):
         """Generate .gitignore"""
@@ -84,7 +107,7 @@ metadata:
   description: All entities using wildcard pattern
 spec:
   targets:
-    - https://github.com/{github_org}/backstage-templates/blob/main/*/entities/*/*.yml
+    - https://github.com/{github_org}/backstage-templates/blob/main/*/entities/*/*-entity.yml
 """
         with open(os.path.join(self.output_dir, "entities-location-wildcard.yml"), 'w') as f:
             f.write(entities_location_content)

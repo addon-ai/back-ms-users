@@ -4,9 +4,10 @@ Spring Boot service templates with Hexagonal Architecture (Ports and Adapters).
 
 ## Available Templates
 
-{{#projects}}
-- **{{name}}**: {{description}}{{#isWebflux}} (WebFlux){{/isWebflux}}{{^isWebflux}} (Spring Boot){{/isWebflux}}
-{{/projects}}
+- **back-ms-users**: Microservice for users management (Spring Boot)
+- **back-ms-movies**: Microservice for movie rental management (Spring Boot)
+- **back-ms-users-webflux**: Reactive microservice for users management with Spring WebFlux (WebFlux)
+- **back-ms-movies-webflux**: Reactive microservice for movie rental management with Spring WebFlux (WebFlux)
 
 ## Architecture
 

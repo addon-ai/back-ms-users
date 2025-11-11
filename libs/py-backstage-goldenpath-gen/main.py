@@ -48,6 +48,7 @@ class BackstageGoldenPathGenerator:
         
         # Generate root files
         github_org = self.config_loader.get_github_org()
+        self.root_generator.generate_readme(configs)
         self.root_generator.generate_collection_components(github_org)
         self.root_generator.generate_gitignore()
         self.root_generator.generate_org_yml()
