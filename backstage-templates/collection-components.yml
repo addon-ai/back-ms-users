@@ -5,5 +5,9 @@ metadata:
   description: Descubre los subcomponentes de la arquitectura hexagonal
 spec:
   targets:
+    - ./back-ms-movies/catalog-info.yaml
+    - ./back-ms-movies-webflux/catalog-info.yaml
+    - ./back-ms-users/catalog-info.yaml
+    - ./back-ms-users-webflux/catalog-info.yaml
     - ./springboot-service/catalog-info.yaml
     - ./webflux-service/catalog-info.yaml
