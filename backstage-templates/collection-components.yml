@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: hexagonal-components-location
+  description: Descubre los subcomponentes de la arquitectura hexagonal
+spec:
+  targets:
+    - ./springboot-service/catalog-info.yaml
+    - ./webflux-service/catalog-info.yaml
