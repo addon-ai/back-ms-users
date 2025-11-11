@@ -4,11 +4,6 @@
 
 A comprehensive service for managing movie rentals with catalog and transaction processing. This service provides movie catalog management (CRUD operations), rental transaction processing, inventory tracking and availability management, late fee calculation and payment processing, and user rental history and status tracking.
 
-## ✨ Features
-
-- 📦 **Movies Management**: CRUD operations
-- 📦 **Rentals Management**: CRUD operations
-
 ## 🔐 Authentication
 
 This API uses standard authentication mechanisms. Refer to the OpenAPI specification for detailed authentication requirements.

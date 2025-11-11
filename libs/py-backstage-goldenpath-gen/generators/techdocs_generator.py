@@ -58,18 +58,11 @@ plugins:
         title = openapi_spec.get('info', {}).get('title', f'{service_name} API')
         description = openapi_spec.get('info', {}).get('description', f'API for {service_name}')
         
-        # Extract features from paths
-        features = self._extract_features(openapi_spec)
-        
         content = f"""# {title}
 
 ## 📋 Overview
 
 {description}
-
-## ✨ Features
-
-{features}
 
 ## 🔐 Authentication
 
@@ -122,21 +115,7 @@ The complete API specification is available in the OpenAPI format. This specific
         with open(os.path.join(docs_dir, 'api-reference.md'), 'w') as f:
             f.write(content)
     
-    def _extract_features(self, openapi_spec):
-        """Extract features from OpenAPI spec paths"""
-        paths = openapi_spec.get('paths', {})
-        
-        # Extract unique resources from paths
-        resources = set()
-        for path in paths.keys():
-            parts = path.strip('/').split('/')
-            if parts and parts[0]:
-                resources.add(parts[0].capitalize())
-        
-        if resources:
-            return '\n'.join([f"- 📦 **{r} Management**: CRUD operations" for r in sorted(resources)])
-        
-        return "- 📦 **API Operations**: Complete REST API functionality"
+
     
     def _group_endpoints(self, paths):
         """Group endpoints by resource"""

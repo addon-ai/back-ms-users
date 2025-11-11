@@ -109,5 +109,5 @@ spec:
   targets:
     - https://github.com/{github_org}/backstage-templates/blob/main/*/entities/*/*-entity.yml
 """
-        with open(os.path.join(self.output_dir, "entities-location-wildcard.yml"), 'w') as f:
+        with open(os.path.join(self.output_dir, "entities-location.yml"), 'w') as f:
             f.write(entities_location_content)
