@@ -18,3 +18,5 @@ spec:
   owner: platform-team
   lifecycle: production
   system: movies-system
+  providesApis:
+    - movie-api

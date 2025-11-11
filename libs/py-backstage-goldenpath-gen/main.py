@@ -57,17 +57,17 @@ class BackstageGoldenPathGenerator:
         # Generate template.yaml
         self._generate_template_yaml(project_name, config, project_dir)
         
-        # Generate catalog-info.yaml (for the template itself)
-        self._generate_template_catalog_info(project_name, config, project_dir)
-        
         # Generate mkdocs.yml
         self._generate_mkdocs(project_name, config, project_dir)
         
         # Generate docs/index.md
         self._generate_docs_index(project_name, docs_dir)
         
-        # Copy OpenAPI specs from Smithy build and generate entities
+        # Copy OpenAPI specs from Smithy build and generate entities FIRST
         self._copy_openapi_specs(project_name, project_dir)
+        
+        # Generate catalog-info.yaml (for the template itself) AFTER entities
+        self._generate_template_catalog_info(project_name, config, project_dir)
         
         # Generate skeleton/catalog-info.yaml (for generated projects)
         self._generate_skeleton_catalog(project_name, config, skeleton_dir)
