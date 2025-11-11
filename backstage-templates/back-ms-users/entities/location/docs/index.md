@@ -6,11 +6,10 @@ A comprehensive service for managing user locations and geographic data with ful
 
 ## ✨ Features
 
-- **User location management (home**
-- **Work**
-- **Billing**
-- **Shipping addresses)**
-- **Geographic data hierarchy (countries**
+- 📦 **Cities Management**: CRUD operations
+- 📦 **Countries Management**: CRUD operations
+- 📦 **Locations Management**: CRUD operations
+- 📦 **Regions Management**: CRUD operations
 
 ## 🔐 Authentication
 

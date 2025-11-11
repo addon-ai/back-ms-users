@@ -123,29 +123,20 @@ The complete API specification is available in the OpenAPI format. This specific
             f.write(content)
     
     def _extract_features(self, openapi_spec):
-        """Extract features from OpenAPI spec"""
-        description = openapi_spec.get('info', {}).get('description', '')
+        """Extract features from OpenAPI spec paths"""
         paths = openapi_spec.get('paths', {})
         
-        # Try to extract from description
-        if 'provides' in description.lower():
-            parts = description.split('provides')
-            if len(parts) > 1:
-                features_text = parts[1].strip()
-                features = [f.strip() for f in features_text.split(',')]
-                return '\n'.join([f"- **{f.capitalize()}**" for f in features[:5]])
-        
-        # Fallback: generate from paths
+        # Extract unique resources from paths
         resources = set()
         for path in paths.keys():
             parts = path.strip('/').split('/')
-            if parts:
+            if parts and parts[0]:
                 resources.add(parts[0].capitalize())
         
         if resources:
-            return '\n'.join([f"- **{r} Management**: CRUD operations" for r in sorted(resources)])
+            return '\n'.join([f"- 📦 **{r} Management**: CRUD operations" for r in sorted(resources)])
         
-        return "- **API Operations**: Complete REST API functionality"
+        return "- 📦 **API Operations**: Complete REST API functionality"
     
     def _group_endpoints(self, paths):
         """Group endpoints by resource"""

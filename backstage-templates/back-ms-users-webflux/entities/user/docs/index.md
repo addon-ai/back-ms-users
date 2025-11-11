@@ -6,11 +6,7 @@ A service for managing user accounts with full CRUD operations and search capabi
 
 ## ✨ Features
 
-- **Comprehensive user management functionality including user registration and authentication**
-- **Profile management and updates**
-- **User search and listing with pagination**
-- **And account status management (active**
-- **Inactive**
+- 📦 **Users Management**: CRUD operations
 
 ## 🔐 Authentication
 

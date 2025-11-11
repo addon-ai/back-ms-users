@@ -6,11 +6,8 @@ A comprehensive service for managing movie rentals with catalog and transaction 
 
 ## ✨ Features
 
-- **Movie catalog management (crud operations)**
-- **Rental transaction processing**
-- **Inventory tracking and availability management**
-- **Late fee calculation and payment processing**
-- **And user rental history and status tracking.**
+- 📦 **Movies Management**: CRUD operations
+- 📦 **Rentals Management**: CRUD operations
 
 ## 🔐 Authentication
 
