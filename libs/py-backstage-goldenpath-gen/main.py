@@ -9,6 +9,7 @@ from generators.docs_generator import DocsGenerator
 from generators.skeleton_generator import SkeletonGenerator
 from generators.root_generator import RootGenerator
 from generators.techdocs_generator import TechDocsGenerator
+from generators.dependencies_generator import DependenciesGenerator
 
 class BackstageGoldenPathGenerator:
     """Main generator orchestrator"""
@@ -29,6 +30,7 @@ class BackstageGoldenPathGenerator:
         self.skeleton_generator = SkeletonGenerator(self.templates_dir, projects_dir)
         self.root_generator = RootGenerator(self.templates_dir, output_dir)
         self.techdocs_generator = TechDocsGenerator()
+        self.dependencies_generator = DependenciesGenerator()
     
     def generate_all(self):
         """Generate all Backstage templates"""
@@ -82,6 +84,9 @@ class BackstageGoldenPathGenerator:
         
         # Generate TechDocs for each entity
         self.techdocs_generator.generate_for_entities(project_dir, openapi_files)
+        
+        # Generate dependencies.yml
+        self.dependencies_generator.generate(project_name, config, project_dir)
         
         # Get provides APIs
         provides_apis = self.entity_generator.get_provides_apis(project_name, project_dir)
