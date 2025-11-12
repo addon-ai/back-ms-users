@@ -112,16 +112,47 @@ spec:
         with open(os.path.join(self.output_dir, "entities-location.yml"), 'w') as f:
             f.write(entities_location_content)
     
-    def generate_dependencies_location(self, github_org):
-        """Generate dependencies-location.yml"""
-        dependencies_location_content = f"""apiVersion: backstage.io/v1alpha1
-kind: Location
+    def generate_dependencies_file(self, all_dependencies):
+        """Generate single dependencies.yml with unique dependencies by version only"""
+        resources = []
+        seen = set()
+        
+        dep_mapping = {
+            'java': ('Java Runtime Environment', 'runtime', ['java', 'runtime']),
+            'springBoot': ('Spring Boot Framework', 'library', ['spring-boot', 'framework']),
+            'mapstruct': ('MapStruct mapping library', 'library', ['mapstruct', 'mapping']),
+            'lombok': ('Lombok code generation library', 'library', ['lombok', 'codegen']),
+            'postgresql': ('PostgreSQL JDBC Driver', 'database-driver', ['postgresql', 'database']),
+            'h2': ('H2 Database Engine', 'database-driver', ['h2', 'database']),
+            'springdoc': ('SpringDoc OpenAPI library', 'library', ['springdoc', 'openapi']),
+            'mavenCompiler': ('Maven Compiler Plugin', 'library', ['maven', 'compiler']),
+            'mavenSurefire': ('Maven Surefire Plugin', 'library', ['maven', 'testing']),
+            'lombokMapstructBinding': ('Lombok MapStruct Binding', 'library', ['lombok', 'mapstruct']),
+            'jacoco': ('JaCoCo Code Coverage', 'library', ['jacoco', 'testing']),
+            'flywayDatabasePostgresql': ('Flyway Database Migration', 'library', ['flyway', 'database'])
+        }
+        
+        for base_name, (deps, system_name) in all_dependencies.items():
+            for key, (desc, res_type, tags) in dep_mapping.items():
+                if key in deps:
+                    version = deps[key]
+                    version_formatted = version.replace('.', '-').replace('Final', '').strip('-')
+                    resource_name = f"{key.lower()}-{version_formatted}"
+                    
+                    if resource_name not in seen:
+                        seen.add(resource_name)
+                        tags_yaml = '\n'.join([f"    - {tag}" for tag in tags])
+                        resources.append(f"""apiVersion: backstage.io/v1alpha1
+kind: Resource
 metadata:
-  name: backstage-dependencies
-  description: All project dependencies
+  name: {resource_name}
+  description: {desc} version {version}
+  tags:
+{tags_yaml}
 spec:
-  targets:
-    - https://github.com/{github_org}/backstage-templates/blob/main/*/entities/dependencies.yml
-"""
-        with open(os.path.join(self.output_dir, "dependencies-location.yml"), 'w') as f:
-            f.write(dependencies_location_content)
+  type: {res_type}
+  owner: platform-team""")
+        
+        content = '\n---\n'.join(resources) + '\n'
+        with open(os.path.join(self.output_dir, "dependencies.yml"), 'w') as f:
+            f.write(content)

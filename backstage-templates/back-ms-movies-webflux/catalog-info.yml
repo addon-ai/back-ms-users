@@ -21,13 +21,19 @@ spec:
   providesApis:
     - movie-reactive-api
   dependsOn:
-    - resource:java-21-movies
-    - resource:spring-boot-3-2-5-movies
-    - resource:mapstruct-1-5-5-movies
-    - resource:lombok-1-18-30-movies
-    - resource:postgresql-42-7-3-movies
-    - resource:maven-compiler-3-11-0-movies
-    - resource:maven-surefire-3-2-5-movies
-    - resource:lombok-mapstruct-binding-0-2-0-movies
-    - resource:jacoco-0-8-11-movies
-    - resource:flyway-10-10-0-movies
+    - resource:java-21
+    - resource:springboot-3-2-5
+    - resource:springwebflux-3-2-5
+    - resource:springdatar2dbc-3-2-5
+    - resource:r2dbcpostgresql-1-0-4-RELEASE
+    - resource:r2dbch2-1-0-0-RELEASE
+    - resource:mapstruct-1-5-5
+    - resource:lombok-1-18-30
+    - resource:springdocwebflux-2-1-0
+    - resource:reactortest-3-6-5
+    - resource:postgresql-42-7-3
+    - resource:mavencompiler-3-11-0
+    - resource:mavensurefire-3-2-5
+    - resource:lombokmapstructbinding-0-2-0
+    - resource:jacoco-0-8-11
+    - resource:flywaydatabasepostgresql-10-10-0

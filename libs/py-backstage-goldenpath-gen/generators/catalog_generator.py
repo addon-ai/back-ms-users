@@ -44,24 +44,10 @@ class CatalogGenerator:
         deps = config.get('project', {}).get('dependencies', {})
         dep_list = []
         
-        dep_mapping = {
-            'java': lambda v: f"java-{v}-{base_name}",
-            'springBoot': lambda v: f"spring-boot-{v.replace('.', '-')}-{base_name}",
-            'mapstruct': lambda v: f"mapstruct-{v.replace('.', '-').replace('Final', '').strip('-')}-{base_name}",
-            'lombok': lambda v: f"lombok-{v.replace('.', '-')}-{base_name}",
-            'postgresql': lambda v: f"postgresql-{v.replace('.', '-')}-{base_name}",
-            'h2': lambda v: f"h2-{v.replace('.', '-')}-{base_name}",
-            'springdoc': lambda v: f"springdoc-{v.replace('.', '-')}-{base_name}",
-            'mavenCompiler': lambda v: f"maven-compiler-{v.replace('.', '-')}-{base_name}",
-            'mavenSurefire': lambda v: f"maven-surefire-{v.replace('.', '-')}-{base_name}",
-            'lombokMapstructBinding': lambda v: f"lombok-mapstruct-binding-{v.replace('.', '-')}-{base_name}",
-            'jacoco': lambda v: f"jacoco-{v.replace('.', '-')}-{base_name}",
-            'flywayDatabasePostgresql': lambda v: f"flyway-{v.replace('.', '-')}-{base_name}"
-        }
-        
-        for key, formatter in dep_mapping.items():
-            if key in deps:
-                dep_list.append(formatter(deps[key]))
+        for key, version in deps.items():
+            version_formatted = version.replace('.', '-').replace('Final', '').strip('-')
+            resource_name = f"{key.lower()}-{version_formatted}"
+            dep_list.append(resource_name)
         
         return dep_list
     

@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: java-21-users
+  name: java-21
   description: Java Runtime Environment version 21
   tags:
     - java
@@ -9,12 +9,11 @@ metadata:
 spec:
   type: runtime
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: spring-boot-3-2-5-users
+  name: springboot-3-2-5
   description: Spring Boot Framework version 3.2.5
   tags:
     - spring-boot
@@ -22,12 +21,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: mapstruct-1-5-5-users
+  name: mapstruct-1-5-5
   description: MapStruct mapping library version 1.5.5.Final
   tags:
     - mapstruct
@@ -35,12 +33,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: lombok-1-18-30-users
+  name: lombok-1-18-30
   description: Lombok code generation library version 1.18.30
   tags:
     - lombok
@@ -48,12 +45,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: postgresql-42-7-3-users
+  name: postgresql-42-7-3
   description: PostgreSQL JDBC Driver version 42.7.3
   tags:
     - postgresql
@@ -61,38 +57,11 @@ metadata:
 spec:
   type: database-driver
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: h2-2-2-224-users
-  description: H2 Database Engine version 2.2.224
-  tags:
-    - h2
-    - database
-spec:
-  type: database-driver
-  owner: platform-team
-  system: users-system
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: springdoc-2-1-0-users
-  description: SpringDoc OpenAPI library version 2.1.0
-  tags:
-    - springdoc
-    - openapi
-spec:
-  type: library
-  owner: platform-team
-  system: users-system
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: maven-compiler-3-11-0-users
+  name: mavencompiler-3-11-0
   description: Maven Compiler Plugin version 3.11.0
   tags:
     - maven
@@ -100,12 +69,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: maven-surefire-3-2-5-users
+  name: mavensurefire-3-2-5
   description: Maven Surefire Plugin version 3.2.5
   tags:
     - maven
@@ -113,12 +81,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: lombok-mapstruct-binding-0-2-0-users
+  name: lombokmapstructbinding-0-2-0
   description: Lombok MapStruct Binding version 0.2.0
   tags:
     - lombok
@@ -126,12 +93,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: jacoco-0-8-11-users
+  name: jacoco-0-8-11
   description: JaCoCo Code Coverage version 0.8.11
   tags:
     - jacoco
@@ -139,12 +105,11 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: flyway-10-10-0-users
+  name: flywaydatabasepostgresql-10-10-0
   description: Flyway Database Migration version 10.10.0
   tags:
     - flyway
@@ -152,4 +117,3 @@ metadata:
 spec:
   type: library
   owner: platform-team
-  system: users-system

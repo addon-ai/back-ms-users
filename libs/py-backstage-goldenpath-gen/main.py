@@ -40,12 +40,19 @@ class BackstageGoldenPathGenerator:
         os.makedirs(self.output_dir, exist_ok=True)
         
         systems = set()
+        all_dependencies = {}
         
         for config in configs:
             project_name = config['project']['general']['name']
             base_name = project_name.replace('-webflux', '').replace('back-ms-', '')
             system_name = f"{base_name}-system"
             systems.add((system_name, base_name))
+            
+            # Collect dependencies
+            deps = config.get('project', {}).get('dependencies', {})
+            if deps:
+                all_dependencies[base_name] = (deps, system_name)
+            
             self._generate_project(project_name, config)
         
         # Generate root files
@@ -56,7 +63,7 @@ class BackstageGoldenPathGenerator:
         self.root_generator.generate_org_yml()
         self.root_generator.generate_systems_yml(systems)
         self.root_generator.generate_entities_location(github_org)
-        self.root_generator.generate_dependencies_location(github_org)
+        self.root_generator.generate_dependencies_file(all_dependencies)
         
         print(f"✅ Backstage collection files generated in {self.output_dir}/")
     
@@ -85,9 +92,6 @@ class BackstageGoldenPathGenerator:
         
         # Generate TechDocs for each entity
         self.techdocs_generator.generate_for_entities(project_dir, openapi_files)
-        
-        # Generate dependencies.yml
-        self.dependencies_generator.generate(project_name, config, project_dir)
         
         # Get provides APIs
         provides_apis = self.entity_generator.get_provides_apis(project_name, project_dir)
